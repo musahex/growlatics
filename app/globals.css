@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* ─── Theme tokens ─────────────────────────────────────────────────────────── */
+
+:root {
+  --font-inter: 'Inter', system-ui, sans-serif;
+
+  /* Light mode (default) */
+  --bg-base:       #F5F3F0;
+  --bg-surface:    #FDFCFA;
+  --bg-card:       #FFFFFF;
+  --text-primary:  #0C0B0A;
+  --text-secondary:#3A3530;
+  --text-muted:    #7A7570;
+  --border-subtle: rgba(10,9,8,0.07);
+  --dot-color:     rgba(10,9,8,0.055);
+  --scrollbar-track: #EAE7E3;
+
+  /* Cursor — light mode */
+  --cursor-color:      #0C0B0A;
+  --cursor-ring-color: rgba(10, 9, 8, 0.28);
+
+  /* Hero interactive field — light mode */
+  --hero-glow:       rgba(210, 64, 26, 0.12);
+  --hero-node-color: rgba(210, 64, 26, 0.43);
+  --hero-line-color: rgba(210, 64, 26, 0.11);
+  --hero-grid-color: rgba(10, 9, 8, 0.03);
+}
+
+[data-theme="dark"] {
+  --bg-base:       #070605;
+  --bg-surface:    #0C0B0A;
+  --bg-card:       #0C0B0A;
+  --text-primary:  #FFFFFF;
+  --text-secondary:#C0B8B0;
+  --text-muted:    #7A7570;
+  --border-subtle: rgba(255,255,255,0.06);
+  --dot-color:     rgba(255,255,255,0.06);
+  --scrollbar-track: #08090B;
+
+  /* Cursor — dark mode */
+  --cursor-color:      rgba(255, 255, 255, 0.88);
+  --cursor-ring-color: rgba(255, 255, 255, 0.24);
+
+  /* Hero interactive field — dark mode */
+  --hero-glow:       rgba(210, 64, 26, 0.12);
+  --hero-node-color: rgba(210, 64, 26, 0.50);
+  --hero-line-color: rgba(210, 64, 26, 0.13);
+  --hero-grid-color: rgba(255, 255, 255, 0.018);
+}
+
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    font-family: var(--font-inter), system-ui, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+    transition: background-color 0.5s ease, color 0.5s ease;
+  }
+
+  ::selection {
+    background: rgba(210, 64, 26, 0.4);
+    color: #fff;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track  { background: var(--scrollbar-track); }
+  ::-webkit-scrollbar-thumb  { background: rgba(210,64,26,0.5); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #D2401A; }
+}
+
+/* ─── Utilities ────────────────────────────────────────────────────────────── */
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+
+  .glass {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.10);
+  }
+
+  .orange-glow  { box-shadow: 0 0 30px rgba(210,64,26,0.3); }
+
+  .text-gradient-orange {
+    background: linear-gradient(135deg, #D2401A 0%, #FF6B47 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .border-glow {
+    border: 1px solid rgba(210,64,26,0.4);
+    box-shadow: 0 0 20px rgba(210,64,26,0.15) inset;
+  }
+}
+
+/* ─── View Transitions ─────────────────────────────────────────────────────── */
+
+@supports (view-transition-name: none) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 600ms;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) { animation-duration: 0.01ms !important; }
+  }
+}
+
+/* ─── Custom cursor ─────────────────────────────────────────────────────────── */
+
+/* Hide native cursor on fine-pointer (mouse/trackpad) devices only.
+   Touch devices are unaffected. The cursor component renders nothing on touch. */
+@media (pointer: fine) {
+  *, *::before, *::after {
+    cursor: none !important;
+  }
+}
+
+/* Class-based lock — added by InteractiveCursor when it confirms it is running.
+   This overrides browser-default pointer/text cursors on buttons, links, inputs, etc.
+   Removed on component unmount so touch/reduced-motion devices are never affected. */
+.custom-cursor-active,
+.custom-cursor-active *,
+.custom-cursor-active *::before,
+.custom-cursor-active *::after {
+  cursor: none !important;
+}
+
+/* Dot — small filled circle, snaps to raw pointer position */
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--cursor-color);
+  /* Colour transitions smoothly; transform is driven by JS RAF */
+  transition: background-color 200ms ease;
+}
+
+/* Ring — thin outlined circle, lags behind pointer */
+.cursor-ring {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--cursor-ring-color);
+  /* Border/glow transitions smoothly; transform/scale driven by JS RAF */
+  transition:
+    border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow   220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
