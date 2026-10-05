@@ -125,6 +125,8 @@ Runs linting checks if configured in the project.
 
 `/lab/system/` is a dev-only test bench for the 3D system (every tier and act layout). It is available under `npm run dev`; the `postbuild` script deletes `out/lab/` and its chunk, so it never ships. Call `npx next build` directly and the lab stays in `out/`: always build with `npm run build`.
 
+`public/.htaccess` (copied to `out/`) makes Hostinger serve the branded `404.html` for unknown URLs; it is a dotfile, so make sure the upload includes it.
+
 Check the export with `node scripts/seo-crawl.mjs` (exits 1 on any SEO problem).
 
 ---
