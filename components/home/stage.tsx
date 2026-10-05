@@ -62,7 +62,7 @@ const useHydrated = () => useSyncExternalStore(subscribeNothing, () => true, () 
  * CSS shows the right one, so desktop does not shift when hydration swaps the phone figure out (hero CLS)
  * and no-JS desktop gets the desktop composition.
  */
-export function ActFigure({ act, stage, title, className }: { act: number; stage?: number; title?: string; className?: string }) {
+export function ActFigure({ act, stage, title, className, leaks }: { act: number; stage?: number; title?: string; className?: string; /** Act 2: number the first n broken handoffs to match the leak list. */ leaks?: number }) {
   const hydrated = useHydrated()
   const wide = useMedia(WIDE)
   const tablet = useMedia(TABLET)
@@ -85,7 +85,13 @@ export function ActFigure({ act, stage, title, className }: { act: number; stage
       intro={act === 1}
       title={title}
       className={cn('w-full aspect-[4/5] md:aspect-[16/10]', !hydrated && 'lg:hidden', className)}
-    />
+    >
+      {LEAK_EDGES.slice(0, leaks ?? 0).map(([edge], i) => (
+        <SpatialLabel key={edge} edge={edge} dx={-8} dy={-6}>
+          {String(i + 1).padStart(2, '0')}
+        </SpatialLabel>
+      ))}
+    </SystemStage>
   )
   if (hydrated) return inline
   return (

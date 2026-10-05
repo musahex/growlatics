@@ -17,6 +17,9 @@ import TraceLanes from './TraceLanes'
 const wrap = 'relative mx-auto w-full max-w-container px-gutter'
 // Text keeps the left of the viewport; the network owns the right (text-safe zone, §7 act 1).
 const col = 'lg:max-w-[58%]'
+// Acts with a figure: below lg the figure sits in flow after the heading (it explains what you see, #8);
+// on lg the wrapper is static so the figure's absolute desktop SVG spans the whole act.
+const actWrap = 'py-section lg:static lg:min-h-screen'
 
 function Act({ n, id, dark, className, children }: { n: number; id: string; dark?: boolean; className?: string; children: React.ReactNode }) {
   return (
@@ -84,10 +87,12 @@ export function Problem() {
   const c = home.problem
   return (
     <Act n={2} id={c.id!}>
-      <ActFigure act={2} title={homeUi.figures.problem} />
-      <div className={cn(wrap, 'py-section lg:min-h-screen')}>
-        <div className={col}>
+      <div className={cn(wrap, actWrap)}>
+        <div className={cn(col, 'relative')}>
           <SectionHeader id={`${c.id}-h`} eyebrow={c.eyebrow} heading={c.heading} body={c.body} />
+        </div>
+        <ActFigure act={2} title={homeUi.figures.problem} className="mt-8" leaks={c.leaks.length} />
+        <div className={cn(col, 'relative')}>
           <Ledger className="mt-12" rows={c.leaks.map((l) => ({ term: l.title, description: l.body }))} />
         </div>
       </div>
@@ -100,10 +105,12 @@ export function Connection() {
   const c = home.connection
   return (
     <Act n={3} id={c.id!}>
-      <ActFigure act={3} title={homeUi.figures.connection} />
-      <div className={cn(wrap, 'py-section lg:min-h-screen')}>
-        <div className={col}>
+      <div className={cn(wrap, actWrap)}>
+        <div className={cn(col, 'relative')}>
           <SectionHeader id={`${c.id}-h`} eyebrow={c.eyebrow} heading={c.heading} body={c.body} />
+        </div>
+        <ActFigure act={3} title={homeUi.figures.connection} className="mt-8" />
+        <div className={cn(col, 'relative')}>
           <Ledger className="mt-12" rows={(c.items ?? []).map((i) => ({ term: i.title, description: i.body }))} />
         </div>
       </div>
@@ -172,10 +179,12 @@ export function Capabilities() {
   const c = home.capabilities
   return (
     <Act n={5} id={c.id!}>
-      <ActFigure act={5} title={homeUi.figures.capabilities} />
-      <div className={cn(wrap, 'py-section lg:min-h-screen')}>
-        <div className={col}>
+      <div className={cn(wrap, actWrap)}>
+        <div className={cn(col, 'relative')}>
           <SectionHeader id={`${c.id}-h`} eyebrow={c.eyebrow} heading={c.heading} body={c.body} />
+        </div>
+        <ActFigure act={5} title={homeUi.figures.capabilities} className="mt-8" />
+        <div className={cn(col, 'relative')}>
           <div className="mt-12">
             <Inspector
               label={c.heading}
@@ -266,11 +275,13 @@ export function Global() {
   const c = home.global
   return (
     <Act n={7} id={c.id!}>
-      <ActFigure act={7} title={homeUi.figures.global} />
-      <div className={cn(wrap, 'py-section lg:min-h-screen lg:pt-24')}>
-        <SectionHeader id={`${c.id}-h`} eyebrow={c.eyebrow} heading={c.heading} />
+      <div className={cn(wrap, actWrap, 'lg:pt-24')}>
+        <div className="relative">
+          <SectionHeader id={`${c.id}-h`} eyebrow={c.eyebrow} heading={c.heading} />
+        </div>
+        <ActFigure act={7} title={homeUi.figures.global} className="mt-8" />
         {/* lg: the 24-hour band runs through the gap between heading and body. */}
-        <div className={cn(col, 'mt-6 lg:mt-[30vh]')}>
+        <div className={cn(col, 'relative mt-6 lg:mt-[30vh]')}>
           <p className="max-w-measure text-body-l text-text-2">{c.body}</p>
           <p className="mt-6 font-mono text-data uppercase text-text-3">{site.markets.map((m) => m.label).join(' · ')}</p>
           {c.links?.map((l) => <MoreLink key={l.href} href={l.href} label={l.label} />)}
