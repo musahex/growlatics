@@ -1,5 +1,25 @@
 // Motion constants (docs/v2/DIRECTION.md §4). Mirrored as CSS variables in app/globals.css.
+import { useSyncExternalStore } from 'react'
 import type { Variants, Transition } from 'framer-motion'
+
+const REDUCED = '(prefers-reduced-motion: reduce)'
+/**
+ * prefers-reduced-motion, hydration-safe: false on the server and during hydration, then the real
+ * value. (framer-motion's useReducedMotion reads matchMedia on the first client render, which made
+ * the client tree differ from the static HTML: React #418/#423.) Reduced variants below therefore
+ * also settle correctly when they replace the full ones after mount.
+ */
+export function useReducedMotion() {
+  return useSyncExternalStore(
+    (fn) => {
+      const m = matchMedia(REDUCED)
+      m.addEventListener('change', fn)
+      return () => m.removeEventListener('change', fn)
+    },
+    () => matchMedia(REDUCED).matches,
+    () => false,
+  )
+}
 
 export const duration = {
   instant: 0.12,
@@ -35,7 +55,7 @@ const t = (d: number, e: Bezier | 'linear' = ease.out): Transition => ({ duratio
 /** R1 Rise, with its reduced-motion equivalent (fade only, `fast`). */
 export function rise(reduced: boolean | null): Variants {
   return reduced
-    ? { hidden: { opacity: 0 }, show: { opacity: 1, transition: t(duration.fast) } }
+    ? { hidden: { opacity: 0 }, show: { opacity: 1, y: 0, transition: { ...t(duration.fast), y: { duration: 0 } } } }
     : { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: t(duration.slow) } }
 }
 
@@ -47,21 +67,21 @@ export function riseGroup(reduced: boolean | null, gap: number = stagger.rise): 
 /** R2 Trace: animate `pathLength` 0→1. Reduced motion draws at once. */
 export function trace(reduced: boolean | null, i = 0): Variants {
   return reduced
-    ? { hidden: { pathLength: 1 }, show: { pathLength: 1 } }
+    ? { hidden: { pathLength: 1 }, show: { pathLength: 1, transition: { duration: 0 } } }
     : { hidden: { pathLength: 0 }, show: { pathLength: 1, transition: { ...t(duration.slower), delay: i * stagger.trace } } }
 }
 
 /** R3 Bars: scaleY 0→1 from the bottom. Reduced motion shows bars at full height. */
 export function bars(reduced: boolean | null, i = 0, d: number = duration.slow): Variants {
   return reduced
-    ? { hidden: { scaleY: 1 }, show: { scaleY: 1 } }
+    ? { hidden: { scaleY: 1 }, show: { scaleY: 1, transition: { duration: 0 } } }
     : { hidden: { scaleY: 0 }, show: { scaleY: 1, transition: { ...t(d), delay: i * stagger.bars } } }
 }
 
 /** R6 Swap: exit up 8px (`ease-in`), enter with R1. Reduced motion cross-fades over `fast`. */
 export function swap(reduced: boolean | null): Variants {
   return reduced
-    ? { initial: { opacity: 0 }, enter: { opacity: 1, transition: t(duration.fast) }, exit: { opacity: 0, transition: t(duration.fast) } }
+    ? { initial: { opacity: 0 }, enter: { opacity: 1, y: 0, transition: { ...t(duration.fast), y: { duration: 0 } } }, exit: { opacity: 0, transition: t(duration.fast) } }
     : {
         initial: { opacity: 0, y: 16 },
         enter: { opacity: 1, y: 0, transition: t(duration.slow) },

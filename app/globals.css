@@ -184,6 +184,11 @@
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
   }
+
+  /* No JS: reveals never run, so their server-rendered hidden state must not stick. */
+  @media (scripting: none) {
+    [data-reveal] { opacity: 1 !important; transform: none !important; }
+  }
 }
 
 /* ─── Utilities ────────────────────────────────────────────────────────── */

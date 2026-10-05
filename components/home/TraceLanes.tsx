@@ -3,9 +3,9 @@
 // Act 6 trace comparison (DIRECTION §7): one lead through separate vendors (stalls at each broken handoff,
 // drops at the third) and through one connected system (arrives). No numbers; the gaps are the evidence.
 import { useState } from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { getLabel, homeUi, systems } from '@/content'
-import { viewportOnce } from '@/lib/motion'
+import { viewportOnce, useReducedMotion } from '@/lib/motion'
 import Button from '@/components/ui/Button'
 
 const X = [80, 320, 560, 800]
@@ -57,7 +57,7 @@ function Lane({ y, broken, label, run, reduced }: { y: number; broken: boolean; 
         initial={reduced ? end : { x: 0, y: 0, opacity: 1 }}
         whileInView={
           reduced
-            ? end
+            ? { ...end, transition: { duration: 0 } }
             : broken
               ? { x: top.x, y: top.y, opacity: top.opacity, transition: { duration: 4.2, times: top.times, ease: 'linear' } }
               : { x: SEG * 3, transition: { duration: (4.2 * 0.6) / 0.88, ease: 'linear' } }
@@ -69,7 +69,7 @@ function Lane({ y, broken, label, run, reduced }: { y: number; broken: boolean; 
 }
 
 export default function TraceLanes() {
-  const reduced = !!useReducedMotion()
+  const reduced = useReducedMotion()
   const [run, setRun] = useState(0)
   return (
     <figure>

@@ -1,7 +1,7 @@
 'use client'
 
-import { motion, useReducedMotion } from 'framer-motion'
-import { rise, riseGroup, viewportOnce } from '@/lib/motion'
+import { motion } from 'framer-motion'
+import { rise, riseGroup, viewportOnce, useReducedMotion } from '@/lib/motion'
 
 type Tag = 'div' | 'ul' | 'ol' | 'li' | 'p' | 'section'
 
@@ -21,9 +21,10 @@ export default function Reveal({
 }) {
   const reduced = useReducedMotion()
   const M = motion[as]
-  if (item) return <M variants={rise(reduced)} className={className}>{children}</M>
+  if (item) return <M data-reveal variants={rise(reduced)} className={className}>{children}</M>
   return (
     <M
+      data-reveal
       variants={group ? riseGroup(reduced) : rise(reduced)}
       initial="hidden"
       whileInView="show"
