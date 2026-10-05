@@ -8,12 +8,15 @@ import {
   reportLink,
   schematicLabels,
   servicePages,
+  serviceSchematics,
+  stageTitles,
   systemById,
   type ServiceSlug,
   type SystemId,
 } from '@/content'
 import { pageMetadata, serviceJsonLd } from '@/lib/seo'
 import PageHero from '@/components/patterns/PageHero'
+import PageStage from '@/components/pages/PageStage'
 import HandoffStrip from '@/components/patterns/HandoffStrip'
 import SystemSchematic from '@/components/patterns/SystemSchematic'
 import SignalRail from '@/components/patterns/SignalRail'
@@ -48,13 +51,16 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
   const sys = systemById[page.system]
   const flow = FLOW[sys.id]
   const ledger = (items: { title: string; body: string }[] = []) => items.map((i) => ({ term: i.title, description: i.body }))
+  // Sell groups its capabilities: show each group's capabilities as chips under its row.
+  const groupTags = (title: string) => sys.capabilities.filter((c) => c.group?.startsWith(title)).map((c) => c.label)
+  const lanes = serviceSchematics[sys.slug] ?? { inputs: flow.up.map((id) => systemById[id].verb), outputs: flow.down.map((id) => systemById[id].verb) }
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd(sys.service, page.route, page.seo.description)) }} />
 
-      <PageHero hero={{ ...page.hero, primary: page.hero.primary && { ...page.hero.primary, href: `/contact/?system=${sys.slug}#book` } }}>
-        <HandoffStrip upstream={flow.up.map(node)} current={node(sys.id)} downstream={flow.down.map(node)} base={flow.base ? node('build') : undefined} />
+      <PageHero hero={{ ...page.hero, primary: page.hero.primary && { ...page.hero.primary, href: `/contact/?system=${sys.slug}#book` } }} stage={<PageStage act={5} focus={sys.id} title={stageTitles.service(sys.service)} />}>
+          <HandoffStrip upstream={flow.up.map(node)} current={node(sys.id)} downstream={flow.down.map(node)} base={flow.base ? node('build') : undefined} />
       </PageHero>
 
       <Section rule aria-labelledby="problem-h">
@@ -63,14 +69,14 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
 
       <Section id="capabilities" tone="surface" aria-labelledby="cap-h">
         <SectionHeader id="cap-h" heading={page.capabilities.heading} />
-        <Ledger className="mt-12" rows={ledger(page.capabilities.items)} />
+        <Ledger className="mt-12" rows={ledger(page.capabilities.items).map((r) => ({ ...r, tags: groupTags(r.term) }))} />
         <div className="mt-16">
           <SystemSchematic
             title={`${sys.service}: ${sys.capabilities.map((c) => c.short).join(', ')}`}
             labels={schematicLabels}
-            inputs={flow.up.map((id) => systemById[id].verb)}
+            inputs={lanes.inputs}
             capabilities={sys.capabilities.map((c) => c.short)}
-            outputs={flow.down.map((id) => systemById[id].verb)}
+            outputs={lanes.outputs}
           />
         </div>
       </Section>

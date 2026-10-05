@@ -432,3 +432,21 @@ export const notFoundPage = {
 export const schematicLabels = { inputs: 'Receives from', capabilities: 'Runs', outputs: 'Hands off to' }
 export const journeyHeading = (verb: string) => `Where ${verb} sits in the journey`
 export const draftNotice = 'Draft — pending owner legal approval. Not linked and not indexed.'
+
+// ─── Network figures (accessible names) and page-specific schematic lanes ────
+
+export const stageTitles = {
+  services: 'Acquire, Sell, Operate and Build reconnected through Growlatics as one system',
+  about: 'Marketing, sales, customer operations and technology connected through Growlatics',
+  international: 'Growlatics serving the United States, the United Kingdom and Pakistan',
+  service: (service: string) => `${service} in the Growlatics network, lit, with its handoffs to the other systems`,
+}
+
+/** Overrides the default schematic lanes (upstream verbs → capabilities → downstream verbs). */
+export const serviceSchematics: Partial<Record<ServiceSlug, { inputs: string[]; outputs: string[] }>> = {
+  // DIRECTION §8.1: Sell shows inbound and outbound lanes and the appointment handoff to the client's calendar.
+  'sales-bpo': { inputs: ['Inbound leads', 'Outbound lists'], outputs: ['Your calendar', 'Operate'] },
+}
+
+/** Work page proof slots (IA §5.9): headings render only when the slot has approved entries. */
+export const workProofHeadings = { caseStudies: 'Case studies', testimonials: 'What clients say' }

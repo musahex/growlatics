@@ -107,7 +107,7 @@ function ErrorText({ id, error }: { id: string; error?: ErrorKey }) {
   )
 }
 
-function Choice({ type, name, value, label, checked, onChange, describedBy }: { type: 'checkbox' | 'radio'; name: string; value: string; label: string; checked: boolean; onChange: () => void; describedBy?: string }) {
+function Choice({ type, name, value, label, checked, onChange, invalid }: { type: 'checkbox' | 'radio'; name: string; value: string; label: string; checked: boolean; onChange: () => void; invalid?: boolean }) {
   return (
     <label
       className={cn(
@@ -116,7 +116,7 @@ function Choice({ type, name, value, label, checked, onChange, describedBy }: { 
         checked ? 'border-signal-line bg-signal-soft text-text' : 'border-line-2 bg-elevated text-text-2 hover:border-line-3',
       )}
     >
-      <input type={type} name={name} value={value} checked={checked} onChange={onChange} aria-describedby={describedBy} className="sr-only" />
+      <input type={type} name={name} value={value} checked={checked} onChange={onChange} aria-invalid={invalid || undefined} className="sr-only" />
       <span aria-hidden className={cn('flex size-4 shrink-0 items-center justify-center border', type === 'radio' ? 'rounded-full' : 'rounded-xs', checked ? 'border-signal bg-signal' : 'border-line-3')}>
         {checked && <span className={cn('bg-on-signal', type === 'radio' ? 'size-1.5 rounded-full' : 'size-2 rounded-xs')} />}
       </span>
@@ -142,7 +142,6 @@ function TextField({ name, label, value, onChange, onBlur, error, required, type
     autoComplete,
     'aria-invalid': error ? true : undefined,
     'aria-describedby': error ? errId : undefined,
-    'data-field': name,
   }
   return (
     <div>
@@ -200,7 +199,7 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
     const first = STEP_FIELDS[key].find((k) => errs[k])
     if (!first) return
     requestAnimationFrame(() => {
-      const el = rootRef.current?.querySelector<HTMLElement>(`[data-field="${first}"], [name="${first}"]`)
+      const el = rootRef.current?.querySelector<HTMLElement>(`[name="${first}"]`)
       el?.focus()
     })
   }
@@ -316,7 +315,7 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
     return (
       <fieldset aria-describedby={errors[k] ? errId : undefined}>
         {legend(s.question, 'helper' in s ? s.helper : undefined)}
-        <div className="mt-6 grid gap-3 sm:grid-cols-2" data-field={k} tabIndex={-1}>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
           {s.options.map((o) => (
             <Choice
               key={o.value}
@@ -326,6 +325,7 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
               label={o.label}
               checked={multi ? (d[k] as string[]).includes(o.value) : d[k] === o.value}
               onChange={() => (multi ? toggle(k as 'needs' | 'markets', o.value as never) : set(k, o.value as never))}
+              invalid={!!errors[k]}
             />
           ))}
         </div>
