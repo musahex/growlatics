@@ -1,8 +1,9 @@
 import Link from 'next/link'
-import { engagement, journey, services, site, systemById, systemsSellFirst } from '@/content'
+import { engagement, journey, services, site, stageTitles, systemById, systemsSellFirst } from '@/content'
 import { pageMetadata } from '@/lib/seo'
 import { cn } from '@/lib/utils'
 import PageHero from '@/components/patterns/PageHero'
+import PageStage from '@/components/pages/PageStage'
 import HandoffStrip from '@/components/patterns/HandoffStrip'
 import SignalRail from '@/components/patterns/SignalRail'
 import Ledger from '@/components/patterns/Ledger'
@@ -18,8 +19,8 @@ const node = (id: 'acquire' | 'sell' | 'operate' | 'build') => ({ label: systemB
 export default function ServicesPage() {
   return (
     <>
-      <PageHero hero={services.hero}>
-        <HandoffStrip upstream={[node('acquire')]} current={node('sell')} downstream={[node('operate')]} base={node('build')} />
+      <PageHero hero={services.hero} stage={<PageStage act={3} title={stageTitles.services} />}>
+          <HandoffStrip upstream={[node('acquire')]} current={node('sell')} downstream={[node('operate')]} base={node('build')} />
       </PageHero>
 
       <Section id="systems" rule aria-labelledby="systems-h">

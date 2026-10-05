@@ -1,16 +1,34 @@
 import { proof as defaultProof, type ProofContent } from '@/content'
+import Section from '@/components/ui/Section'
+import SectionHeader from '@/components/ui/SectionHeader'
 import Ledger from './Ledger'
 
 // Proof components render null while their content arrays are empty (no placeholders, no "coming soon").
+// Pass `heading` to render the slot as its own section (IA §5.9); the heading appears only with entries.
 
-export function CaseStudyList({ items = defaultProof.caseStudies }: { items?: ProofContent['caseStudies'] }) {
-  if (!items.length) return null
-  return <Ledger rows={items.map((c) => ({ term: c.client, description: c.summary }))} />
+function Slot({ id, heading, children }: { id: string; heading?: string; children: React.ReactNode }) {
+  if (!heading) return <>{children}</>
+  return (
+    <Section id={id} rule aria-labelledby={`${id}-h`}>
+      <SectionHeader id={`${id}-h`} heading={heading} />
+      <div className="mt-12">{children}</div>
+    </Section>
+  )
 }
 
-export function TestimonialSlot({ items = defaultProof.testimonials }: { items?: ProofContent['testimonials'] }) {
+export function CaseStudyList({ items = defaultProof.caseStudies, heading }: { items?: ProofContent['caseStudies']; heading?: string }) {
   if (!items.length) return null
   return (
+    <Slot id="case-studies" heading={heading}>
+      <Ledger rows={items.map((c) => ({ term: c.client, description: c.summary }))} />
+    </Slot>
+  )
+}
+
+export function TestimonialSlot({ items = defaultProof.testimonials, heading }: { items?: ProofContent['testimonials']; heading?: string }) {
+  if (!items.length) return null
+  return (
+    <Slot id="testimonials" heading={heading}>
     <ul className="grid gap-10">
       {items.map((t) => (
         <li key={t.id}>
@@ -21,6 +39,7 @@ export function TestimonialSlot({ items = defaultProof.testimonials }: { items?:
         </li>
       ))}
     </ul>
+    </Slot>
   )
 }
 

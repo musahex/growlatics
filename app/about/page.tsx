@@ -1,7 +1,8 @@
 import Link from 'next/link'
-import { about, site, systemById } from '@/content'
+import { about, site, stageTitles, systemById } from '@/content'
 import { pageMetadata } from '@/lib/seo'
 import PageHero from '@/components/patterns/PageHero'
+import PageStage from '@/components/pages/PageStage'
 import HandoffStrip from '@/components/patterns/HandoffStrip'
 import Ledger from '@/components/patterns/Ledger'
 import ConvergenceCTA from '@/components/patterns/ConvergenceCTA'
@@ -15,8 +16,8 @@ const node = (id: 'acquire' | 'sell' | 'operate' | 'build') => ({ label: systemB
 export default function AboutPage() {
   return (
     <>
-      <PageHero hero={about.hero}>
-        <HandoffStrip upstream={[node('acquire'), node('sell')]} current={{ label: site.name, sub: site.tagline }} downstream={[node('operate'), node('build')]} />
+      <PageHero hero={about.hero} stage={<PageStage act={3} title={stageTitles.about} />}>
+          <HandoffStrip upstream={[node('acquire'), node('sell')]} current={{ label: site.name, sub: site.tagline }} downstream={[node('operate'), node('build')]} />
       </PageHero>
       {about.sections.map((s) => (
         <Section key={s.heading} id={s.id} rule aria-labelledby={`${s.id}-h`}>

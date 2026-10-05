@@ -1,4 +1,4 @@
-import { engagement, schematicLabels, systems, work } from '@/content'
+import { engagement, proof, schematicLabels, systems, work, workProofHeadings } from '@/content'
 import { pageMetadata } from '@/lib/seo'
 import PageHero from '@/components/patterns/PageHero'
 import SystemSchematic from '@/components/patterns/SystemSchematic'
@@ -41,10 +41,16 @@ export default function WorkPage() {
       </Section>
 
       {/* Dormant proof slots: each renders nothing until content/proof.ts has approved entries. */}
-      <CaseStudyList />
-      <TestimonialSlot />
-      <LogoRow />
-      <MetricSlot />
+      <CaseStudyList heading={workProofHeadings.caseStudies} />
+      <TestimonialSlot heading={workProofHeadings.testimonials} />
+      {proof.logos.length + proof.metrics.length > 0 && (
+        <Section rule>
+          <div className="grid gap-12">
+            <LogoRow />
+            <MetricSlot />
+          </div>
+        </Section>
+      )}
 
       <ConvergenceCTA heading={work.finalCtaHeading} />
     </>

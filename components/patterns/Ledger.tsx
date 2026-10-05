@@ -6,6 +6,8 @@ export interface LedgerRow {
   term: string
   description: string
   href?: string
+  /** Mono chips under the description (e.g. the capabilities inside a group). */
+  tags?: string[]
 }
 
 /** P5 Ledger: two-column definition table with hairline rows and mono index; no boxes. */
@@ -29,7 +31,18 @@ export default function Ledger({ rows, className, termAs: Term = 'h3' }: { rows:
               r.term
             )}
           </Term>
-          <p className="text-body text-text-2">{r.description}</p>
+          <div>
+            <p className="text-body text-text-2">{r.description}</p>
+            {r.tags && r.tags.length > 0 && (
+              <ul className="mt-4 flex flex-wrap gap-2">
+                {r.tags.map((t) => (
+                  <li key={t} className="rounded-sm border border-line px-2 py-1 font-mono text-data-s text-text-3">
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </Reveal>
       ))}
     </Reveal>
