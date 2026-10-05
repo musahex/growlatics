@@ -1,4 +1,4 @@
-import { engagement, proof, schematicLabels, systems, work, workProofHeadings } from '@/content'
+import { engagement, proof, systems, work, workProofHeadings, workSchematic } from '@/content'
 import { breadcrumbJsonLd, ldJson, pageMetadata } from '@/lib/seo'
 import PageHero from '@/components/patterns/PageHero'
 import SystemSchematic from '@/components/patterns/SystemSchematic'
@@ -25,15 +25,15 @@ export default function WorkPage() {
         <div className="mt-16">
           <SystemSchematic
             title={`${measure.heading}: ${(measure.items ?? []).map((i) => i.title).join(', ')}`}
-            labels={schematicLabels}
+            labels={workSchematic.labels}
             inputs={systems.map((s) => s.verb)}
             capabilities={(measure.items ?? []).map((i) => i.title)}
-            outputs={[]}
+            outputs={workSchematic.outputs}
           />
         </div>
       </Section>
 
-      <Section id={report.id} rule aria-labelledby="report-h">
+      <Section id={report.id} rule space="tight" aria-labelledby="report-h">
         <SectionHeader id="report-h" heading={report.heading} body={report.body} />
         {report.links?.map((l) => (
           <Button key={l.href} href={l.href} variant="text" arrow className="mt-8">

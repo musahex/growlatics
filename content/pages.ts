@@ -489,5 +489,15 @@ export const serviceSchematics: Partial<Record<ServiceSlug, { inputs: string[]; 
   'sales-bpo': { inputs: ['Inbound leads', 'Outbound lists'], outputs: ['Your calendar', 'Operate'] },
 }
 
+/**
+ * Work page schematic (review: Work): its own column labels, not the service ones, and an outputs column.
+ * Outputs restate the 'How we report' body (owner-verify: metrics agreed before launch).
+ */
+export const workSchematic = {
+  labels: { inputs: 'Systems', capabilities: 'What we measure', outputs: 'Reported as' },
+  outputs: ['Agreed baselines', 'Whole-system report'],
+  verify: true,
+}
+
 /** Work page proof slots (IA §5.9): headings render only when the slot has approved entries. */
 export const workProofHeadings = { caseStudies: 'Case studies', testimonials: 'What clients say' }
