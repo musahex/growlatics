@@ -460,6 +460,29 @@ export const stageTitles = {
   service: (service: string) => `${service} in the Growlatics network, lit, with its handoffs to the other systems`,
 }
 
+/**
+ * Sales & BPO handoff strips (DIRECTION §8.1, review #5). Hero: inbound and outbound lanes into Sell and the
+ * appointment handoff to the client's calendar. "How it works": your CRM ↔ our team ↔ your closers.
+ * Every string reuses page copy above; the team strip restates owner-verify claims (work in your CRM, managed teams).
+ */
+export const salesHandoff = {
+  hero: {
+    upstream: [
+      { label: 'Inbound', sub: 'Inbound leads' },
+      { label: 'Outbound', sub: 'Outbound lists' },
+    ],
+    downstream: [{ label: 'Handoff', sub: 'Your calendar' }],
+  },
+  team: {
+    // OWNER-VERIFY: work in client tools; managed by team leads
+    verify: true,
+    label: 'How the work moves',
+    upstream: [{ label: 'Your CRM', sub: 'Scripts and qualification rules' }],
+    current: { label: 'Our team', sub: 'Managed sales capacity' },
+    downstream: [{ label: 'Your closers', sub: 'Qualified, with context' }],
+  },
+}
+
 /** Overrides the default schematic lanes (upstream verbs → capabilities → downstream verbs). */
 export const serviceSchematics: Partial<Record<ServiceSlug, { inputs: string[]; outputs: string[] }>> = {
   // DIRECTION §8.1: Sell shows inbound and outbound lanes and the appointment handoff to the client's calendar.
