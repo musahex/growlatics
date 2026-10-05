@@ -24,25 +24,22 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(initial)
   }, [])
 
+  // Side effects stay out of the setState updater: React may call updaters more than once.
   const toggleTheme = useCallback(() => {
-    setTheme((current) => {
-      const next: Theme = current === 'dark' ? 'light' : 'dark'
+    const next: Theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light'
+    const apply = () => {
+      document.documentElement.setAttribute('data-theme', next)
+      try { localStorage.setItem('theme', next) } catch (_) {}
+    }
 
-      const apply = () => {
-        document.documentElement.setAttribute('data-theme', next)
-        try { localStorage.setItem('theme', next) } catch (_) {}
-      }
-
-      // Reduced motion: instant swap, no view transition (DIRECTION §4.5).
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      if (!reduced && 'startViewTransition' in document) {
-        document.startViewTransition(apply)
-      } else {
-        apply()
-      }
-
-      return next
-    })
+    // Reduced motion: instant swap, no view transition (DIRECTION §4.5).
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (!reduced && 'startViewTransition' in document) {
+      document.startViewTransition(apply)
+    } else {
+      apply()
+    }
+    setTheme(next)
   }, [])
 
   return (
