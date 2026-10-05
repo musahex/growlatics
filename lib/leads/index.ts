@@ -42,11 +42,12 @@ export function leadEmailBody(lead: LeadSubmission, notes = dash(lead.message)):
 export function buildMailto(lead: LeadSubmission): { href: string; body: string } {
   const subject = encodeURIComponent(leadForm.mailto.subject(lead.company))
   const make = (body: string) => `mailto:${leadForm.mailto.to}?subject=${subject}&body=${encodeURIComponent(body)}`
-  let notes = dash(lead.message)
-  let body = leadEmailBody(lead, notes)
-  while (make(body).length > MAX_MAILTO && notes.length > 1) {
-    notes = notes.slice(0, Math.max(1, notes.length - 50)).trimEnd() + '…'
-    body = leadEmailBody(lead, notes)
+  let msg = lead.message?.trim() ?? ''
+  let body = leadEmailBody(lead)
+  // msg shrinks every pass, so this ends even when the other fields alone exceed the limit.
+  while (make(body).length > MAX_MAILTO && msg) {
+    msg = msg.slice(0, -50).trimEnd()
+    body = leadEmailBody(lead, msg + '…')
   }
   return { href: make(body), body }
 }

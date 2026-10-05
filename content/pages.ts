@@ -425,6 +425,8 @@ export const work: PageContent = {
       // OWNER-VERIFY: metrics agreed before launch
       body: 'Metrics and baselines are agreed in writing before launch. Reporting covers the whole system — not just the channel we run — and follows a cadence set with you.',
       verify: true,
+      // IA §1.4: /work/ main content links to /services/.
+      links: [{ label: 'See the four systems', href: '/services/' }],
     },
   ],
   finalCtaHeading: "Let's define what success looks like for you.",

@@ -371,9 +371,9 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
             {legend(f.steps.contact.question)}
             <div className="mt-6 grid gap-5 sm:grid-cols-2">
               <TextField name="name" label={c.name} value={d.name} onChange={(v) => set('name', v)} onBlur={blur('name')} error={errors.name} required autoComplete="name" maxLength={80} />
-              <TextField name="email" type="email" label={c.email} value={d.email} onChange={(v) => set('email', v)} onBlur={blur('email')} error={errors.email} required autoComplete="email" />
+              <TextField name="email" type="email" label={c.email} value={d.email} onChange={(v) => set('email', v)} onBlur={blur('email')} error={errors.email} required autoComplete="email" maxLength={254} />
               <TextField name="company" label={c.company} value={d.company} onChange={(v) => set('company', v)} onBlur={blur('company')} error={errors.company} required autoComplete="organization" maxLength={100} />
-              <TextField name="website" type="url" label={c.website} value={d.website} onChange={(v) => set('website', v)} onBlur={blur('website')} error={errors.website} autoComplete="url" />
+              <TextField name="website" type="url" label={c.website} value={d.website} onChange={(v) => set('website', v)} onBlur={blur('website')} error={errors.website} autoComplete="url" maxLength={200} />
               <TextField name="phone" type="tel" label={c.phone} value={d.phone} onChange={(v) => set('phone', v)} onBlur={blur('phone')} error={errors.phone} autoComplete="tel" maxLength={20} />
               <div className="sm:col-span-2">
                 <TextField name="message" label={c.message} value={d.message} onChange={(v) => set('message', v)} onBlur={blur('message')} error={errors.message} multiline maxLength={1000} />

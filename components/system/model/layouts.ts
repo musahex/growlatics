@@ -5,7 +5,6 @@ import { CORE, EDGES, NODES, NODE_INDEX, type SystemId } from './graph'
 /** Node state levels: 0 hidden · 1 dormant · 2 idle · 3 active. Edge levels: 0 hidden · 1 broken · 2 rest · 3 hot. */
 export const LEVEL = { hidden: 0, dormant: 1, idle: 2, active: 3 } as const
 export type NodeState = keyof typeof LEVEL
-export type ActLayout = Record<string, { x: number; y: number; z: number; state: NodeState }>
 
 export type Pose = {
   pos: Float32Array // N*3
@@ -21,7 +20,6 @@ export type Pose = {
 
 const N = NODES.length
 const E = EDGES.length
-export const ACT_COUNT = 9
 export const STAGE_COUNT = 5
 /** Key order: acts 1-3, journey stages 0-4 (act 4), acts 5-9. */
 export const KEY_COUNT = 3 + STAGE_COUNT + 5
@@ -313,13 +311,4 @@ export function poseAt(out: Pose, kp: number) {
   out.mark = a.mark + (b.mark - a.mark) * t
   out.hero = a.hero + (b.hero - a.hero) * t
   return out
-}
-
-/** The spec's ActLayout shape for one act (or journey stage), e.g. for content-driven consumers. */
-export function actLayout(act: number, stage = 0): ActLayout {
-  const p = KEYS[keyFor(act, stage)]
-  const names = Object.keys(LEVEL) as NodeState[]
-  return Object.fromEntries(
-    NODES.map((x, i) => [x.id, { x: p.pos[i * 3], y: p.pos[i * 3 + 1], z: p.pos[i * 3 + 2], state: names[Math.round(p.node[i])] }]),
-  )
 }

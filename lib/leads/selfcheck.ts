@@ -25,6 +25,10 @@ const long = buildMailto({ ...lead, message: 'ü'.repeat(1000) })
 assert.ok(long.href.length <= 2000, `mailto too long: ${long.href.length}`)
 assert.ok(long.body.includes('…'))
 
+// Fields other than Notes already over the limit: must return, not loop forever.
+const huge = buildMailto({ ...lead, website: 'https://example.com/' + 'a'.repeat(2100), message: 'hello there' })
+assert.ok(huge.body.includes('Notes:\n…'))
+
 assert.equal(validateEmail('a@b.co'), null)
 assert.equal(validateEmail('nope'), 'email')
 assert.equal(validateEmail(''), 'required')

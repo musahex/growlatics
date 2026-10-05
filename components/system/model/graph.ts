@@ -8,7 +8,6 @@ export type EdgeKind = 'internal' | 'handoff' | 'core'
 export type GEdge = { id: string; a: string; b: string; kind: EdgeKind; bow: number }
 
 export const SYSTEMS = ['acquire', 'sell', 'operate', 'build'] as const
-export type CapabilitySystem = (typeof SYSTEMS)[number]
 
 const n = (id: string, weight: 1 | 2 | 3 = 1): GNode => ({
   id,

@@ -9,6 +9,3 @@ export interface ClientLogo { id: string; name: string; src: string; approvedBy:
 export interface ProofContent { caseStudies: CaseStudy[]; testimonials: Testimonial[]; logos: ClientLogo[]; metrics: VerifiedMetric[] }
 
 export const proof: ProofContent = { caseStudies: [], testimonials: [], logos: [], metrics: [] }
-
-export const hasProof = (p: ProofContent = proof) =>
-  p.caseStudies.length + p.testimonials.length + p.logos.length + p.metrics.length > 0

@@ -1,0 +1,2 @@
+# Hostinger (Apache/LiteSpeed): serve the static export's branded 404 for unknown URLs.
+ErrorDocument 404 /404.html
