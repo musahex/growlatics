@@ -66,7 +66,7 @@ export default function FinalCTA() {
             transition={{ duration: 0.55, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
           >
-            <Button href="mailto:hello@growlatics.com" size="lg" data-cursor="cta">
+            <Button href="mailto:ahsan@growlatics.com" size="lg" data-cursor="cta">
               Book a Growth Call
             </Button>
             <Button href="#services" size="md" variant="outline" data-cursor="interactive">

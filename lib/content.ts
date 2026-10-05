@@ -87,13 +87,14 @@ export const FOOTER_CONTENT = {
     ],
     Contact: [
       { label: 'Book a Call', href: '#contact' },
-      { label: 'Email Us', href: 'mailto:hello@growlatics.com' },
+      { label: 'Email Us', href: 'mailto:ahsan@growlatics.com' },
+      { label: '+1 (470) 755-6472', href: 'tel:+14707556472' },
     ],
   },
   social: [
-    { label: 'LinkedIn', href: '#' },
-    { label: 'Twitter', href: '#' },
-    { label: 'Instagram', href: '#' },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/company/growlatics/' },
+    { label: 'Facebook', href: 'https://www.facebook.com/share/1bFSXzTp4i/' },
+    { label: 'Instagram', href: 'https://www.instagram.com/growlatics' },
   ],
   copyright: `© ${new Date().getFullYear()} Growlatics. All rights reserved.`,
 }

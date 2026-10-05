@@ -7,7 +7,8 @@ import InteractiveCursor from '@/components/ui/InteractiveCursor'
 import { ThemeProvider } from '@/context/ThemeContext'
 
 export const metadata: Metadata = {
-  title: 'Growlatics — Marketing that converts. Sales teams that close. Tech that scales.',
+  metadataBase: new URL('https://growlatics.us'),
+  title: 'Growlatics',
   description:
     'Growlatics helps businesses scale through performance marketing, offshore sales operations, customer support, and digital product development.',
   keywords: [
@@ -23,6 +24,13 @@ export const metadata: Metadata = {
     description: 'Marketing that converts. Sales teams that close. Tech that scales.',
     siteName: 'Growlatics',
     type: 'website',
+    images: ['/og-image.png'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Growlatics',
+    description: 'Marketing that converts. Sales teams that close. Tech that scales.',
+    images: ['/og-image.png'],
   },
 }
 

@@ -1,15 +1,15 @@
-import { Linkedin, Twitter, Instagram, MapPin } from 'lucide-react'
+import { Linkedin, Facebook, Instagram, MapPin } from 'lucide-react'
 import { FOOTER_CONTENT } from '@/lib/content'
 
 const SOCIAL_ICONS: Record<string, React.ReactNode> = {
   LinkedIn: <Linkedin size={18} />,
-  Twitter: <Twitter size={18} />,
+  Facebook: <Facebook size={18} />,
   Instagram: <Instagram size={18} />,
 }
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0D0C0B] border-t border-white/[0.08]">
+    <footer data-cursor-surface="dark" className="bg-[#0D0C0B] border-t border-white/[0.08]">
       <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand column */}
@@ -42,6 +42,8 @@ export default function Footer() {
                 <a
                   key={s.label}
                   href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={s.label}
                   className="w-9 h-9 rounded-lg glass flex items-center justify-center text-text-muted hover:text-white hover:border-brand-orange/40 transition-all duration-200"
                 >
