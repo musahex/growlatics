@@ -4,7 +4,7 @@
 
 import { useMemo, type CSSProperties } from 'react'
 import { EDGES, EDGE_A, EDGE_B, NODES, SYSTEMS, labelFor, CORE } from '../model/graph'
-import { emptyPose, keyFor, poseAt, transpose } from '../model/layouts'
+import { emptyPose, frame as fit, keyFor, poseAt, transpose } from '../model/layouts'
 import { FIELD, FIELD_POINTS } from '../model/flow'
 import { css } from '../model/palette'
 import { useSystem } from '../runtime/useSystem'
@@ -26,9 +26,11 @@ export type NetworkSVGProps = {
   style?: CSSProperties
   /** Hide while the fixed home stage draws live (inline act figures on home). */
   hideWhenLive?: boolean
+  /** Fit the composition to its visible nodes (inline figures). */
+  frame?: boolean
 }
 
-export function NetworkSVG({ act, stage = 0, follow, labels = true, portrait, title, className, style, hideWhenLive }: NetworkSVGProps) {
+export function NetworkSVG({ act, stage = 0, follow, labels = true, portrait, title, className, style, hideWhenLive, frame }: NetworkSVGProps) {
   const storeAct = useSystem('act')
   const storeStage = useSystem('stage')
   const live = useSystem('live')
@@ -38,13 +40,15 @@ export function NetworkSVG({ act, stage = 0, follow, labels = true, portrait, ti
   const p = useMemo(() => {
     const pose = poseAt(emptyPose(), keyFor(a, s))
     if (portrait) transpose(pose)
+    if (frame) fit(pose)
+    else pose.cam.set([0.5, 0.5, 1, 0])
     return pose
-  }, [a, s, portrait])
+  }, [a, s, portrait, frame])
 
   const W = portrait ? 1000 : 1600
   const H = portrait ? 1600 : 1000
-  const X = (i: number) => p.pos[i * 3] * W
-  const Y = (i: number) => p.pos[i * 3 + 1] * H
+  const X = (i: number) => ((p.pos[i * 3] - p.cam[0]) * p.cam[2] + 0.5) * W
+  const Y = (i: number) => ((p.pos[i * 3 + 1] - p.cam[1]) * p.cam[2] + 0.5) * H
 
   const edgePath = (e: number) => {
     const ax = X(EDGE_A[e]), ay = Y(EDGE_A[e]), bx = X(EDGE_B[e]), by = Y(EDGE_B[e])
@@ -78,7 +82,7 @@ export function NetworkSVG({ act, stage = 0, follow, labels = true, portrait, ti
       {p.field > 0 && (
         <g opacity={p.field}>
           {Array.from({ length: FIELD_POINTS }, (_, i) => (
-            <circle key={i} cx={FIELD[i * 3] * W} cy={FIELD[i * 3 + 1] * H} r={2} fill={css.dormant} />
+            <circle key={i} cx={((FIELD[i * 3] - p.cam[0]) * p.cam[2] + 0.5) * W} cy={((FIELD[i * 3 + 1] - p.cam[1]) * p.cam[2] + 0.5) * H} r={2} fill={css.dormant} />
           ))}
         </g>
       )}

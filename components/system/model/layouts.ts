@@ -85,7 +85,7 @@ function edges(p: Pose, mode: EdgeMode) {
 
 // Market nodes rest on the core when hidden so they never fly in from the origin.
 function parkMarkets(p: Pose) {
-  for (const id of ['market.us', 'market.uk', 'market.pk']) {
+  for (const id of ['market.us', 'market.gb', 'market.pk']) {
     const i = NODE_INDEX[id]
     p.pos.set(p.pos.subarray(CORE * 3, CORE * 3 + 3), i * 3)
   }
@@ -116,8 +116,8 @@ function act1(): Pose {
 function act2(): Pose {
   const p = emptyPose()
   place(p, [
-    [['acquire.paid-media', 'acquire.funnels'], { x: 0.58, y: 0.2, z: 0, r: 0.05 }],
-    [['acquire.seo', 'acquire.social-media', 'acquire.youtube', 'acquire.lead-generation'], { x: 0.86, y: 0.22, z: -0.2, r: 0.07 }],
+    [['acquire.paid-search', 'acquire.funnels'], { x: 0.58, y: 0.2, z: 0, r: 0.05 }],
+    [['acquire.seo', 'acquire.social', 'acquire.youtube', 'acquire.lead-generation'], { x: 0.86, y: 0.22, z: -0.2, r: 0.07 }],
     [['sell.cold-outreach', 'sell.outbound-calling'], { x: 0.6, y: 0.52, z: 0.3, r: 0.05 }],
     [['sell.lead-qualification', 'sell.inbound', 'sell.appointment-setting', 'sell.telesales', 'sell.sales-operations'], { x: 0.87, y: 0.5, z: 0.2, r: 0.08 }],
     [idsOf('operate'), { x: 0.62, y: 0.82, z: 0, r: 0.07 }],
@@ -179,7 +179,8 @@ function journey(stage: number): Pose {
   )
   edges(p, 'flowing')
   NODES.forEach((x, i) => (p.label[i] = active.includes(x.system) ? 1 : 0))
-  p.cam.set([STAGE_FOCUS[stage][0], STAGE_FOCUS[stage][1], 1.8, 0])
+  // Focus lands right of centre (≈ x 0.68) so the stage panel on the left stays clear.
+  p.cam.set([STAGE_FOCUS[stage][0] - 0.1, STAGE_FOCUS[stage][1], 1.8, 0])
   p.hero = 1
   return p
 }
@@ -215,11 +216,11 @@ function act7(): Pose {
   const caps = NODES.filter((x) => !x.id.startsWith('market.') && x.system !== 'core')
   caps.forEach((x, k) => {
     const i = NODE_INDEX[x.id]
-    p.pos.set([0.08 + (k / (caps.length - 1)) * 0.84, 0.62 + (k % 2 ? 0.02 : -0.02), -0.3], i * 3)
+    p.pos.set([0.08 + (k / (caps.length - 1)) * 0.84, 0.42 + (k % 2 ? 0.02 : -0.02), -0.3], i * 3)
   })
-  p.pos.set([0.5, 0.62, 0], CORE * 3)
-  const utc = { 'market.us': -5, 'market.uk': 0, 'market.pk': 5 }
-  for (const [id, off] of Object.entries(utc)) p.pos.set([(off + 12) / 24, 0.42, 0.2], NODE_INDEX[id] * 3)
+  p.pos.set([0.5, 0.42, 0], CORE * 3)
+  const utc = { 'market.us': -5, 'market.gb': 0, 'market.pk': 5 }
+  for (const [id, off] of Object.entries(utc)) p.pos.set([(off + 12) / 24, 0.3, 0.2], NODE_INDEX[id] * 3)
   states(p, (s) => (s === 'market' ? 'active' : 'dormant'))
   edges(p, 'band')
   for (const id of Object.keys(utc)) p.label[NODE_INDEX[id]] = 1
@@ -265,6 +266,21 @@ export function transpose(p: Pose) {
   const cx = p.cam[0]
   p.cam[0] = p.cam[1]
   p.cam[1] = cx
+}
+
+/** Inline figures: fit the 2D camera to the visible nodes so a composition fills its box. */
+export function frame(p: Pose, pad = 0.12) {
+  let x0 = 1, y0 = 1, x1 = 0, y1 = 0
+  for (let i = 0; i < N; i++) {
+    if (p.node[i] < 0.5) continue
+    const x = p.pos[i * 3], y = p.pos[i * 3 + 1]
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y)
+  }
+  if (x1 < x0) return p
+  p.cam[0] = (x0 + x1) / 2 + 0.03 // labels sit right of their nodes
+  p.cam[1] = (y0 + y1) / 2
+  p.cam[2] = Math.min(2.2, Math.max(1, 1 / (Math.max(x1 - x0, y1 - y0) + pad * 2)))
+  return p
 }
 
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
