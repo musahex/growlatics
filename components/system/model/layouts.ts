@@ -104,7 +104,8 @@ function act1(): Pose {
     [['core.growlatics'], CORE_C(0.62, 0.52)],
   ])
   parkMarkets(p)
-  states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' ? 'active' : 'idle'))
+  // Sell is the commercial lead: the only lit cluster at rest. The others stay neutral (orange = active).
+  states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' || s === 'sell' ? 'active' : 'idle'))
   edges(p, 'connected')
   p.field = 1
   return p
@@ -246,7 +247,8 @@ function act9(): Pose {
     [['core.growlatics'], CORE_C(0.5, 0.42)],
   ])
   parkMarkets(p)
-  states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' ? 'active' : 'idle'))
+  // Destination reached: every system lit for the first time on the page.
+  states(p, (s) => (s === 'market' ? 'hidden' : 'active'))
   edges(p, 'converge')
   p.mark = 1
   return p

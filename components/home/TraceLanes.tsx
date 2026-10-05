@@ -30,8 +30,8 @@ function Lane({ y, broken, label, run, reduced }: { y: number; broken: boolean; 
       {X.slice(1).map((x, i) =>
         broken ? (
           <g key={x} fill="none" strokeWidth={1.25}>
-            <path d={`M${X[i] + 10} ${y}H${x - SEG / 2 - 14}`} className="stroke-net-edge" />
-            <path d={`M${x - SEG / 2 + 14} ${y}H${x - 10}`} className="stroke-net-edge" />
+            <path d={`M${X[i] + 10} ${y}H${x - SEG / 2 - 14}`} className="stroke-line-3" />
+            <path d={`M${x - SEG / 2 + 14} ${y}H${x - 10}`} className="stroke-line-3" />
             <path d={`M${x - SEG / 2 - 14} ${y}H${x - SEG / 2 + 14}`} className="stroke-net-edge-broken" strokeDasharray="3 6" />
           </g>
         ) : (
@@ -40,7 +40,7 @@ function Lane({ y, broken, label, run, reduced }: { y: number; broken: boolean; 
       )}
       {X.map((x, i) => (
         <g key={x}>
-          <circle cx={x} cy={y} r={7} className={broken ? 'fill-net-idle' : 'fill-net-active'} />
+          <circle cx={x} cy={y} r={7} className={broken ? 'fill-text-3' : 'fill-net-active'} />
           {broken && (
             <text x={x} y={y + 30} textAnchor="middle" className="fill-text-3" style={mono}>
               {OWNERS[i]}

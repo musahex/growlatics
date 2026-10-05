@@ -234,7 +234,7 @@ export function Why() {
       <ul className="mt-4 border-b border-line">
         {items.map((t) => (
           <li key={t} className="flex gap-3 border-t border-line py-3 text-body-s text-text-2">
-            <span aria-hidden className={cn('mt-2 size-1.5 shrink-0 rounded-full', lit ? 'bg-signal' : 'bg-net-idle')} />
+            <span aria-hidden className={cn('mt-2 size-1.5 shrink-0 rounded-full', lit ? 'bg-signal' : 'bg-text-4')} />
             {t}
           </li>
         ))}
