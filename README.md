@@ -119,6 +119,16 @@ Runs linting checks if configured in the project.
 
 ---
 
+## Static export and the system lab
+
+`npm run build` writes the static site to `out/` (`output: 'export'`, `trailingSlash: true`); upload `out/` to Hostinger. `npm run start` does not serve an export: use any static server on `out/`.
+
+`/lab/system/` is a dev-only test bench for the 3D system (every tier and act layout). It is available under `npm run dev`; the `postbuild` script deletes `out/lab/` and its chunk, so it never ships. Call `npx next build` directly and the lab stays in `out/`: always build with `npm run build`.
+
+Check the export with `node scripts/seo-crawl.mjs` (exits 1 on any SEO problem).
+
+---
+
 ## Production Build
 
 Before deploying, always run:
