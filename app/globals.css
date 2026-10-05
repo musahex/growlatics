@@ -34,9 +34,9 @@
 
   /* network ramp */
   --net-dormant: 12 11 10 / 0.22;
-  --net-idle: 210 64 26 / 0.45;
+  --net-idle: 12 11 10 / 0.38;
   --net-active: 210 64 26 / 0.95;
-  --net-edge: 210 64 26 / 0.12;
+  --net-edge: 12 11 10 / 0.16;
   --net-edge-hot: 210 64 26 / 0.48;
   --net-edge-broken: 12 11 10 / 0.18;
   --net-packet: 210 64 26;
@@ -122,9 +122,9 @@
   --c-glow: 210 64 26 / 0.16;
 
   --net-dormant: 244 241 236 / 0.2;
-  --net-idle: 210 64 26 / 0.52;
+  --net-idle: 244 241 236 / 0.5;
   --net-active: 210 64 26 / 1;
-  --net-edge: 210 64 26 / 0.14;
+  --net-edge: 244 241 236 / 0.15;
   --net-edge-hot: 210 64 26 / 0.44;
   --net-edge-broken: 244 241 236 / 0.16;
   --net-packet: 240 102 60;
