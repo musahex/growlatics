@@ -1,7 +1,7 @@
 'use client'
 
-import { motion, useReducedMotion } from 'framer-motion'
-import { bars, duration, viewportOnce } from '@/lib/motion'
+import { motion } from 'framer-motion'
+import { bars, duration, useReducedMotion, viewportOnce } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
 // Canonical five-bar mark (docs/v2/DIRECTION.md §5): heights 32/52/70/86/100 % of 70u,

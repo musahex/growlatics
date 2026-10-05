@@ -58,10 +58,10 @@ export const systems: SystemContent[] = [
       { id: 'sell.pipeline-reporting', label: 'Pipeline reporting', short: 'Reporting', group: 'Sales operations' },
       { id: 'sell.scripts-cadence', label: 'Script and cadence design', short: 'Scripts', group: 'Sales operations' },
       { id: 'sell.sales-operations', label: 'Sales process support', short: 'Sales ops', group: 'Sales operations' },
-      // OWNER-VERIFY: BPO task scope (IA §9.1)
+      // OWNER-VERIFY: BPO task scope (IA §9.1). Scope sentence lives in the sales-bpo page ledger (content/pages.ts).
       {
         id: 'sell.bpo',
-        label: 'Back-office and business-process execution that supports the revenue cycle (order processing, follow-up workflows, data and admin tasks)',
+        label: 'Back-office execution',
         short: 'BPO',
         group: 'Business process outsourcing (BPO)',
         verify: true,

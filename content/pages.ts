@@ -456,16 +456,49 @@ export const draftNotice = 'Draft — pending owner legal approval. Not linked a
 // ─── Network figures (accessible names) and page-specific schematic lanes ────
 
 export const stageTitles = {
-  services: 'Acquire, Sell, Operate and Build reconnected through Growlatics as one system',
+  services: 'Acquire, Sell, Operate and Build around the Growlatics core, with Sell leading',
   about: 'Marketing, sales, customer operations and technology connected through Growlatics',
   international: 'Growlatics serving the United States, the United Kingdom and Pakistan',
   service: (service: string) => `${service} in the Growlatics network, lit, with its handoffs to the other systems`,
+}
+
+/**
+ * Sales & BPO handoff strips (DIRECTION §8.1, review #5). Hero: inbound and outbound lanes into Sell and the
+ * appointment handoff to the client's calendar. "How it works": your CRM ↔ our team ↔ your closers.
+ * Every string reuses page copy above; the team strip restates owner-verify claims (work in your CRM, managed teams).
+ */
+export const salesHandoff = {
+  hero: {
+    upstream: [
+      { label: 'Inbound', sub: 'Inbound leads' },
+      { label: 'Outbound', sub: 'Outbound lists' },
+    ],
+    downstream: [{ label: 'Handoff', sub: 'Your calendar' }],
+  },
+  team: {
+    // OWNER-VERIFY: work in client tools; managed by team leads
+    verify: true,
+    label: 'How the work moves',
+    upstream: [{ label: 'Your CRM', sub: 'Scripts and qualification rules' }],
+    current: { label: 'Our team', sub: 'Managed sales capacity' },
+    downstream: [{ label: 'Your closers', sub: 'Qualified, with context' }],
+  },
 }
 
 /** Overrides the default schematic lanes (upstream verbs → capabilities → downstream verbs). */
 export const serviceSchematics: Partial<Record<ServiceSlug, { inputs: string[]; outputs: string[] }>> = {
   // DIRECTION §8.1: Sell shows inbound and outbound lanes and the appointment handoff to the client's calendar.
   'sales-bpo': { inputs: ['Inbound leads', 'Outbound lists'], outputs: ['Your calendar', 'Operate'] },
+}
+
+/**
+ * Work page schematic (review: Work): its own column labels, not the service ones, and an outputs column.
+ * Outputs restate the 'How we report' body (owner-verify: metrics agreed before launch).
+ */
+export const workSchematic = {
+  labels: { inputs: 'Systems', capabilities: 'What we measure', outputs: 'Reported as' },
+  outputs: ['Agreed baselines', 'Whole-system report'],
+  verify: true,
 }
 
 /** Work page proof slots (IA §5.9): headings render only when the slot has approved entries. */

@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import {
   connectedHeading,
   journey,
   journeyHeading,
   pairsWithLabel,
   reportLink,
+  salesHandoff,
   schematicLabels,
   servicePages,
   serviceSchematics,
@@ -22,6 +22,7 @@ import SystemSchematic from '@/components/patterns/SystemSchematic'
 import SignalRail from '@/components/patterns/SignalRail'
 import Ledger from '@/components/patterns/Ledger'
 import ConvergenceCTA from '@/components/patterns/ConvergenceCTA'
+import Button from '@/components/ui/Button'
 import Section from '@/components/ui/Section'
 import SectionHeader from '@/components/ui/SectionHeader'
 
@@ -51,9 +52,18 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
   const sys = systemById[page.system]
   const flow = FLOW[sys.id]
   const ledger = (items: { title: string; body: string }[] = []) => items.map((i) => ({ term: i.title, description: i.body }))
-  // Sell groups its capabilities: show each group's capabilities as chips under its row.
-  const groupTags = (title: string) => sys.capabilities.filter((c) => c.group?.startsWith(title)).map((c) => c.label)
   const lanes = serviceSchematics[sys.slug] ?? { inputs: flow.up.map((id) => systemById[id].verb), outputs: flow.down.map((id) => systemById[id].verb) }
+  // Sell groups its 13 capabilities: the schematic draws 4 group nodes with their capabilities as sub-tags (review #5).
+  const groups = Array.from(new Set(sys.capabilities.map((c) => c.group).filter((g): g is string => !!g)))
+  const capNodes = groups.length ? groups : sys.capabilities.map((c) => c.short)
+  const capNotes = groups.length ? groups.map((g) => {
+        const caps = sys.capabilities.filter((c) => c.group === g)
+        return caps.map((c) => (caps.length === 1 ? c.label : c.short)) // a one-capability group's short name repeats the group
+      }) : undefined
+  const sell = sys.id === 'sell'
+  const hero = sell
+    ? { upstream: salesHandoff.hero.upstream, downstream: [...salesHandoff.hero.downstream, node('operate')] }
+    : { upstream: flow.up.map(node), downstream: flow.down.map(node) }
 
   return (
     <>
@@ -61,22 +71,23 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(breadcrumbJsonLd(page.route)) }} />
 
       <PageHero hero={{ ...page.hero, primary: page.hero.primary && { ...page.hero.primary, href: `/contact/?system=${sys.slug}#book` } }} stage={<PageStage act={5} focus={sys.id} title={stageTitles.service(sys.service)} />}>
-          <HandoffStrip upstream={flow.up.map(node)} current={node(sys.id)} downstream={flow.down.map(node)} base={flow.base ? node('build') : undefined} />
+          <HandoffStrip upstream={hero.upstream} current={node(sys.id)} downstream={hero.downstream} base={flow.base ? node('build') : undefined} />
       </PageHero>
 
-      <Section rule aria-labelledby="problem-h">
+      <Section rule space="tight" aria-labelledby="problem-h">
         <SectionHeader id="problem-h" heading={page.problem.heading} body={page.problem.body} />
       </Section>
 
       <Section id="capabilities" tone="surface" aria-labelledby="cap-h">
         <SectionHeader id="cap-h" heading={page.capabilities.heading} />
-        <Ledger className="mt-12" rows={ledger(page.capabilities.items).map((r) => ({ ...r, tags: groupTags(r.term) }))} />
+        <Ledger className="mt-12" rows={ledger(page.capabilities.items)} />
         <div className="mt-16">
           <SystemSchematic
             title={`${sys.service}: ${sys.capabilities.map((c) => c.short).join(', ')}`}
             labels={schematicLabels}
             inputs={lanes.inputs}
-            capabilities={sys.capabilities.map((c) => c.short)}
+            capabilities={capNodes}
+            notes={capNotes}
             outputs={lanes.outputs}
           />
         </div>
@@ -85,14 +96,21 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
       {page.howItWorks && (
         <Section rule aria-labelledby="how-h">
           <SectionHeader id="how-h" heading={page.howItWorks.heading} />
-          <Ledger className="mt-12" rows={ledger(page.howItWorks.items)} />
+          {sell && (
+            <div className="mt-12">
+              <HandoffStrip label={salesHandoff.team.label} upstream={salesHandoff.team.upstream} current={salesHandoff.team.current} downstream={salesHandoff.team.downstream} />
+            </div>
+          )}
+          <SignalRail className="mt-12" items={(page.howItWorks.items ?? []).map((i, k) => ({ index: String(k + 1).padStart(2, '0'), title: i.title, body: i.body }))} />
         </Section>
       )}
 
       {page.engagementShapes && (
-        <Section rule aria-labelledby="shapes-h">
-          <SectionHeader id="shapes-h" heading={page.engagementShapes.heading} />
-          <Ledger className="mt-12" rows={ledger(page.engagementShapes.items)} />
+        <Section rule space="tight" aria-labelledby="shapes-h">
+          <Split>
+            <SectionHeader id="shapes-h" heading={page.engagementShapes.heading} />
+            <Ledger rows={ledger(page.engagementShapes.items)} />
+          </Split>
         </Section>
       )}
 
@@ -105,25 +123,33 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
         />
       </Section>
 
-      <Section rule aria-labelledby="connected-h">
-        <SectionHeader id="connected-h" heading={connectedHeading} />
-        <Ledger
-          className="mt-12"
-          rows={sys.pairsWith.map((p) => ({ term: pairsWithLabel(systemById[p.system].verb), description: p.line, href: systemById[p.system].href }))}
-        />
-        <Link href={reportLink.href} className="mt-8 inline-flex min-h-11 items-center text-body-s font-semibold text-signal-ink hover:text-text">
-          {reportLink.label} →
-        </Link>
+      <Section rule space="tight" aria-labelledby="connected-h">
+        <Split>
+          <div>
+            <SectionHeader id="connected-h" heading={connectedHeading} />
+            <Button href={reportLink.href} variant="text" arrow className="mt-6">
+              {reportLink.label}
+            </Button>
+          </div>
+          <Ledger rows={sys.pairsWith.map((p) => ({ term: pairsWithLabel(systemById[p.system].verb), description: p.line, href: systemById[p.system].href }))} />
+        </Split>
       </Section>
 
       {page.faq && (
-        <Section rule aria-labelledby="faq-h">
-          <SectionHeader id="faq-h" heading={page.faqHeading ?? ''} />
-          <Ledger className="mt-12" rows={page.faq.map((q) => ({ term: q.question, description: q.answer }))} />
+        <Section rule space="tight" aria-labelledby="faq-h">
+          <Split>
+            <SectionHeader id="faq-h" heading={page.faqHeading ?? ''} />
+            <Ledger rows={page.faq.map((q) => ({ term: q.question, description: q.answer }))} />
+          </Split>
         </Section>
       )}
 
       <ConvergenceCTA heading={page.finalCtaHeading} />
     </>
   )
+}
+
+/** Heading beside its list from lg: short reference sections read as one block, not another full-width table. */
+function Split({ children }: { children: React.ReactNode }) {
+  return <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-16">{children}</div>
 }
