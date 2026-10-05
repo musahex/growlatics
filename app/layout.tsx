@@ -5,6 +5,7 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import InteractiveCursor from '@/components/ui/InteractiveCursor'
 import { ThemeProvider } from '@/context/ThemeContext'
+import { SystemProvider } from '@/components/system/runtime'
 import { home, nav, site } from '@/content'
 import { pageMetadata } from '@/lib/seo'
 import { bgHex } from '@/lib/tokens'
@@ -37,12 +38,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {nav.skipLink}
         </a>
         <ThemeProvider>
-          <InteractiveCursor />
-          <Header />
-          <div className="relative z-content">
-            <main id="main">{children}</main>
-            <Footer />
-          </div>
+          <SystemProvider>
+            <InteractiveCursor />
+            <Header />
+            <div className="relative z-content">
+              <main id="main">{children}</main>
+              <Footer />
+            </div>
+          </SystemProvider>
         </ThemeProvider>
       </body>
     </html>

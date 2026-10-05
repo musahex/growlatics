@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { engagement, home } from '@/content'
 import { organizationJsonLd } from '@/lib/seo'
-import GlobalGrowthScene from '@/components/three/GlobalGrowthScene'
 import Hero from '@/components/sections/Hero'
 import ThreeGrowthWindow from '@/components/sections/ThreeGrowthWindow'
 import ServicesSection from '@/components/sections/ServicesSection'
@@ -17,9 +16,6 @@ export default function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }} />
-      {/* Legacy fixed background canvas, home only until HOME mounts the system stage. */}
-      <GlobalGrowthScene />
-
       <Hero />
 
       <Section id={connection.id} rule aria-labelledby="system-h">

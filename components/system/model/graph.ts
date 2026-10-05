@@ -1,3 +1,4 @@
+import { getLabel } from '@/content'
 // The single source of network data (DIRECTION §6.3). Every renderer draws these nodes.
 // Ids are `<system>.<capability>` (PLAN shared contract), kebab-case from IA_AND_COPY §3.
 
@@ -150,4 +151,9 @@ export const FALLBACK_LABELS: Record<string, string> = {
   'capability.market.pk': 'Pakistan',
 }
 
-export const labelFor = (node: GNode) => FALLBACK_LABELS[node.labelKey] ?? node.id
+// Content is the source of copy; FALLBACK_LABELS covers graph ids content does not define yet.
+export const labelFor = (node: GNode) => {
+  const key = node.system === 'core' ? 'core' : node.id
+  const label = getLabel(key)
+  return label !== key ? label : FALLBACK_LABELS[node.labelKey] ?? node.id
+}
