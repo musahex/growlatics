@@ -1,68 +1,68 @@
-'use client'
-
-import { forwardRef } from 'react'
+import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type Variant = 'primary' | 'ghost' | 'outline'
-type Size = 'sm' | 'md' | 'lg'
+type Variant = 'primary' | 'secondary' | 'text'
+type Size = 'md' | 'lg'
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+const base =
+  'inline-flex items-center justify-center gap-2 rounded-md font-semibold select-none transition-colors duration-fast ease-out disabled:pointer-events-none disabled:opacity-50'
+
+const variants: Record<Variant, string> = {
+  primary: 'bg-signal text-on-signal shadow-signal hover:bg-signal-deep active:bg-signal-deep',
+  secondary: 'border border-line-2 bg-transparent text-text hover:border-line-3 hover:bg-signal-soft',
+  text: 'px-0 text-signal-ink hover:text-text',
+}
+
+const sizes: Record<Size, string> = {
+  md: 'min-h-11 px-5 text-body-s',
+  lg: 'min-h-12 px-6 text-body',
+}
+
+export function buttonClass(variant: Variant = 'primary', size: Size = 'md', className?: string) {
+  return cn(base, variants[variant], variant !== 'text' && sizes[size], variant === 'text' && 'min-h-11 text-body-s', className)
+}
+
+interface CommonProps {
   variant?: Variant
   size?: Size
-  href?: string
-  'data-cursor'?: string
+  className?: string
+  children: React.ReactNode
+  /** Show a trailing arrow (functional affordance). */
+  arrow?: boolean
 }
 
-const variantStyles: Record<Variant, string> = {
-  primary:
-    'bg-brand-orange text-white hover:bg-brand-orange-deep shadow-orange-glow hover:shadow-orange-glow-lg active:scale-95',
-  ghost:
-    'bg-surface-glass text-white border border-surface-border hover:border-brand-orange/50 hover:bg-white/[0.08] backdrop-blur-sm',
-  outline:
-    'bg-transparent text-brand-orange border border-brand-orange hover:bg-brand-orange hover:text-white',
-}
+type LinkButtonProps = CommonProps & { href: string } & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href' | 'className'>
+type NativeButtonProps = CommonProps & { href?: undefined } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'className'>
 
-const sizeStyles: Record<Size, string> = {
-  sm: 'px-4 py-2 text-sm',
-  md: 'px-6 py-3 text-sm',
-  lg: 'px-8 py-4 text-base',
-}
+/** Link when `href` is set (internal → next/link), otherwise a <button>. */
+export default function Button(props: LinkButtonProps | NativeButtonProps) {
+  const { variant = 'primary', size = 'md', className, children, arrow, ...rest } = props
+  const cls = buttonClass(variant, size, className)
+  const cursor = variant === 'primary' ? 'cta' : 'interactive'
+  const content = (
+    <>
+      {children}
+      {arrow && <ArrowRight size={16} strokeWidth={1.5} aria-hidden />}
+    </>
+  )
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      className,
-      variant = 'primary',
-      size = 'md',
-      href,
-      children,
-      'data-cursor': dataCursor,
-      ...props
-    },
-    ref,
-  ) => {
-    const classes = cn(
-      'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange/50 disabled:opacity-50 disabled:pointer-events-none',
-      variantStyles[variant],
-      sizeStyles[size],
-      className,
+  if ('href' in rest && rest.href !== undefined) {
+    const { href, ...anchor } = rest as LinkButtonProps
+    const external = /^(https?:|mailto:|tel:)/.test(href)
+    return external ? (
+      <a href={href} className={cls} data-cursor={cursor} {...anchor}>
+        {content}
+      </a>
+    ) : (
+      <Link href={href} className={cls} data-cursor={cursor} {...anchor}>
+        {content}
+      </Link>
     )
-
-    if (href) {
-      return (
-        <a href={href} className={classes} data-cursor={dataCursor}>
-          {children}
-        </a>
-      )
-    }
-
-    return (
-      <button ref={ref} className={classes} data-cursor={dataCursor} {...props}>
-        {children}
-      </button>
-    )
-  },
-)
-
-Button.displayName = 'Button'
-export default Button
+  }
+  return (
+    <button type="button" className={cls} data-cursor={cursor} {...(rest as NativeButtonProps)}>
+      {content}
+    </button>
+  )
+}

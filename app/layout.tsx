@@ -1,62 +1,46 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import GlobalGrowthScene from '@/components/three/GlobalGrowthScene'
 import InteractiveCursor from '@/components/ui/InteractiveCursor'
 import { ThemeProvider } from '@/context/ThemeContext'
+import { home, nav, site } from '@/content'
+import { pageMetadata } from '@/lib/seo'
+import { bgHex } from '@/lib/tokens'
+
+// Self-hosted at build time by next/font: no runtime request to Google (DIRECTION §3).
+const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-sans' })
+const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], display: 'swap', variable: '--font-mono', preload: false })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://growlatics.us'),
-  title: 'Growlatics',
-  description:
-    'Growlatics helps businesses scale through performance marketing, offshore sales operations, customer support, and digital product development.',
-  keywords: [
-    'performance marketing',
-    'sales operations',
-    'BPO',
-    'customer support',
-    'digital development',
-    'growth agency',
-  ],
-  openGraph: {
-    title: 'Growlatics',
-    description: 'Marketing that converts. Sales teams that close. Tech that scales.',
-    siteName: 'Growlatics',
-    type: 'website',
-    images: ['/og-image.png'],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Growlatics',
-    description: 'Marketing that converts. Sales teams that close. Tech that scales.',
-    images: ['/og-image.png'],
-  },
+  metadataBase: new URL(site.url),
+  ...pageMetadata('/', home.seo),
 }
 
-// Inline script runs synchronously before paint — prevents flash of wrong theme.
-const FOUC_SCRIPT = `(function(){try{var t=localStorage.getItem('theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: bgHex.light },
+    { media: '(prefers-color-scheme: dark)', color: bgHex.dark },
+  ],
+}
+
+// Runs before paint: applies the stored theme so there is no flash of the wrong theme.
+const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('theme');document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="scroll-smooth" data-theme="dark" suppressHydrationWarning>
-      <body className="antialiased overflow-x-hidden">
-        {/* FOUC prevention — must be the very first child of body */}
-        <script dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
-
+    <html lang="en" data-theme="dark" className={`${inter.variable} ${mono.variable}`} suppressHydrationWarning>
+      <body className="font-sans">
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-toast focus:rounded-md focus:bg-elevated focus:px-4 focus:py-3 focus:text-text">
+          {nav.skipLink}
+        </a>
         <ThemeProvider>
-          {/* Custom cursor — renders nothing on touch/mobile */}
           <InteractiveCursor />
-
-          {/* Fixed 3D canvas — z:0, sits behind all page content */}
-          <GlobalGrowthScene />
-
-          {/* Header — fixed, z:50 */}
           <Header />
-
-          {/* z-[1] lifts this wrapper above the fixed canvas (z:0) */}
-          <div className="relative z-[1]">
-            <main>{children}</main>
+          <div className="relative z-content">
+            <main id="main">{children}</main>
             <Footer />
           </div>
         </ThemeProvider>

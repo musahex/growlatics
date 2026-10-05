@@ -2,66 +2,152 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
-/* ─── Theme tokens ─────────────────────────────────────────────────────────── */
+/* ─── Design tokens (docs/v2/DIRECTION.md §2) ──────────────────────────────
+   Colours are RGB channels so Tailwind opacity modifiers work:
+   rgb(var(--c-bg) / <alpha-value>). Tokens that carry their own alpha
+   (lines, soft tints, network ramp) are used as rgb(var(--token)).
+   [data-surface="dark"] re-declares the dark set inside its subtree. */
 
 :root {
-  --font-inter: 'Inter', system-ui, sans-serif;
+  /* neutrals + type (light) */
+  --c-bg: 245 243 240;
+  --c-surface: 253 252 250;
+  --c-elevated: 255 255 255;
+  --c-inset: 236 233 228;
+  --c-text: 12 11 10;
+  --c-text-2: 58 53 48;
+  --c-text-3: 111 106 100;
+  --c-text-4: 163 157 150;
+  --c-line: 12 11 10 / 0.08;
+  --c-line-2: 12 11 10 / 0.14;
+  --c-line-3: 12 11 10 / 0.24;
+  --c-grid-dot: 12 11 10 / 0.055;
 
-  /* Light mode (default) */
-  --bg-base:       #F5F3F0;
-  --bg-surface:    #FDFCFA;
-  --bg-card:       #FFFFFF;
-  --text-primary:  #0C0B0A;
-  --text-secondary:#3A3530;
-  --text-muted:    #7A7570;
-  --border-subtle: rgba(10,9,8,0.07);
-  --dot-color:     rgba(10,9,8,0.055);
-  --scrollbar-track: #EAE7E3;
+  /* signal */
+  --c-signal: 210 64 26;
+  --c-signal-deep: 168 50 22;
+  --c-signal-ink: 178 58 23;
+  --c-signal-soft: 210 64 26 / 0.08;
+  --c-signal-line: 210 64 26 / 0.32;
+  --c-glow: 210 64 26 / 0.12;
+  --c-on-signal: 255 255 255;
 
-  /* Cursor — light mode */
-  --cursor-color:      #0C0B0A;
-  --cursor-ring-color: rgba(10, 9, 8, 0.28);
+  /* network ramp */
+  --net-dormant: 12 11 10 / 0.22;
+  --net-idle: 210 64 26 / 0.45;
+  --net-active: 210 64 26 / 0.95;
+  --net-edge: 210 64 26 / 0.12;
+  --net-edge-hot: 210 64 26 / 0.48;
+  --net-edge-broken: 12 11 10 / 0.18;
+  --net-packet: 210 64 26;
+  --net-blend: normal;
 
-  /* Hero interactive field — light mode */
-  --hero-glow:       rgba(210, 64, 26, 0.12);
-  --hero-node-color: rgba(210, 64, 26, 0.43);
-  --hero-line-color: rgba(210, 64, 26, 0.11);
-  --hero-grid-color: rgba(10, 9, 8, 0.03);
+  /* glass */
+  --glass-bg: 253 252 250 / 0.78;
+  --glass-line: 12 11 10 / 0.1;
+  --glass-blur: 16px;
+
+  /* shadows */
+  --sh-1: 0 1px 2px rgb(40 24 12 / 0.06);
+  --sh-2: 0 8px 24px -8px rgb(40 24 12 / 0.12), 0 1px 2px rgb(40 24 12 / 0.06);
+  --sh-3: 0 24px 64px -16px rgb(40 24 12 / 0.18), 0 2px 4px rgb(40 24 12 / 0.06);
+  --sh-signal: 0 0 0 1px rgb(210 64 26 / 0.32), 0 6px 24px -6px rgb(210 64 26 / 0.35);
+  --focus-ring: 0 0 0 2px rgb(var(--c-bg)), 0 0 0 4px rgb(210 64 26 / 0.55);
+
+  /* legacy cursor aliases until SYSTEM-3D moves InteractiveCursor onto tokens */
+  --cursor-color: rgb(var(--c-text));
+  --cursor-ring-color: rgb(var(--c-line-3));
+
+  /* space, layout */
+  --space-section: clamp(96px, 12vw, 192px);
+  --space-section-tight: clamp(64px, 8vw, 128px);
+  --gutter: 20px;
+  --container: 1280px;
+  --container-wide: 1536px;
+
+  /* radii */
+  --r-xs: 2px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --r-full: 9999px;
+
+  /* z layers */
+  --z-canvas: 0;
+  --z-content: 10;
+  --z-stage: 20;
+  --z-header: 50;
+  --z-overlay: 80;
+  --z-toast: 90;
+  --z-cursor: 100;
+
+  /* motion (mirrors lib/motion.ts) */
+  --dur-instant: 120ms;
+  --dur-fast: 200ms;
+  --dur-base: 320ms;
+  --dur-slow: 560ms;
+  --dur-slower: 880ms;
+  --dur-cinematic: 1400ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+
+  color-scheme: light;
 }
 
-[data-theme="dark"] {
-  --bg-base:       #070605;
-  --bg-surface:    #0C0B0A;
-  --bg-card:       #0C0B0A;
-  --text-primary:  #FFFFFF;
-  --text-secondary:#C0B8B0;
-  --text-muted:    #7A7570;
-  --border-subtle: rgba(255,255,255,0.06);
-  --dot-color:     rgba(255,255,255,0.06);
-  --scrollbar-track: #08090B;
+@media (min-width: 640px) { :root { --gutter: 24px; } }
+@media (min-width: 1024px) { :root { --gutter: 32px; } }
+@media (min-width: 1536px) { :root { --gutter: 48px; } }
 
-  /* Cursor — dark mode */
-  --cursor-color:      rgba(255, 255, 255, 0.88);
-  --cursor-ring-color: rgba(255, 255, 255, 0.24);
+[data-theme="dark"],
+[data-surface="dark"] {
+  --c-bg: 7 6 5;
+  --c-surface: 12 11 10;
+  --c-elevated: 20 18 15;
+  --c-inset: 10 9 8;
+  --c-text: 244 241 236;
+  --c-text-2: 192 184 176;
+  --c-text-3: 138 131 123;
+  --c-text-4: 79 73 67;
+  --c-line: 244 241 236 / 0.07;
+  --c-line-2: 244 241 236 / 0.13;
+  --c-line-3: 244 241 236 / 0.22;
+  --c-grid-dot: 244 241 236 / 0.05;
 
-  /* Hero interactive field — dark mode */
-  --hero-glow:       rgba(210, 64, 26, 0.12);
-  --hero-node-color: rgba(210, 64, 26, 0.50);
-  --hero-line-color: rgba(210, 64, 26, 0.13);
-  --hero-grid-color: rgba(255, 255, 255, 0.018);
+  --c-signal-deep: 184 56 26;
+  --c-signal-ink: 238 90 48;
+  --c-signal-soft: 210 64 26 / 0.12;
+  --c-signal-line: 210 64 26 / 0.38;
+  --c-glow: 210 64 26 / 0.16;
+
+  --net-dormant: 244 241 236 / 0.2;
+  --net-idle: 210 64 26 / 0.52;
+  --net-active: 210 64 26 / 1;
+  --net-edge: 210 64 26 / 0.14;
+  --net-edge-hot: 210 64 26 / 0.44;
+  --net-edge-broken: 244 241 236 / 0.16;
+  --net-packet: 240 102 60;
+  --net-blend: additive;
+
+  --glass-bg: 12 11 10 / 0.72;
+  --glass-line: 244 241 236 / 0.08;
+
+  --sh-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --sh-2: 0 8px 24px -8px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(244 241 236 / 0.03);
+  --sh-3: 0 24px 64px -16px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(244 241 236 / 0.04);
+  --sh-signal: 0 0 0 1px rgb(210 64 26 / 0.38), 0 6px 28px -6px rgb(210 64 26 / 0.45);
+  --focus-ring: 0 0 0 2px rgb(var(--c-bg)), 0 0 0 4px rgb(210 64 26 / 0.55);
+
+  --cursor-color: rgb(var(--c-text));
+  --cursor-ring-color: rgb(var(--c-line-3));
+
+  color-scheme: dark;
 }
 
-/* ─── Base ─────────────────────────────────────────────────────────────────── */
+/* ─── Base ─────────────────────────────────────────────────────────────── */
 
 @layer base {
-  *, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
@@ -69,80 +155,66 @@
   }
 
   body {
-    background-color: var(--bg-base);
-    color: var(--text-primary);
-    font-family: var(--font-inter), system-ui, sans-serif;
-    line-height: 1.6;
+    background-color: rgb(var(--c-bg));
+    color: rgb(var(--c-text));
+    font-family: var(--font-sans), system-ui, sans-serif;
+    line-height: 1.65;
+    font-variant-numeric: tabular-nums;
     overflow-x: hidden;
-    transition: background-color 0.5s ease, color 0.5s ease;
+  }
+
+  h1, h2, h3 { text-wrap: balance; }
+  p, li, dd { text-wrap: pretty; }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
   }
 
   ::selection {
-    background: rgba(210, 64, 26, 0.4);
-    color: #fff;
+    background: rgb(var(--c-signal) / 0.35);
+    color: rgb(var(--c-text));
   }
 
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track  { background: var(--scrollbar-track); }
-  ::-webkit-scrollbar-thumb  { background: rgba(210,64,26,0.5); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #D2401A; }
+  ::-webkit-scrollbar-track { background: rgb(var(--c-inset)); }
+  ::-webkit-scrollbar-thumb { background: rgb(var(--c-signal) / 0.5); border-radius: var(--r-xs); }
+  ::-webkit-scrollbar-thumb:hover { background: rgb(var(--c-signal)); }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
 }
 
-/* ─── Utilities ────────────────────────────────────────────────────────────── */
+/* ─── Utilities ────────────────────────────────────────────────────────── */
 
 @layer utilities {
-  .text-balance { text-wrap: balance; }
-
   .glass {
-    background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.10);
+    background: rgb(var(--c-elevated) / 0.96);
+    border: 1px solid rgb(var(--glass-line));
   }
-
-  .orange-glow  { box-shadow: 0 0 30px rgba(210,64,26,0.3); }
-
-  .text-gradient-orange {
-    background: linear-gradient(135deg, #D2401A 0%, #FF6B47 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .border-glow {
-    border: 1px solid rgba(210,64,26,0.4);
-    box-shadow: 0 0 20px rgba(210,64,26,0.15) inset;
+  @supports (backdrop-filter: blur(1px)) {
+    .glass {
+      background: rgb(var(--glass-bg));
+      backdrop-filter: blur(var(--glass-blur));
+      -webkit-backdrop-filter: blur(var(--glass-blur));
+    }
   }
 }
 
-/* ─── View Transitions ─────────────────────────────────────────────────────── */
+/* ─── Theme view transition (instant under reduced motion) ─────────────── */
 
 @supports (view-transition-name: none) {
   ::view-transition-old(root),
   ::view-transition-new(root) {
-    animation-duration: 600ms;
-    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    ::view-transition-old(root),
-    ::view-transition-new(root) { animation-duration: 0.01ms !important; }
+    animation-duration: var(--dur-slow);
+    animation-timing-function: var(--ease-in-out);
   }
 }
 
-/* ─── Custom cursor ─────────────────────────────────────────────────────────── */
+/* ─── Custom cursor (component lives in SYSTEM-3D) ─────────────────────────
+   The native cursor is hidden only while the custom cursor is running. */
 
-/* Hide native cursor on fine-pointer (mouse/trackpad) devices only.
-   Touch devices are unaffected. The cursor component renders nothing on touch. */
-@media (pointer: fine) {
-  *, *::before, *::after {
-    cursor: none !important;
-  }
-}
-
-/* Class-based lock — added by InteractiveCursor when it confirms it is running.
-   This overrides browser-default pointer/text cursors on buttons, links, inputs, etc.
-   Removed on component unmount so touch/reduced-motion devices are never affected. */
 .custom-cursor-active,
 .custom-cursor-active *,
 .custom-cursor-active *::before,
@@ -150,24 +222,20 @@
   cursor: none !important;
 }
 
-/* Dot — small filled circle, snaps to raw pointer position */
 .cursor-dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--r-full);
   background-color: var(--cursor-color);
-  /* Colour transitions smoothly; transform is driven by JS RAF */
-  transition: background-color 200ms ease;
+  transition: background-color var(--dur-fast) var(--ease-out);
 }
 
-/* Ring — thin outlined circle, lags behind pointer */
 .cursor-ring {
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--r-full);
   border: 1.5px solid var(--cursor-ring-color);
-  /* Border/glow transitions smoothly; transform/scale driven by JS RAF */
   transition:
-    border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow   220ms cubic-bezier(0.16, 1, 0.3, 1);
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }

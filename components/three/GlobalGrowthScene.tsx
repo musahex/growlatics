@@ -4,6 +4,7 @@ import { useRef, useEffect, useMemo, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Line } from '@react-three/drei'
 import * as THREE from 'three'
+import { bgHex, signalDeepHex, signalHex } from '@/lib/tokens'
 
 // ─── Module-level mutable state (never causes React re-renders) ──────────────
 
@@ -35,8 +36,8 @@ const EDGES: [number, number][] = [
   [0, 2], [1, 3], [2, 4], [3, 5], [4, 6], [5, 7], [2, 3],
 ]
 
-const BG_DARK  = new THREE.Color('#070605')
-const BG_LIGHT = new THREE.Color('#F5F3F0')
+const BG_DARK  = new THREE.Color(bgHex.dark)
+const BG_LIGHT = new THREE.Color(bgHex.light)
 
 // ─── Individual node — pulsing sphere ────────────────────────────────────────
 
@@ -65,8 +66,8 @@ function AmbientNode({ pos }: { pos: [number, number, number] }) {
     <mesh ref={meshRef} position={pos}>
       <sphereGeometry args={[0.09, 10, 10]} />
       <meshStandardMaterial
-        color="#D2401A"
-        emissive="#D2401A"
+        color={signalHex}
+        emissive={signalHex}
         emissiveIntensity={0.45}
         transparent
         opacity={0.55}
@@ -112,7 +113,7 @@ function Particles() {
       <pointsMaterial
         ref={matRef}
         size={0.018}
-        color="#D2401A"
+        color={signalHex}
         transparent
         opacity={0.12}
         sizeAttenuation
@@ -143,7 +144,7 @@ function CursorLight() {
     <pointLight
       ref={lightRef}
       position={[0, 0, 2]}
-      color="#D2401A"
+      color={signalHex}
       intensity={0.75}
       distance={11}
     />
@@ -173,7 +174,7 @@ function NodesGroup() {
         <Line
           key={i}
           points={[NODES[a], NODES[b]]}
-          color="#D2401A"
+          color={signalHex}
           lineWidth={0.5}
           opacity={themeState.isDark ? 0.08 : 0.05}
           transparent
@@ -225,9 +226,9 @@ function SceneContent() {
     <>
       <ambientLight intensity={0.18} />
       {/* Warm orange fill from upper-left */}
-      <pointLight position={[-2.5, 3.5, 2]} color="#D2401A" intensity={0.9} distance={13} />
+      <pointLight position={[-2.5, 3.5, 2]} color={signalHex} intensity={0.9} distance={13} />
       {/* Deep-red counter-fill from lower-right */}
-      <pointLight position={[4.5, -2.5, 1.5]} color="#7A1808" intensity={0.55} distance={11} />
+      <pointLight position={[4.5, -2.5, 1.5]} color={signalDeepHex} intensity={0.55} distance={11} />
       <CursorLight />
       <Particles />
       <NodesGroup />
