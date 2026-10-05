@@ -19,30 +19,33 @@ export type Palette = {
   packet: RGBA
 }
 
-type Key = Exclude<keyof Palette, 'dark' | 'additive'>
+type Key = Exclude<keyof Palette, 'dark' | 'additive' | 'idle' | 'edge'>
 const VARS: Record<Key, string> = {
   bg: '--c-bg',
   text: '--c-text',
   line3: '--c-line-3',
   glow: '--c-glow',
   dormant: '--net-dormant',
-  idle: '--net-idle',
   active: '--net-active',
-  edge: '--net-edge',
   edgeHot: '--net-edge-hot',
   edgeBroken: '--net-edge-broken',
   packet: '--net-packet',
 }
 
 // Fallbacks = DIRECTION §2.1/§2.2 values, used only if a token is missing.
+// idle and edge are neutral (text tint), not the orange --net-idle/--net-edge tokens: "if nothing is active,
+// nothing is orange" (DIRECTION §1, REVIEW_CREATIVE #1/#10). Orange stays for active nodes, hot edges,
+// packets and the core, so dormant → lit and fragmented → connected read in both themes.
+const IDLE_A = { dark: 0.5, light: 0.38 }
+const EDGE_A = { dark: 0.15, light: 0.16 }
 const LIGHT: Record<Key, string> = {
   bg: '245 243 240', text: '12 11 10', line3: '12 11 10 / 0.24', glow: '210 64 26 / 0.12',
-  dormant: '12 11 10 / 0.22', idle: '210 64 26 / 0.45', active: '210 64 26 / 0.95', edge: '210 64 26 / 0.12',
+  dormant: '12 11 10 / 0.22', active: '210 64 26 / 0.95',
   edgeHot: '210 64 26 / 0.48', edgeBroken: '12 11 10 / 0.18', packet: '210 64 26',
 }
 const DARK: Record<Key, string> = {
   bg: '7 6 5', text: '244 241 236', line3: '244 241 236 / 0.22', glow: '210 64 26 / 0.16',
-  dormant: '244 241 236 / 0.20', idle: '210 64 26 / 0.52', active: '210 64 26 / 1', edge: '210 64 26 / 0.14',
+  dormant: '244 241 236 / 0.20', active: '210 64 26 / 1',
   edgeHot: '210 64 26 / 0.44', edgeBroken: '244 241 236 / 0.16', packet: '240 102 60',
 }
 
@@ -67,6 +70,9 @@ export function readPalette(el: Element, theme: 'dark' | 'light'): Palette {
   const fb = dark ? DARK : LIGHT
   const out = { dark } as Palette
   for (const k of Object.keys(VARS) as Key[]) out[k] = parseColor(cs.getPropertyValue(VARS[k])) ?? parseColor(fb[k])!
+  const t = out.text
+  out.idle = [t[0], t[1], t[2], dark ? IDLE_A.dark : IDLE_A.light]
+  out.edge = [t[0], t[1], t[2], dark ? EDGE_A.dark : EDGE_A.light]
   const blend = cs.getPropertyValue('--net-blend').trim()
   out.additive = blend ? blend === 'additive' : dark
   return out
@@ -88,18 +94,19 @@ export const css = {
   text: 'rgb(var(--c-text, 244 241 236))',
   line3: 'rgb(var(--c-line-3, 244 241 236 / 0.22))',
   signal: 'rgb(var(--c-signal, 210 64 26))',
+  signalInk: 'rgb(var(--c-signal-ink, 238 90 48))',
   signalLine: 'rgb(var(--c-signal-line, 210 64 26 / 0.38))',
   glow: 'rgb(var(--c-glow, 210 64 26 / 0.16))',
   glowStop: 'radial-gradient(circle, rgb(var(--c-glow, 210 64 26 / 0.16)) 0%, transparent 60%)',
   shSignal: 'var(--sh-signal, 0 0 0 1px rgb(210 64 26 / .38), 0 6px 28px -6px rgb(210 64 26 / .45))',
   dormant: 'rgb(var(--net-dormant, 244 241 236 / 0.20))',
-  idle: 'rgb(var(--net-idle, 210 64 26 / 0.52))',
+  idle: 'rgb(var(--c-text, 244 241 236) / 0.46)',
   active: 'rgb(var(--net-active, 210 64 26 / 1))',
-  edge: 'rgb(var(--net-edge, 210 64 26 / 0.14))',
+  edge: 'rgb(var(--c-text, 244 241 236) / 0.16)',
   edgeHot: 'rgb(var(--net-edge-hot, 210 64 26 / 0.44))',
   edgeBroken: 'rgb(var(--net-edge-broken, 244 241 236 / 0.16))',
   packet: 'rgb(var(--net-packet, 240 102 60))',
-  label: 'rgb(var(--c-text-3, 138 131 123))',
+  label: 'rgb(var(--c-text-2, 192 184 176))',
   panel: 'rgb(var(--c-elevated, 20 18 15) / 0.9)',
 }
 

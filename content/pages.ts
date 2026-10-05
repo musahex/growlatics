@@ -98,6 +98,8 @@ export const home: HomeContent = {
 export const homeUi = {
   stageIndex: (n: string, total: number) => `${n} / ${String(total).padStart(2, '0')}`,
   lanes: { separate: 'Separate vendors', connected: 'One connected system', replay: 'Replay trace' },
+  /** Act 7 band: markets at their standard UTC offsets (data only; no coverage-hours claim). */
+  band: { axis: 'UTC', offsets: { US: -5, GB: 0, PK: 5 } as Record<string, number> },
   figures: {
     hero: 'The Growlatics network: Acquire, Sell, Operate and Build connected through one core',
     problem: 'Separate vendors with broken handoffs between them, where leads drop out',

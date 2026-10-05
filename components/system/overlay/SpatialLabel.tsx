@@ -3,12 +3,12 @@
 // DOM labels positioned with transform from projected coordinates, scheduler order 30 (§6.6).
 // One overlay per stage, not one portal per node.
 import { useEffect, useRef, type ReactNode } from 'react'
-import { CORE, EDGE_A, EDGE_B, EDGE_INDEX, NODES, NODE_INDEX, labelFor } from '../model/graph'
+import { CORE, EDGE_A, EDGE_B, EDGE_INDEX, LABEL_ORDER, NODES, NODE_INDEX, SYSTEMS, labelFor, systemName } from '../model/graph'
 import { css } from '../model/palette'
 import { sys } from '../runtime/store'
 import { useStage } from '../stage/context'
 import { MarkRects } from './MarkBars'
-import { place } from '../model/place'
+import { place, reserveNode } from '../model/place'
 
 const labelStyle = {
   position: 'absolute',
@@ -62,37 +62,72 @@ export function SpatialLabel({ node, edge, act, dx = 12, dy = -6, children }: { 
   )
 }
 
-/** Capability labels for every node (visibility from the field) and the act-9/intro mark at the core. */
+const nameStyle = { ...labelStyle, font: '600 12px/1 var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)', letterSpacing: '0.08em', color: css.text } as const
+
+/** Capability labels for every node, the four system names (acts 1, 3, 5) and the act-9/intro mark at the core. */
 export function SpatialLabelLayer() {
   const stage = useStage()
   const refs = useRef<(HTMLSpanElement | null)[]>([])
+  const nameRefs = useRef<(HTMLSpanElement | null)[]>([])
   const mark = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!stage) return
     const last = new Float32Array(NODES.length).fill(-1)
+    const lastName = new Float32Array(SYSTEMS.length).fill(-1)
     const width = new Float32Array(NODES.length) // measured once per label (fixed font)
+    const nameW = new Float32Array(SYSTEMS.length)
     const slot = new Uint8Array(NODES.length) // last placement, tried first (no flicker)
-    const placed: number[] = [] // x, y, w of labels already placed this frame (shared rule: model/place.ts)
+    const placed: number[] = [] // x, y, w of boxes already taken this frame (shared rule: model/place.ts)
     let lastMark = -1
+    const fade = (el: HTMLElement, store: Float32Array, i: number, a: number) => {
+      if (a !== store[i]) el.style.opacity = String((store[i] = a))
+    }
     const fn = () => {
       const f = stage.field
+      const S = f.screen
+      const maxX = stage.rect.width || Infinity
       placed.length = 0
-      for (let i = 0; i < NODES.length; i++) {
+      for (let i = 0; i < NODES.length; i++) if (f.level[i] >= 1) reserveNode(placed, S[i * 2], S[i * 2 + 1], 3 * f.size[i] + 1, 11)
+      // System names above each cluster, placed before the capability labels.
+      SYSTEMS.forEach((sid, k) => {
+        const el = nameRefs.current[k]
+        if (!el) return
+        let sx = 0, top = Infinity, n = 0, fa = 1
+        for (let i = 0; i < NODES.length; i++) {
+          if (NODES[i].system !== sid || f.level[i] < 1) continue
+          sx += S[i * 2]
+          top = Math.min(top, S[i * 2 + 1])
+          fa = f.focusA[i]
+          n++
+        }
+        const a = n ? Math.round(f.pose.names * f.pose.dim * fa * (1 - f.pose.mark) * 100) / 100 : 0
+        fade(el, lastName, k, a)
+        if (a <= 0) return
+        if (!nameW[k]) nameW[k] = el.offsetWidth || 60
+        const x = Math.max(0, Math.min(maxX - nameW[k], sx / n - nameW[k] / 2))
+        const y = top - 30
+        placed.push(x, y, nameW[k])
+        el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`
+      })
+      for (const i of LABEL_ORDER) {
         const el = refs.current[i]
         if (!el) continue
-        const a = Math.round(f.labelA[i] * Math.min(1, f.level[i]) * f.pose.dim * 100) / 100
-        if (a !== last[i]) el.style.opacity = String((last[i] = a))
-        if (a <= 0) continue
-        if (!width[i]) width[i] = el.offsetWidth || 80
-        const [x, y, k] = place(placed, f.screen[i * 2], f.screen[i * 2 + 1], width[i], 11, slot[i], stage.rect.width || Infinity)
-        slot[i] = k
-        el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`
+        let a = Math.round(f.labelA[i] * Math.min(1, f.level[i]) * f.pose.dim * 100) / 100
+        if (a > 0) {
+          if (!width[i]) width[i] = el.offsetWidth || 80
+          const at = place(placed, S[i * 2], S[i * 2 + 1], width[i], 11, slot[i], maxX)
+          if (at) {
+            slot[i] = at[2]
+            el.style.transform = `translate3d(${at[0].toFixed(1)}px,${at[1].toFixed(1)}px,0)`
+          } else a = 0
+        }
+        fade(el, last, i, a)
       }
       const m = Math.round(f.pose.mark * 100) / 100
       const el = mark.current
       if (el) {
         if (m !== lastMark) el.style.opacity = String((lastMark = m))
-        if (m > 0) el.style.transform = `translate3d(${f.screen[CORE * 2].toFixed(1)}px,${f.screen[CORE * 2 + 1].toFixed(1)}px,0) translate(-50%,-100%) scaleY(${Math.min(1, m * 1.2).toFixed(3)})`
+        if (m > 0) el.style.transform = `translate3d(${S[CORE * 2].toFixed(1)}px,${S[CORE * 2 + 1].toFixed(1)}px,0) translate(-50%,-100%) scaleY(${Math.min(1, m * 1.2).toFixed(3)})`
       }
     }
     stage.overlays.add(fn)
@@ -108,6 +143,11 @@ export function SpatialLabelLayer() {
           </span>
         ),
       )}
+      {SYSTEMS.map((sid, k) => (
+        <span key={sid} ref={(el) => void (nameRefs.current[k] = el)} style={sid === 'sell' ? { ...nameStyle, color: css.signalInk } : nameStyle}>
+          {systemName(sid).toUpperCase()}
+        </span>
+      ))}
       <div ref={mark} style={{ position: 'absolute', left: 0, top: 0, width: 92, height: 96, opacity: 0, transformOrigin: '50% 100%', willChange: 'transform, opacity' }}>
         <svg viewBox="0 0 66 70" width="100%" height="100%" aria-hidden>
           <MarkRects />
