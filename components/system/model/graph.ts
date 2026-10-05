@@ -1,4 +1,4 @@
-import { getLabel } from '@/content'
+import { getLabel, systemById } from '@/content'
 // The single source of network data (DIRECTION §6.3). Every renderer draws these nodes.
 // Ids are `<system>.<capability>` (PLAN shared contract), kebab-case from IA_AND_COPY §3.
 
@@ -120,3 +120,7 @@ EDGES.forEach((_, i) => {
 
 // Words come from content/ (getLabel); every graph id is a content id.
 export const labelFor = (node: GNode) => getLabel(node.system === 'core' ? 'core' : node.id)
+/** A system's name ("Acquire", "Sell"…) from content/. */
+export const systemName = (s: string) => systemById[s as keyof typeof systemById]?.verb ?? s
+/** Label placement order: heaviest node first, so a crowded cluster keeps its key capabilities. */
+export const LABEL_ORDER = NODES.map((_, i) => i).sort((a, b) => NODES[b].weight - NODES[a].weight || a - b)

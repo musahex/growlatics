@@ -11,8 +11,9 @@ export type Pose = {
   node: Float32Array // N, 0..3
   edge: Float32Array // E, 0..3
   label: Float32Array // N, 0..1 SpatialLabel visibility
+  names: number // 0..1 the four system names over their clusters (acts 1, 3, 5)
   field: number // dormant background field alpha (act 1)
-  dim: number // whole-network multiplier (act 8 dims to 0.5)
+  dim: number // whole-network multiplier (acts 6 and 8 step back)
   mark: number // 0..1 the core resolves into the five-bar mark (act 9)
   hero: number // journey hero packet visibility
   cam: Float32Array // [x, y, zoom, tiltDeg]
@@ -32,6 +33,7 @@ export const emptyPose = (): Pose => ({
   node: new Float32Array(N),
   edge: new Float32Array(E),
   label: new Float32Array(N),
+  names: 0,
   field: 0,
   dim: 1,
   mark: 0,
@@ -108,6 +110,7 @@ function act1(): Pose {
   states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' || s === 'sell' ? 'active' : 'idle'))
   edges(p, 'connected')
   p.field = 1
+  p.names = 1
   return p
 }
 
@@ -145,6 +148,7 @@ function act3(): Pose {
   parkMarkets(p)
   states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' ? 'active' : 'idle'))
   edges(p, 'flowing')
+  p.names = 1
   return p
 }
 
@@ -200,13 +204,26 @@ function act5(): Pose {
   parkMarkets(p)
   states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' ? 'active' : 'idle'))
   edges(p, 'flowing')
+  p.names = 1
   return p
 }
 
-// ── Act 6: the network rests behind the trace comparison ──
+// ── Act 6: the systems line up as one route (the trace lanes' bottom lane), stepped back so the lanes lead ──
 function act6(): Pose {
-  const p = act3()
-  p.dim = 0.6
+  const p = emptyPose()
+  place(p, [
+    ...bySystem({
+      acquire: { x: 0.66, y: 0.5, z: 0, r: 0.035 },
+      sell: { x: 0.76, y: 0.5, z: 0.2, r: 0.045 },
+      operate: { x: 0.9, y: 0.5, z: 0, r: 0.035 },
+      build: { x: 0.83, y: 0.68, z: -0.6, r: 0.05 },
+    }),
+    [['core.growlatics'], CORE_C(0.83, 0.5)],
+  ])
+  parkMarkets(p)
+  states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' ? 'active' : 'idle'))
+  edges(p, 'flowing')
+  p.dim = 0.35
   return p
 }
 
@@ -227,10 +244,22 @@ function act7(): Pose {
   return p
 }
 
-// ── Act 8: work rail; the canvas dims so the DOM leads ──
+// ── Act 8: convergence begins. Clusters contract toward the core, top right, clear of the rail below ──
 function act8(): Pose {
-  const p = act3()
-  p.dim = 0.5
+  const p = emptyPose()
+  place(p, [
+    ...bySystem({
+      acquire: { x: 0.72, y: 0.22, z: 0, r: 0.035 },
+      sell: { x: 0.88, y: 0.22, z: 0.2, r: 0.04 },
+      operate: { x: 0.88, y: 0.4, z: 0, r: 0.03 },
+      build: { x: 0.72, y: 0.4, z: -0.6, r: 0.035 },
+    }),
+    [['core.growlatics'], CORE_C(0.8, 0.31)],
+  ])
+  parkMarkets(p)
+  states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' ? 'active' : 'idle'))
+  edges(p, 'converge')
+  p.dim = 0.6
   return p
 }
 
@@ -308,6 +337,7 @@ export function poseAt(out: Pose, kp: number) {
   lerpArr(out.edge, a.edge, b.edge)
   lerpArr(out.label, a.label, b.label)
   lerpArr(out.cam, a.cam, b.cam)
+  out.names = a.names + (b.names - a.names) * t
   out.field = a.field + (b.field - a.field) * t
   out.dim = a.dim + (b.dim - a.dim) * t
   out.mark = a.mark + (b.mark - a.mark) * t

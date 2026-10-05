@@ -3,15 +3,13 @@
 'use client'
 
 import { useMemo, type CSSProperties } from 'react'
-import { EDGES, EDGE_A, EDGE_B, NODES, SYSTEMS, labelFor, CORE } from '../model/graph'
+import { EDGES, EDGE_A, EDGE_B, NODES, SYSTEMS, labelFor, systemName, CORE, LABEL_ORDER } from '../model/graph'
 import { emptyPose, frame as fit, keyFor, poseAt, transpose } from '../model/layouts'
 import { FIELD, FIELD_POINTS } from '../model/flow'
 import { css } from '../model/palette'
 import { useSystem } from '../runtime/useSystem'
 import { MarkRects } from '../overlay/MarkBars'
-import { place } from '../model/place'
-
-const SYSTEM_NAMES: Record<string, string> = { acquire: 'Acquire', sell: 'Sell', operate: 'Operate', build: 'Build' }
+import { place, reserveNode } from '../model/place'
 
 export type NetworkSVGProps = {
   act: number
@@ -132,27 +130,39 @@ export function NetworkSVG({ act, stage = 0, follow, labels = true, portrait, ti
         <g fontFamily={font} fontSize={portrait ? 22 : 15} fill={css.label} letterSpacing="0.04em">
           {(() => {
             // Same greedy placement as the live overlay; mono glyphs ≈ 0.64em wide incl. tracking.
+            // System names go first so capability labels never print over them.
             const fs = portrait ? 22 : 15
+            const nfs = portrait ? 26 : 17
             const placed: number[] = []
-            return NODES.map((n, i) => {
+            const names = p.names > 0.5 && p.mark < 0.5 ? centroids : []
+            NODES.forEach((n, i) => p.node[i] >= 1 && reserveNode(placed, X(i), Y(i), 3.5 + n.weight * 1.6, fs))
+            for (const c of names) if (c) placed.push(c.x - (systemName(c.sid).length * nfs * 0.7) / 2, c.y - nfs * 0.8, systemName(c.sid).length * nfs * 0.7)
+            const caps = LABEL_ORDER.map((i) => {
+              const n = NODES[i]
               const show = (p.node[i] >= 1 || focused(i)) && (labels === 'all' || p.label[i] > 0.5 || focused(i)) && i !== CORE
               if (!show) return null
               const text = labelFor(n)
-              const [x, y] = place(placed, X(i), Y(i), text.length * fs * 0.64, fs, 0, W)
+              const at = place(placed, X(i), Y(i), text.length * fs * 0.64, fs, 0, W)
+              if (!at) return null
               return (
-                <text key={n.id} x={x} y={y + fs * 0.8} opacity={fa(i)}>
+                <text key={n.id} x={at[0]} y={at[1] + fs * 0.8} opacity={fa(i)}>
                   {text}
                 </text>
               )
             })
+            return (
+              <>
+                {caps}
+                {names.map((c) =>
+                  c ? (
+                    <text key={c.sid} x={c.x} y={c.y} textAnchor="middle" fill={c.sid === 'sell' ? css.signalInk : css.text} fontSize={nfs} fontWeight={600}>
+                      {systemName(c.sid).toUpperCase()}
+                    </text>
+                  ) : null,
+                )}
+              </>
+            )
           })()}
-          {centroids.map((c) =>
-            c && p.mark < 0.5 ? (
-              <text key={c.sid} x={c.x} y={c.y} textAnchor="middle" fill={css.text} fontSize={portrait ? 26 : 17} fontWeight={600}>
-                {SYSTEM_NAMES[c.sid].toUpperCase()}
-              </text>
-            ) : null,
-          )}
         </g>
       )}
       {p.mark > 0 && (

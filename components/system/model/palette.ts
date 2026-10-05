@@ -94,6 +94,7 @@ export const css = {
   text: 'rgb(var(--c-text, 244 241 236))',
   line3: 'rgb(var(--c-line-3, 244 241 236 / 0.22))',
   signal: 'rgb(var(--c-signal, 210 64 26))',
+  signalInk: 'rgb(var(--c-signal-ink, 238 90 48))',
   signalLine: 'rgb(var(--c-signal-line, 210 64 26 / 0.38))',
   glow: 'rgb(var(--c-glow, 210 64 26 / 0.16))',
   glowStop: 'radial-gradient(circle, rgb(var(--c-glow, 210 64 26 / 0.16)) 0%, transparent 60%)',
@@ -105,7 +106,7 @@ export const css = {
   edgeHot: 'rgb(var(--net-edge-hot, 210 64 26 / 0.44))',
   edgeBroken: 'rgb(var(--net-edge-broken, 244 241 236 / 0.16))',
   packet: 'rgb(var(--net-packet, 240 102 60))',
-  label: 'rgb(var(--c-text-3, 138 131 123))',
+  label: 'rgb(var(--c-text-2, 192 184 176))',
   panel: 'rgb(var(--c-elevated, 20 18 15) / 0.9)',
 }
 
