@@ -41,10 +41,6 @@ export const ease: { out: Bezier; inOut: Bezier; in: Bezier; linear: 'linear' } 
 // Exits run at 60% of the matching entrance duration.
 export const exitDuration = (d: number) => d * 0.6
 
-// Frame-rate-independent damping: v += (target - v) * (1 - exp(-k * dt)), dt in seconds.
-export const damp = (v: number, target: number, k: number, dt: number) => v + (target - v) * (1 - Math.exp(-k * dt))
-export const dampK = { cursorRing: 14, cursorDot: 40, pointer: 6, camera: 3.5, theme: 5 } as const
-
 // R1–R4 fire once when 20% of the element is in view; nothing re-animates on scroll-back.
 export const viewportOnce = { once: true, amount: 0.2 } as const
 
