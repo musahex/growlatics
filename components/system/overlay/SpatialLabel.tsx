@@ -2,10 +2,9 @@
 
 // DOM labels positioned with transform from projected coordinates, scheduler order 30 (§6.6).
 // One overlay per stage, not one portal per node.
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { CORE, EDGE_A, EDGE_B, EDGE_INDEX, NODES, NODE_INDEX, labelFor } from '../model/graph'
 import { css } from '../model/palette'
-import { addTask, removeTask } from '../runtime/scheduler'
 import { sys } from '../runtime/store'
 import { useStage } from '../stage/context'
 import { MarkRects } from './MarkBars'
@@ -28,13 +27,12 @@ const labelStyle = {
 export function SpatialLabel({ node, edge, act, dx = 12, dy = -6, children }: { node?: string; edge?: string; /** Show only while this act is current. */ act?: number; dx?: number; dy?: number; children: ReactNode }) {
   const stage = useStage()
   const ref = useRef<HTMLSpanElement>(null)
-  const id = useId()
   useEffect(() => {
     if (!stage) return
     const ni = node ? NODE_INDEX[node] : -1
     const ei = edge ? EDGE_INDEX[edge] : -1
     let lastA = -1
-    addTask(`label:${id}`, () => {
+    const fn = () => {
       const el = ref.current
       const s = stage.field.screen
       if (!el) return
@@ -53,9 +51,10 @@ export function SpatialLabel({ node, edge, act, dx = 12, dy = -6, children }: { 
       el.style.transform = `translate3d(${(x + dx).toFixed(1)}px,${(y + dy).toFixed(1)}px,0)`
       const r = Math.round(a * 100) / 100
       if (r !== lastA) el.style.opacity = String((lastA = r))
-    }, 30)
-    return () => removeTask(`label:${id}`)
-  }, [stage, node, edge, act, dx, dy, id])
+    }
+    stage.overlays.add(fn)
+    return () => void stage.overlays.delete(fn)
+  }, [stage, node, edge, act, dx, dy])
   return (
     <span ref={ref} style={labelStyle}>
       {children}
@@ -68,7 +67,6 @@ export function SpatialLabelLayer() {
   const stage = useStage()
   const refs = useRef<(HTMLSpanElement | null)[]>([])
   const mark = useRef<HTMLDivElement>(null)
-  const id = useId()
   useEffect(() => {
     if (!stage) return
     const last = new Float32Array(NODES.length).fill(-1)
@@ -76,7 +74,7 @@ export function SpatialLabelLayer() {
     const slot = new Uint8Array(NODES.length) // last placement, tried first (no flicker)
     const placed: number[] = [] // x, y, w of labels already placed this frame (shared rule: model/place.ts)
     let lastMark = -1
-    addTask(`labels:${id}`, () => {
+    const fn = () => {
       const f = stage.field
       placed.length = 0
       for (let i = 0; i < NODES.length; i++) {
@@ -96,9 +94,10 @@ export function SpatialLabelLayer() {
         if (m !== lastMark) el.style.opacity = String((lastMark = m))
         if (m > 0) el.style.transform = `translate3d(${f.screen[CORE * 2].toFixed(1)}px,${f.screen[CORE * 2 + 1].toFixed(1)}px,0) translate(-50%,-100%) scaleY(${Math.min(1, m * 1.2).toFixed(3)})`
       }
-    }, 30)
-    return () => removeTask(`labels:${id}`)
-  }, [stage, id])
+    }
+    stage.overlays.add(fn)
+    return () => void stage.overlays.delete(fn)
+  }, [stage])
 
   return (
     <div aria-hidden style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 'var(--z-stage, 20)' as unknown as number }}>

@@ -69,6 +69,7 @@ export function SystemStage({ mode = 'inline', act, stage = 0, intro, labels = t
       pointerFx: false,
       draw: null,
       ready: () => {},
+      overlays: new Set(),
       onPalette: null,
     }),
     [fixed],
@@ -130,7 +131,6 @@ export function SystemStage({ mode = 'inline', act, stage = 0, intro, labels = t
     const el = ref.current
     if (!el || !showLive) return
     ctx.el = el
-    const stopController = fixed ? startStageController() : null
     const task = `stage:${id}`
     let lastKp = -1, lastChange = 0, skip = false
     const frame = (dt: number, t: number) => {
@@ -155,20 +155,26 @@ export function SystemStage({ mode = 'inline', act, stage = 0, intro, labels = t
         sys.near.d = nearD
       }
       ctx.draw?.(dt, t)
+      ctx.overlays.forEach((fn) => fn(dt, t))
     }
+    // Everything per-frame for this stage (controller, draw, labels) runs only while it is in view.
     let on = false
+    let stopController: (() => void) | null = null
     const run = (v: boolean) => {
       if (v === on) return
       on = v
-      if (v) addTask(task, frame, 20)
-      else removeTask(task)
+      if (v) {
+        if (fixed) stopController = startStageController()
+        addTask(task, frame, 20)
+      } else {
+        removeTask(task)
+        stopController?.()
+        stopController = null
+      }
     }
-    let io: IntersectionObserver | null = null
-    if (fixed) run(true)
-    else {
-      io = new IntersectionObserver(([e]) => run(e.isIntersecting))
-      io.observe(el)
-    }
+    // A fixed element always intersects: the fixed stage pauses when its acts wrapper leaves the viewport (footer).
+    const io = new IntersectionObserver(([e]) => run(e.isIntersecting))
+    io.observe(fixed ? el.parentElement ?? el : el)
     ctx.ready = () => {
       ctx.ready = () => {}
       if (intro && claimIntro() && !ctx.still) ctx.field.intro = 0
@@ -179,9 +185,8 @@ export function SystemStage({ mode = 'inline', act, stage = 0, intro, labels = t
       }
     }
     return () => {
-      io?.disconnect()
+      io.disconnect()
       run(false)
-      stopController?.()
       sys.near.d = Infinity
       if (fixed) {
         sys.live = false

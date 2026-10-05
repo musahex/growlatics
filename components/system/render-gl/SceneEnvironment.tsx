@@ -28,9 +28,12 @@ export function SceneEnvironment({ stage }: { stage: StageCtx }) {
       }
       sum += dt
       if (++n === 90) {
-        if (sum / n > 0.02 && session.step < STEPS.length - 1) {
-          session = { step: session.step + 1 }
-          setDpr(STEPS[session.step])
+        // Next step strictly below the current DPR (a 1× screen must not "drop" to 1.25).
+        const cur = initialDpr()
+        const next = STEPS.findIndex((d) => d < cur)
+        if (sum / n > 0.02 && next >= 0) {
+          session = { step: next }
+          setDpr(STEPS[next])
         }
         sum = n = 0
       }

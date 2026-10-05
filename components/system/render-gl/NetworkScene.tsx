@@ -20,6 +20,8 @@ export default function NetworkScene() {
     <Canvas
       frameloop="never"
       events={noEvents}
+      // No scroll listener of its own (react-use-measure): size comes from ResizeObserver; offsets only matter for R3F pointer events, which are off.
+      resize={{ scroll: false }}
       dpr={dpr}
       linear
       flat
