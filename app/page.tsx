@@ -1,42 +1,25 @@
-import Link from 'next/link'
-import { engagement, home } from '@/content'
 import { organizationJsonLd } from '@/lib/seo'
-import Hero from '@/components/sections/Hero'
-import ThreeGrowthWindow from '@/components/sections/ThreeGrowthWindow'
-import ServicesSection from '@/components/sections/ServicesSection'
-import Ledger from '@/components/patterns/Ledger'
-import SignalRail from '@/components/patterns/SignalRail'
-import ConvergenceCTA from '@/components/patterns/ConvergenceCTA'
-import Section from '@/components/ui/Section'
-import SectionHeader from '@/components/ui/SectionHeader'
+import { HomeStage } from '@/components/home/stage'
+import { Capabilities, Connection, Convergence, Global, Hero, Journey, Problem, Why, Work } from '@/components/home/acts'
 
-// Interim home on the v2 foundation. HOME (phase 3) replaces it with the nine acts on the system stage.
+// Home: nine acts over one fixed system stage (DIRECTION §6.7). clip-path keeps the fixed canvas
+// inside the acts (it never paints over the footer) and makes this wrapper the canvas's stacking context.
 export default function Home() {
-  const { connection, work } = home
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }} />
-      <Hero />
-
-      <Section id={connection.id} rule aria-labelledby="system-h">
-        <SectionHeader id="system-h" eyebrow={connection.eyebrow} heading={connection.heading} body={connection.body} />
-        <Ledger className="mt-12" rows={(connection.items ?? []).map((i) => ({ term: i.title, description: i.body }))} />
-      </Section>
-
-      <ThreeGrowthWindow />
-      <ServicesSection />
-
-      <Section id={work.id} rule aria-labelledby="work-h">
-        <SectionHeader id="work-h" eyebrow={work.eyebrow} heading={work.heading} body={work.body} />
-        <SignalRail className="mt-16" items={engagement.steps.map((s) => ({ index: `0${s.number}`, title: s.title, body: s.body }))} />
-        {work.links?.map((l) => (
-          <Link key={l.href} href={l.href} className="mt-12 inline-flex min-h-11 items-center text-body-s font-semibold text-signal-ink hover:text-text">
-            {l.label} →
-          </Link>
-        ))}
-      </Section>
-
-      <ConvergenceCTA />
+      <div className="relative [clip-path:inset(0)]">
+        <HomeStage />
+        <Hero />
+        <Problem />
+        <Connection />
+        <Journey />
+        <Capabilities />
+        <Why />
+        <Global />
+        <Work />
+        <Convergence />
+      </div>
     </>
   )
 }

@@ -94,6 +94,22 @@ export const home: HomeContent = {
   },
 }
 
+/** Home-only UI words and figure descriptions (HOME-owned, IA §5.1). */
+export const homeUi = {
+  stageIndex: (n: string, total: number) => `${n} / ${String(total).padStart(2, '0')}`,
+  lanes: { separate: 'Separate vendors', connected: 'One connected system', replay: 'Replay trace' },
+  figures: {
+    hero: 'The Growlatics network: Acquire, Sell, Operate and Build connected through one core',
+    problem: 'Separate vendors with broken handoffs between them, where leads drop out',
+    connection: 'Every handoff rerouted through one connected core',
+    journey: (stage: string) => `The ${stage} stage of the growth journey, its system lit`,
+    capabilities: 'Four systems around the core, Sell the largest',
+    global: 'United States, United Kingdom and Pakistan placed on a 24-hour band',
+    convergence: 'Every path converging on the Growlatics mark',
+    trace: 'One lead traced through separate vendors, where it stalls and drops, and through one connected system, where it arrives',
+  },
+}
+
 // ─── Shared blocks ───────────────────────────────────────────────────────────
 
 export const engagement: { heading: string; id: string; steps: EngagementStep[] } = {

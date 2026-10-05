@@ -3,7 +3,7 @@
 // edge "boost charge" while a packet is mid-path, decay 0.958 @60fps), desynchronised breathing,
 // pointer proximity falloff. No allocation inside step().
 import { ADJ, CORE, EDGES, EDGE_A, EDGE_B, NODES, type SystemId } from './graph'
-import { emptyPose, poseAt, transpose, type Pose } from './layouts'
+import { emptyPose, frame, poseAt, transpose, type Pose } from './layouts'
 import { sys } from '../runtime/store'
 import { damp } from '../runtime/scheduler'
 import type { RGBA, Palette } from './palette'
@@ -65,6 +65,7 @@ export function createField(opts: { maxPackets: number; portrait?: boolean }) {
     packets: Array.from({ length: MAX_PACKETS }, (): Packet => ({ alive: false, edge: 0, t: 0, dir: 1, speed: 1, leak: 0, leakAt: 2, x: 0, y: 0, z: 0 })),
     maxPackets: opts.maxPackets,
     portrait: !!opts.portrait,
+    frame: false,
     hero: { x: 0.5, y: 0.5, z: 0.4, a: 0 },
     spawnClock: 0,
   }
@@ -80,6 +81,7 @@ export function stepField(f: Field, dt: number, kpTarget: number, o: { still: bo
   f.kp = o.still ? kpTarget : damp(f.kp, kpTarget, 3.5, dt)
   poseAt(f.pose, f.kp)
   if (f.portrait) transpose(f.pose)
+  if (f.frame) frame(f.pose)
   const p = f.pose
 
   // Intro (act 1, once per session): activation in graph order, handoffs fail, core arrives, mark.

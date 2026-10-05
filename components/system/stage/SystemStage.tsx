@@ -32,6 +32,8 @@ export type SystemStageProps = {
   labels?: boolean | 'all'
   /** Phone composition (clusters stacked). Default: automatic from the stage's aspect ratio (live tiers only). */
   portrait?: boolean
+  /** Inline only: fit the composition to its visible nodes (phone/tablet act figures). */
+  frame?: boolean
   /** Accessible name of the figure. */
   title?: string
   className?: string
@@ -42,7 +44,7 @@ export type SystemStageProps = {
 
 const BASE_MS = 320
 
-export function SystemStage({ mode = 'inline', act, stage = 0, intro, labels = true, portrait, title, className, style, children }: SystemStageProps) {
+export function SystemStage({ mode = 'inline', act, stage = 0, intro, labels = true, portrait, frame, title, className, style, children }: SystemStageProps) {
   useRuntime()
   const id = useId()
   const tier = useSystem('tier')
@@ -74,6 +76,7 @@ export function SystemStage({ mode = 'inline', act, stage = 0, intro, labels = t
   ctx.tier = tier
   ctx.still = reduced
   ctx.pointerFx = tier === 2 && fixed
+  ctx.field.frame = !!frame && !fixed
 
   // Lazy-load trigger (rootMargin 50%) and tier-2 idle gate.
   useEffect(() => {
@@ -97,14 +100,29 @@ export function SystemStage({ mode = 'inline', act, stage = 0, intro, labels = t
 
   // Palette on mount and on theme change.
   useEffect(() => {
+    let dark: boolean | null = null
     const read = () => {
-      if (!ref.current) return
-      ctx.palette = readPalette(ref.current, sys.theme)
+      const el = ref.current
+      if (!el) return
+      // The fixed home stage takes the dark-surface palette while a dark act (data-surface) is current.
+      if (fixed) {
+        const d = !!document.querySelector(`[data-act="${sys.act.index}"][data-surface="dark"]`)
+        if (d === dark && ctx.palette) return
+        dark = d
+        if (d) el.dataset.surface = 'dark'
+        else delete el.dataset.surface
+      }
+      ctx.palette = readPalette(el, sys.theme)
       ctx.onPalette?.()
     }
     read()
-    return subscribe('theme', read)
-  }, [ctx])
+    const offTheme = subscribe('theme', () => ((dark = null), read()))
+    const offAct = fixed ? subscribe('act', read) : null
+    return () => {
+      offTheme()
+      offAct?.()
+    }
+  }, [ctx, fixed])
 
   // Frame task: runs only while the stage intersects (pause off-screen). Labels at order 30.
   const showLive = tier > 0 && near && (tier === 1 || idle)
@@ -200,6 +218,7 @@ export function SystemStage({ mode = 'inline', act, stage = 0, intro, labels = t
             follow={follow}
             labels={labels}
             portrait={portrait}
+            frame={frame}
             title={title}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', visibility: svgHidden ? 'hidden' : undefined }}
           />

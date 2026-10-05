@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { CORE, EDGE_A, EDGE_B, EDGE_INDEX, NODES, NODE_INDEX, labelFor } from '../model/graph'
 import { css } from '../model/palette'
 import { addTask, removeTask } from '../runtime/scheduler'
+import { sys } from '../runtime/store'
 import { useStage } from '../stage/context'
 import { MarkRects } from './MarkBars'
 
@@ -23,7 +24,7 @@ const labelStyle = {
 } as const
 
 /** A callout anchored to a node or to the middle of an edge (e.g. act 2 leak gaps). */
-export function SpatialLabel({ node, edge, dx = 12, dy = -6, children }: { node?: string; edge?: string; dx?: number; dy?: number; children: ReactNode }) {
+export function SpatialLabel({ node, edge, act, dx = 12, dy = -6, children }: { node?: string; edge?: string; /** Show only while this act is current. */ act?: number; dx?: number; dy?: number; children: ReactNode }) {
   const stage = useStage()
   const ref = useRef<HTMLSpanElement>(null)
   const id = useId()
@@ -47,12 +48,13 @@ export function SpatialLabel({ node, edge, dx = 12, dy = -6, children }: { node?
         y = (s[p * 2 + 1] + s[q * 2 + 1]) / 2
         a = Math.min(1, stage.field.edgeLevel[ei])
       } else return
+      if (act !== undefined && sys.act.index !== act) a = 0
       el.style.transform = `translate3d(${(x + dx).toFixed(1)}px,${(y + dy).toFixed(1)}px,0)`
       const r = Math.round(a * 100) / 100
       if (r !== lastA) el.style.opacity = String((lastA = r))
     }, 30)
     return () => removeTask(`label:${id}`)
-  }, [stage, node, edge, dx, dy, id])
+  }, [stage, node, edge, act, dx, dy, id])
   return (
     <span ref={ref} style={labelStyle}>
       {children}
