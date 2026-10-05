@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { engagement, journey, services, site, stageTitles, systemById, systemsSellFirst } from '@/content'
-import { pageMetadata } from '@/lib/seo'
+import { breadcrumbJsonLd, ldJson, pageMetadata } from '@/lib/seo'
 import { cn } from '@/lib/utils'
 import PageHero from '@/components/patterns/PageHero'
 import PageStage from '@/components/pages/PageStage'
@@ -19,6 +19,7 @@ const node = (id: 'acquire' | 'sell' | 'operate' | 'build') => ({ label: systemB
 export default function ServicesPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(breadcrumbJsonLd(services.route)) }} />
       <PageHero hero={services.hero} stage={<PageStage act={3} title={stageTitles.services} />}>
           <HandoffStrip upstream={[node('acquire')]} current={node('sell')} downstream={[node('operate')]} base={node('build')} />
       </PageHero>

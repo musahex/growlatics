@@ -1,13 +1,16 @@
-import { organizationJsonLd } from '@/lib/seo'
+import { home } from '@/content'
+import { homeJsonLd, ldJson, pageMetadata } from '@/lib/seo'
 import { HomeStage } from '@/components/home/stage'
 import { Capabilities, Connection, Convergence, Global, Hero, Journey, Problem, Why, Work } from '@/components/home/acts'
+
+export const metadata = pageMetadata(home.route, home.seo)
 
 // Home: nine acts over one fixed system stage (DIRECTION §6.7). clip-path keeps the fixed canvas
 // inside the acts (it never paints over the footer) and makes this wrapper the canvas's stacking context.
 export default function Home() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(homeJsonLd()) }} />
       <div className="relative [clip-path:inset(0)]">
         <HomeStage />
         <Hero />

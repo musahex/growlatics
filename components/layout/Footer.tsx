@@ -36,7 +36,7 @@ export default function Footer() {
             </ul>
           </div>
           {nav.footer.map((col) => (
-            <div key={col.heading}>
+            <nav key={col.heading} aria-label={col.heading}>
               <p className="mb-3 font-mono text-data uppercase text-text-3">{col.heading}</p>
               <ul>
                 {col.links.map((l) => (
@@ -45,7 +45,7 @@ export default function Footer() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
           ))}
         </div>
         <div className="mt-16 flex flex-col gap-3 border-t border-line pt-6 text-body-s text-text-3 sm:flex-row sm:justify-between">

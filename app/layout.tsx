@@ -6,18 +6,15 @@ import Footer from '@/components/layout/Footer'
 import InteractiveCursor from '@/components/ui/InteractiveCursor'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { SystemProvider } from '@/components/system/runtime'
-import { home, nav, site } from '@/content'
-import { pageMetadata } from '@/lib/seo'
+import { nav } from '@/content'
+import { siteMetadata } from '@/lib/seo'
 import { bgHex } from '@/lib/tokens'
 
 // Self-hosted at build time by next/font: no runtime request to Google (DIRECTION §3).
 const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-sans' })
 const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], display: 'swap', variable: '--font-mono', preload: false })
 
-export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
-  ...pageMetadata('/', home.seo),
-}
+export const metadata: Metadata = siteMetadata
 
 export const viewport: Viewport = {
   themeColor: [

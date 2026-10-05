@@ -1,5 +1,5 @@
 import { contact, site } from '@/content'
-import { pageMetadata } from '@/lib/seo'
+import { breadcrumbJsonLd, ldJson, pageMetadata } from '@/lib/seo'
 import PageHero from '@/components/patterns/PageHero'
 import QualificationFlow from '@/components/patterns/QualificationFlow'
 import Section from '@/components/ui/Section'
@@ -11,6 +11,7 @@ const linkCls = 'inline-flex min-h-11 items-center text-body text-text hover:tex
 export default function ContactPage() {
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(breadcrumbJsonLd(contact.route)) }} />
       <PageHero hero={contact.hero} />
       <Section space="none" className="pb-section">
         <div className="grid gap-16 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
