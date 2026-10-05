@@ -14,7 +14,7 @@ export default function ContactPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(breadcrumbJsonLd(contact.route)) }} />
       <PageHero hero={contact.hero} />
       <Section space="none" className="pb-section">
-        <div className="grid gap-16 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <div className="grid gap-16 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
           <QualificationFlow id="book" />
           <aside aria-labelledby="direct-h" className="lg:pt-4">
             <h2 id="direct-h" className="text-title text-text">
