@@ -4,7 +4,7 @@
 
 import { useMemo, type CSSProperties } from 'react'
 import { EDGES, EDGE_A, EDGE_B, NODES, SYSTEMS, labelFor, systemName, CORE, LABEL_ORDER } from '../model/graph'
-import { emptyPose, frame as fit, keyFor, poseAt, transpose } from '../model/layouts'
+import { emptyPose, frame as fit, keyFor, poseAt } from '../model/layouts'
 import { FIELD, FIELD_POINTS } from '../model/flow'
 import { css } from '../model/palette'
 import { useSystem } from '../runtime/useSystem'
@@ -41,8 +41,7 @@ export function NetworkSVG({ act, stage = 0, follow, labels = true, portrait, ti
   const s = follow ? storeStage : stage
 
   const p = useMemo(() => {
-    const pose = poseAt(emptyPose(), keyFor(a, s))
-    if (portrait) transpose(pose)
+    const pose = poseAt(emptyPose(), keyFor(a, s), portrait)
     if (frame) fit(pose)
     else pose.cam.set([0.5, 0.5, 1, 0])
     return pose

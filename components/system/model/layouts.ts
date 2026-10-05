@@ -101,7 +101,7 @@ function act1(): Pose {
       acquire: { x: 0.8, y: 0.25, z: -0.1, r: 0.085 },
       sell: { x: 0.77, y: 0.5, z: 0.35, r: 0.11 },
       operate: { x: 0.86, y: 0.72, z: 0, r: 0.07 },
-      build: { x: 0.78, y: 0.88, z: -0.75, r: 0.12 },
+      build: { x: 0.82, y: 0.88, z: -0.75, r: 0.1 },
     }),
     [['core.growlatics'], CORE_C(0.62, 0.52)],
   ])
@@ -280,9 +280,31 @@ function act9(): Pose {
 
 export const KEYS: Pose[] = [act1(), act2(), act3(), ...[0, 1, 2, 3, 4].map(journey), act5(), act6(), act7(), act8(), act9()]
 
+// ── Act 1 portrait (1024×1366 fixed stage, phones): the hero copy fills the top and the System index the
+// bottom, so the network sits in the band between them, Sell in the middle and nearest. Portrait coordinates. ──
+function act1Portrait(): Pose {
+  const p = emptyPose()
+  place(p, [
+    ...bySystem({
+      acquire: { x: 0.22, y: 0.6, z: -0.1, r: 0.08 },
+      sell: { x: 0.5, y: 0.53, z: 0.35, r: 0.1 },
+      operate: { x: 0.78, y: 0.6, z: 0, r: 0.065 },
+      build: { x: 0.5, y: 0.73, z: -0.75, r: 0.09 },
+    }),
+    [['core.growlatics'], CORE_C(0.62, 0.47)],
+  ])
+  const ref = KEYS[0]
+  p.node.set(ref.node)
+  p.edge.set(ref.edge)
+  p.field = ref.field
+  p.names = ref.names
+  parkMarkets(p)
+  return p
+}
+
 /** Phone/portrait: transpose so horizontal arrangements stack vertically. */
-// ponytail: plain x/y transpose; hand-tune portrait keys if a phone act reads wrong.
-export function transpose(p: Pose) {
+// ponytail: plain x/y transpose except act 1 (act1Portrait); hand-tune more portrait keys if an act reads wrong.
+function transpose(p: Pose) {
   for (let i = 0; i < N; i++) {
     const x = p.pos[i * 3]
     p.pos[i * 3] = p.pos[i * 3 + 1]
@@ -308,6 +330,15 @@ export function frame(p: Pose, pad = 0.12) {
   return p
 }
 
+const PORTRAIT_KEYS: Pose[] = KEYS.map((k, i) => {
+  if (i === 0) return act1Portrait()
+  const p = emptyPose()
+  p.pos.set(k.pos); p.node.set(k.node); p.edge.set(k.edge); p.label.set(k.label); p.cam.set(k.cam)
+  Object.assign(p, { names: k.names, field: k.field, dim: k.dim, mark: k.mark, hero: k.hero })
+  transpose(p)
+  return p
+})
+
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
 /** Scroll position → continuous key position. 60% dwell on the act's end state, 40% travel to the next (§4.4). */
@@ -319,11 +350,12 @@ export function keyPosition(act: number, local: number, stage = 0, stageLocal = 
 }
 
 /** Writes the blended pose at key position `kp` into `out` (no allocation). */
-export function poseAt(out: Pose, kp: number) {
+export function poseAt(out: Pose, kp: number, portrait = false) {
   const i0 = Math.max(0, Math.min(KEY_COUNT - 1, Math.floor(kp)))
   const i1 = Math.min(KEY_COUNT - 1, i0 + 1)
   const t = kp - i0
-  const a = KEYS[i0], b = KEYS[i1]
+  const keys = portrait ? PORTRAIT_KEYS : KEYS
+  const a = keys[i0], b = keys[i1]
   const lerpArr = (o: Float32Array, x: Float32Array, y: Float32Array) => {
     for (let j = 0; j < o.length; j++) o[j] = x[j] + (y[j] - x[j]) * t
   }

@@ -3,7 +3,7 @@
 // edge "boost charge" while a packet is mid-path, decay 0.958 @60fps), desynchronised breathing,
 // pointer proximity falloff. No allocation inside step().
 import { ADJ, CORE, EDGES, EDGE_A, EDGE_B, NODES, type SystemId } from './graph'
-import { emptyPose, frame, poseAt, transpose, type Pose } from './layouts'
+import { emptyPose, frame, poseAt, type Pose } from './layouts'
 import { sys } from '../runtime/store'
 import { damp } from '../runtime/scheduler'
 import type { RGBA, Palette } from './palette'
@@ -79,13 +79,13 @@ export function stepField(f: Field, dt: number, kpTarget: number, o: { still: bo
   f.t += dt
   if (f.kp < 0) f.kp = kpTarget
   f.kp = o.still ? kpTarget : damp(f.kp, kpTarget, 3.5, dt)
-  poseAt(f.pose, f.kp)
-  if (f.portrait) transpose(f.pose)
+  poseAt(f.pose, f.kp, f.portrait)
   if (f.frame) frame(f.pose)
   const p = f.pose
 
   // Intro (act 1, once per session): activation in graph order, handoffs fail, core arrives, mark.
   let introCore = 1, introHandoff = 0
+  if (f.kp > 0.5) f.intro = -1 // scrolled past act 1 mid-intro: the mark must not follow into later acts
   if (f.intro >= 0 && !o.still) {
     f.intro += dt
     const it = f.intro

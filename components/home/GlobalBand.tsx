@@ -26,7 +26,7 @@ export default function GlobalBand({ className }: { className?: string }) {
       <ul className="absolute inset-x-4 top-14 sm:inset-x-6">
         {markets.map((m) => (
           <li key={m.code} className="absolute top-0 -translate-x-1/2" style={{ left: at(m.x) }}>
-            <span aria-hidden className="absolute left-1/2 top-0 size-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-signal-soft" />
+            <span aria-hidden className="absolute left-1/2 top-0 hidden size-8 sm:block -translate-x-1/2 -translate-y-1/2 rounded-full bg-signal-soft" />
             <span aria-hidden className="absolute left-1/2 top-0 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-signal" />
             <span className="absolute bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-data-s uppercase text-text-2">
               <span className="hidden sm:inline">{m.label}</span>

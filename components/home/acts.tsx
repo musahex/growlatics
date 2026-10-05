@@ -1,7 +1,6 @@
 // The nine home acts (DIRECTION §7, IA §5.1). Every act is a data-act section over the fixed stage.
 // Sections are not positioned (their backgrounds paint under the fixed canvas); their content is,
 // so it paints above it. Copy comes from '@/content' only.
-import Link from 'next/link'
 import { engagement, getLabel, home, homeUi, journey, schematicLabels, site, systemById, systems, type SystemId } from '@/content'
 import { EDGES } from '@/components/system/model/graph'
 import { cn } from '@/lib/utils'
@@ -38,9 +37,9 @@ function Act({ n, id, dark, className, children }: { n: number; id: string; dark
 
 function MoreLink({ href, label }: { href: string; label: string }) {
   return (
-    <Link href={href} className="mt-10 inline-flex min-h-11 items-center text-body-s font-semibold text-signal-ink hover:text-text">
-      {label} →
-    </Link>
+    <Button href={href} variant="text" arrow className="mt-10">
+      {label}
+    </Button>
   )
 }
 

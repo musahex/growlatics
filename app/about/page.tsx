@@ -1,7 +1,7 @@
-import { about, site, stageTitles, systemById } from '@/content'
+import { about, site, systemById } from '@/content'
 import { breadcrumbJsonLd, ldJson, pageMetadata } from '@/lib/seo'
 import PageHero from '@/components/patterns/PageHero'
-import PageStage from '@/components/pages/PageStage'
+import GlobalBand from '@/components/home/GlobalBand'
 import HandoffStrip from '@/components/patterns/HandoffStrip'
 import Ledger from '@/components/patterns/Ledger'
 import Statement from '@/components/patterns/Statement'
@@ -35,14 +35,9 @@ export default function AboutPage() {
               </div>
             )}
             {s.id === 'international' && (
-              // The act-7 market band (US, UK, Pakistan on a 24-hour ribbon): About's one network figure.
-              // The act-7 pose draws the band at about 36% of the stage height: a 2x-tall stage, offset up,
-              // centres it in a short 4:1 frame instead of leaving the lower half empty.
-              <div className="relative mt-12 hidden aspect-[4/1] w-full overflow-hidden md:block">
-                <div className="absolute inset-x-0 -top-[22%] h-[200%]">
-                  <PageStage act={7} title={stageTitles.international} />
-                </div>
-              </div>
+              // The act-7 market band (US, UK, Pakistan on a 24-hour ribbon): About's one network figure. The home
+              // DOM band, not a canvas: the act-7 pose now hides its nodes (the home draws the band in the DOM too).
+              <GlobalBand className="mt-12" />
             )}
             {s.links && (
               <ul className="mt-8 flex flex-wrap gap-x-8">
