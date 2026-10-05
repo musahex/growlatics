@@ -83,3 +83,24 @@ What fails is **legibility of the story**. Orange is on every node in every act,
 - Real-GPU frame rate, reduced-motion visuals and 768/1024 widths (PERF report covers them).
 - Pointer interactions (cursor states, pointer-as-router) and the act-1 intro sequence frame by frame; the shots are after the intro.
 - `/lab/system/`, `/privacy/`, `/terms/`.
+
+## Fix pass (STORY, branch `v2-story`)
+
+Worker: worker-gl-story (temp). Base `v2` 8a8f659. Before/after shots (headless Chromium, tier 2 WebGL at 1440, tier 1 at 1024 touch and 390, tier 0 reduced motion at 1440, both themes): `/Users/moses/HarnessAgents/hive/agents/worker-gl-story/screenshots/{before,after}/` (`act<N>[-s<stage>]-<width>-<theme>[-rm].png`, `tech-top-*` for the Technology hero). Gates: build, tsc, lint, `node scripts/seo-crawl.mjs` (0 problems) pass. First Load JS unchanged (`/` 164 kB, others 139–160 kB).
+
+| # | Finding | Status | Commit |
+|---|---|---|---|
+| 1 | Orange everywhere | **fixed.** `idle` nodes and resting edges are a text tint in both themes (`palette.ts` derives them from `--c-text`; the orange `--net-idle`/`--net-edge` tokens are no longer read by the network). Orange = active nodes, hot edges, packets, core. Act 1 lights only Sell and the core; act 2 is all neutral with a dormant core; act 3's spokes through the core carry the orange; act 4 lights only the current stage; act 9 lights everything. Trace-lane "separate" dots and bullets are neutral. | 74a4d49 |
+| 2 | Acts 3/6/8 same canvas | **fixed.** Act 6: the systems line up as one route right of the text (dim 0.35), echoing the bottom trace lane. Act 8: convergence begins, clusters contracted around a core top right, clear of the rail. | ca36076 |
+| 3 | Hero doesn't name the systems | **fixed.** Acts 1, 3, 5 name ACQUIRE / SELL / OPERATE / BUILD over their clusters on every tier (live overlay and tier-0 SVG; Sell in signal ink). Sell is the only lit, largest, nearest cluster in act 1. | ca36076, 74a4d49 |
+| 4 | Hero cuts off the System index | **fixed.** H1 three lines at lg (68 px, full text column), `lg:pt-28`; the System index rows sit above 900 px at 1440×900. | c26e1a6 |
+| 7 | Spatial labels collide | **fixed.** Shared placement (`model/place.ts`) reserves every node dot, places heavy nodes first and drops a label when no slot fits (self-check covers both). Applies to home, inline figures (Tech hero) and phones. Canvas labels raised to `--c-text-2`. | ca36076 |
+| 8 | Phone acts: diagram before heading | **fixed.** Below lg, acts 2, 3, 5 and 7 render the figure after the section header (desktop composition unchanged). Phone act 2 numbers its broken handoffs 01–05 to match the leak ledger. | 9aaa134 |
+| 9 | Act 7 band unreadable | **fixed.** A DOM band across the full container: hairline, ticks every 3 h labelled by UTC offset (mono `data-s`), US / UK / Pakistan at their offsets with labels above the nodes, their shared span lit. The canvas steps back to the field in act 7. Offsets in `homeUi.band`. | 07359e1 |
+| 10 | Light theme turns salmon | **fixed** with #1 (light idle `12 11 10 / 0.38`, edges `/ 0.16`, active stays full signal). | 74a4d49 |
+
+Not done, with reasons:
+- 5, 6 and the internal-page items belong to POLISH (`docs/v2/FIXPASS_POLISH.md`). I added no internal-page hero poses: the existing `act`/`stage`/`focus` props plus the new label rule cover the Technology hero; POLISH can ask if it needs a dedicated "Build from below" pose.
+- Act 1 intro still lights clusters in graph order and does not stage the "dormant then lit in story order" beat beyond what the existing intro does. Not in the STORY list; the end state now carries the story.
+- Pre-existing, not a review finding: at 1024×1366 portrait (fixed stage, transposed layout) the hero network runs behind the System index (`before/act1-1024-dark.png` shows the same). Needs a portrait camera for act 1; left for final QA.
+- P3 notes (eyebrow orphan on phone, act 9 button at the fold, act 4 hero packet, journey Mark progress) untouched.
