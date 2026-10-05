@@ -1,9 +1,10 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
+import { alpha as rgbA, ink, signal } from '@/lib/tokens'
 
 // ─── Brand colour ─────────────────────────────────────────────────────────────
-const R = 210, G = 64, B = 26
+const SIG = signal
 
 // ─── Network topology ─────────────────────────────────────────────────────────
 // Nodes positioned in text-safe zones (top strip, right edge, bottom strip).
@@ -183,7 +184,7 @@ export default function HeroInteractiveField() {
       const PULSE_A    = dark ? 0.30  : 0.28  // pulse ring peak alpha
 
       // ── Background grid ───────────────────────────────────────────────────
-      const gridC = dark ? `rgba(255,255,255,${GRID_A})` : `rgba(10,9,8,${GRID_A})`
+      const gridC = rgbA(ink[dark ? 'dark' : 'light'], GRID_A)
       ctx.save()
       ctx.strokeStyle = gridC
       ctx.lineWidth   = 0.5
@@ -248,7 +249,7 @@ export default function HeroInteractiveField() {
         const cursorContrib = edgeProx[i] * (dark ? 0.22 : 0.28)
         const alpha = Math.min(0.95, LINE_BASE + sigContrib + cursorContrib)
 
-        ctx.strokeStyle = `rgba(${R},${G},${B},${alpha})`
+        ctx.strokeStyle = rgbA(SIG, alpha)
         ctx.beginPath()
         ctx.moveTo(na.x, na.y)
         ctx.quadraticCurveTo(c.x, c.y, nb.x, nb.y)
@@ -272,8 +273,8 @@ export default function HeroInteractiveField() {
 
         // Halo (soft radial gradient)
         const halo = ctx.createRadialGradient(x, y, 0, x, y, nr * 8)
-        halo.addColorStop(0, `rgba(${R},${G},${B},${haloA})`)
-        halo.addColorStop(1, `rgba(${R},${G},${B},0)`)
+        halo.addColorStop(0, rgbA(SIG, haloA))
+        halo.addColorStop(1, rgbA(SIG, 0))
         ctx.beginPath()
         ctx.arc(x, y, nr * 8, 0, Math.PI * 2)
         ctx.fillStyle = halo
@@ -282,7 +283,7 @@ export default function HeroInteractiveField() {
         // Dot
         ctx.beginPath()
         ctx.arc(x, y, nr, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(${R},${G},${B},${nodeA})`
+        ctx.fillStyle = rgbA(SIG, nodeA)
         ctx.fill()
       }
 
@@ -307,9 +308,9 @@ export default function HeroInteractiveField() {
           // Light mode uses a slightly larger glow to compensate for lower contrast
           const sgR = dark ? 8 : 10
           const sg = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, sgR)
-          sg.addColorStop(0,   `rgba(${R},${G},${B},${alpha})`)
-          sg.addColorStop(0.4, `rgba(${R},${G},${B},${alpha * 0.35})`)
-          sg.addColorStop(1,   `rgba(${R},${G},${B},0)`)
+          sg.addColorStop(0,   rgbA(SIG, alpha))
+          sg.addColorStop(0.4, rgbA(SIG, alpha * 0.35))
+          sg.addColorStop(1,   rgbA(SIG, 0))
           ctx.beginPath()
           ctx.arc(pt.x, pt.y, sgR, 0, Math.PI * 2)
           ctx.fillStyle = sg
@@ -318,7 +319,7 @@ export default function HeroInteractiveField() {
           // Crisp center point
           ctx.beginPath()
           ctx.arc(pt.x, pt.y, 1.8, 0, Math.PI * 2)
-          ctx.fillStyle = `rgba(${R},${G},${B},${alpha})`
+          ctx.fillStyle = rgbA(SIG, alpha)
           ctx.fill()
         }
       }
@@ -335,7 +336,7 @@ export default function HeroInteractiveField() {
           const phase = (globalPhase + off) % 1
           const pr    = r + phase * 22
           const pa    = Math.max(0, (1 - phase) * PULSE_A)
-          ctx.strokeStyle = `rgba(${R},${G},${B},${pa})`
+          ctx.strokeStyle = rgbA(SIG, pa)
           ctx.beginPath()
           ctx.arc(x, y, pr, 0, Math.PI * 2)
           ctx.stroke()
@@ -372,6 +373,7 @@ export default function HeroInteractiveField() {
       {/* Cursor-following glow blob (CSS-driven for quality, transform-only for perf) */}
       <div
         ref={glowRef}
+        className="bg-pointer-glow"
         style={{
           position: 'absolute',
           left: 0,
@@ -379,7 +381,6 @@ export default function HeroInteractiveField() {
           width:  GLOW_R * 2,
           height: GLOW_R * 2,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, var(--hero-glow) 0%, transparent 60%)',
           willChange: 'transform',
           pointerEvents: 'none',
           // Park off-screen until first mousemove fires

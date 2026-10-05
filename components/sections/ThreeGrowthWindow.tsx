@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useEffect, useMemo } from 'react'
+import Link from 'next/link'
 import {
   useScroll,
   useMotionValueEvent,
@@ -11,42 +12,17 @@ import {
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Line } from '@react-three/drei'
 import * as THREE from 'three'
+import { bgHex, signalHex, text4Hex, textHex } from '@/lib/tokens'
 import { cn } from '@/lib/utils'
+import { journey } from '@/content'
+import { swap } from '@/lib/motion'
+import Mark from '@/components/brand/Mark'
+import SignalRail from '@/components/patterns/SignalRail'
+import SectionHeader from '@/components/ui/SectionHeader'
 
 // ─── Data ───────────────────────────────────────────────────────────────────
 
-const STAGES = [
-  {
-    n: '01',
-    label: 'Attention',
-    title: 'Attract qualified demand',
-    copy: 'Performance campaigns and acquisition systems built around measurable growth.',
-  },
-  {
-    n: '02',
-    label: 'Convert',
-    title: 'Turn attention into pipeline',
-    copy: 'Landing pages, funnels, and response workflows designed to reduce leakage.',
-  },
-  {
-    n: '03',
-    label: 'Close',
-    title: 'Add sales capacity',
-    copy: 'Trained inbound, outbound, and appointment-setting teams that move leads forward.',
-  },
-  {
-    n: '04',
-    label: 'Support',
-    title: 'Retain and support customers',
-    copy: 'Customer support operations that improve experience, retention, and trust.',
-  },
-  {
-    n: '05',
-    label: 'Scale',
-    title: 'Build systems that grow with you',
-    copy: 'Technology, automation, and digital infrastructure designed for scale.',
-  },
-]
+const STAGES = journey.stages
 
 // Node positions in 3D space — gentle arc with depth variation
 const NODE_POS: [number, number, number][] = [
@@ -96,10 +72,10 @@ function GrowthNode({
     <mesh ref={meshRef} position={pos}>
       <sphereGeometry args={[0.2, 32, 32]} />
       <meshStandardMaterial
-        color="#D2401A"
+        color={signalHex}
         transparent
         opacity={0.18}
-        emissive="#D2401A"
+        emissive={signalHex}
         emissiveIntensity={0}
         roughness={0.12}
         metalness={0.65}
@@ -126,7 +102,7 @@ function HaloRing({ stage }: { stage: number }) {
   return (
     <mesh ref={meshRef} position={NODE_POS[0]}>
       <torusGeometry args={[0.42, 0.012, 8, 64]} />
-      <meshBasicMaterial color="#D2401A" transparent opacity={0.35} />
+      <meshBasicMaterial color={signalHex} transparent opacity={0.35} />
     </mesh>
   )
 }
@@ -147,7 +123,7 @@ function ActiveLight({ stage }: { stage: number }) {
     <pointLight
       ref={lightRef}
       position={NODE_POS[0]}
-      color="#D2401A"
+      color={signalHex}
       intensity={2.8}
       distance={5}
     />
@@ -189,7 +165,7 @@ function Particles() {
       </bufferGeometry>
       <pointsMaterial
         size={0.032}
-        color="#D2401A"
+        color={signalHex}
         transparent
         opacity={0.18}
         sizeAttenuation
@@ -223,7 +199,7 @@ function SceneGroup({ stage }: { stage: number }) {
           <Line
             key={i}
             points={[pos, NODE_POS[i + 1]]}
-            color={hi ? '#D2401A' : '#2C2A28'}
+            color={hi ? signalHex : text4Hex.dark}
             lineWidth={hi ? 1.6 : 0.8}
             opacity={hi ? 0.55 : 0.14}
             transparent
@@ -238,9 +214,9 @@ function SceneGroup({ stage }: { stage: number }) {
 function GrowthScene({ stage }: { stage: number }) {
   return (
     <>
-      <color attach="background" args={['#060504']} />
+      <color attach="background" args={[bgHex.dark]} />
       <ambientLight intensity={0.35} />
-      <directionalLight position={[6, 8, 4]} intensity={0.4} color="#FFFFFF" />
+      <directionalLight position={[6, 8, 4]} intensity={0.4} color={textHex.dark} />
       <CameraController stage={stage} />
       <ActiveLight stage={stage} />
       <Particles />
@@ -266,140 +242,72 @@ export default function ThreeGrowthWindow() {
   })
 
   useMotionValueEvent(scrollYProgress, 'change', (v) => {
-    if (!reduceMotion) {
-      setActiveStage(Math.min(Math.floor(v * 5), 4))
-    }
+    if (!reduceMotion) setActiveStage(Math.min(Math.floor(v * 5), 4))
   })
 
   const stage = STAGES[activeStage]
+  const rail = (
+    <SignalRail
+      items={STAGES.map((s) => ({ index: s.number, title: s.name, body: `${s.line} ${s.copy}` }))}
+    />
+  )
 
   return (
-    // md:h-[300vh] creates the scroll space; mobile uses auto height
-    <div ref={containerRef} data-cursor-surface="dark" className="relative bg-[#080706] md:h-[300vh]">
+    // Act 4 (interim): always a dark surface. Sticky travel on md+ only without reduced motion;
+    // reduced motion and phones get all five stages in normal flow.
+    <section
+      id="journey"
+      ref={containerRef}
+      data-surface="dark"
+      data-cursor-surface="dark"
+      aria-labelledby="journey-h"
+      className={cn('relative bg-bg text-text', !reduceMotion && 'md:h-[300vh]')}
+    >
+      {!reduceMotion && (
+        <div className="hidden md:sticky md:top-0 md:block md:h-screen md:overflow-hidden">
+          <div className="grid h-full grid-cols-[5fr_7fr] pt-16">
+            <div className="flex flex-col px-8 py-8 lg:px-14 xl:px-20">
+              <p className="text-label uppercase text-signal-ink">{journey.eyebrow}</p>
+              <h2 id="journey-h" className="mt-4 max-w-md text-title text-text-2">
+                {journey.heading}
+              </h2>
 
-      {/* ── Desktop: sticky 3D window ── */}
-      <div className="hidden md:block md:sticky md:top-0 md:h-screen md:overflow-hidden">
-        {/* Push content below fixed header */}
-        <div className="h-full pt-16 grid grid-cols-[5fr_7fr]">
-
-          {/* Left: text panel */}
-          <div className="flex flex-col px-8 py-8 lg:px-14 xl:px-20">
-            {/* Section label */}
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#D2401A]">
-              Growth System
-            </p>
-
-            {/* Stage content — animated on change */}
-            <div className="flex flex-1 flex-col justify-center">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeStage}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -14 }}
-                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <p className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#D2401A]">
-                    {stage.n}&nbsp;&nbsp;{stage.label}
-                  </p>
-                  <h2 className="mb-5 text-[clamp(1.8rem,2.4vw,2.9rem)] font-extrabold leading-[1.1] tracking-[-0.025em] text-white">
-                    {stage.title}
-                  </h2>
-                  <p className="max-w-[22rem] text-[15px] leading-[1.75] text-[#6E6860]">
-                    {stage.copy}
-                  </p>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {/* Progress bars */}
-            <div>
-              <div className="flex items-center gap-[6px] mb-2">
-                {STAGES.map((_, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      'h-[2px] flex-1 rounded-full transition-all duration-500',
-                      i <= activeStage ? 'bg-[#D2401A]' : 'bg-white/[0.10]'
-                    )}
-                  />
-                ))}
+              <div className="flex flex-1 flex-col justify-center">
+                <AnimatePresence mode="wait">
+                  <motion.div key={activeStage} variants={swap(reduceMotion)} initial="initial" animate="enter" exit="exit">
+                    <p className="mb-3 font-mono text-data text-signal-ink">
+                      {stage.number} / 05
+                    </p>
+                    <h3 className="text-display-m text-text">{stage.name}</h3>
+                    <p className="mt-3 text-body-l text-text">{stage.line}</p>
+                    <p className="mt-4 max-w-sm text-body text-text-2">{stage.copy}</p>
+                  </motion.div>
+                </AnimatePresence>
               </div>
-              <p className="text-[10px] uppercase tracking-[0.08em] text-[#3A3530]">
-                Stage {activeStage + 1} of {STAGES.length} &nbsp;·&nbsp; Scroll to explore
-              </p>
+
+              <Mark size={28} state="progress" value={activeStage + 1} title={`${stage.number} / 05`} />
+            </div>
+
+            <div className="py-5 pr-5">
+              <div className="relative h-full overflow-hidden rounded-xl border border-line">
+                {mounted && (
+                  <Canvas camera={{ position: CAM_POS[0], fov: 42 }} dpr={[1, 1.5]} style={{ width: '100%', height: '100%' }}>
+                    <GrowthScene stage={activeStage} />
+                  </Canvas>
+                )}
+              </div>
             </div>
           </div>
-
-          {/* Right: 3D canvas in a rounded "window" */}
-          <div className="py-5 pr-5">
-            <div className="relative h-full overflow-hidden rounded-2xl border border-white/[0.06] bg-[#060504] shadow-[0_0_80px_rgba(210,64,26,0.05)]">
-              {mounted && (
-                <Canvas
-                  camera={{ position: CAM_POS[0], fov: 42 }}
-                  dpr={[1, 1.5]}
-                  style={{ width: '100%', height: '100%' }}
-                >
-                  <GrowthScene stage={activeStage} />
-                </Canvas>
-              )}
-              {/* Subtle inner vignette */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 rounded-2xl"
-                style={{
-                  background:
-                    'radial-gradient(ellipse at center, transparent 55%, rgba(6,5,4,0.65) 100%)',
-                }}
-              />
-            </div>
-          </div>
-
         </div>
+      )}
+
+      <div className={cn('mx-auto max-w-container px-gutter py-section', !reduceMotion && 'md:hidden')}>
+        <SectionHeader id={reduceMotion ? 'journey-h' : undefined} eyebrow={journey.eyebrow} heading={journey.heading} body={journey.intro} />
+        <div className="mt-16">{rail}</div>
+        <Link href={journey.closing.href} className="mt-12 inline-flex min-h-11 items-center text-body-s font-semibold text-signal-ink hover:text-text">
+          {journey.closing.label} →
+        </Link>
       </div>
-
-      {/* ── Mobile: static numbered stage list ── */}
-      <div className="md:hidden px-5 pt-20 pb-16 sm:px-6">
-        <div className="mb-12">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#D2401A]">
-            Growth System
-          </p>
-          <h2 className="text-[clamp(1.75rem,5.5vw,2.5rem)] font-extrabold leading-[1.1] tracking-[-0.025em] text-white">
-            From attention to revenue, every stage connected.
-          </h2>
-        </div>
-
-        {STAGES.map((s, i) => (
-          <div key={s.n} className="relative flex gap-5 pb-10 last:pb-0">
-            {/* Vertical connector */}
-            {i < STAGES.length - 1 && (
-              <div
-                aria-hidden
-                className="absolute left-[15px] top-[34px] bottom-0 w-px bg-[#D2401A]/20"
-              />
-            )}
-
-            {/* Stage badge */}
-            <div className="relative z-10 mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#D2401A]/40 bg-[#D2401A]/10">
-              <span className="text-[10px] font-extrabold tabular-nums text-[#D2401A]">
-                {i + 1}
-              </span>
-            </div>
-
-            {/* Content */}
-            <div>
-              <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#D2401A]">
-                {s.label}
-              </p>
-              <h3 className="mb-2 text-[17px] font-bold leading-snug text-white">
-                {s.title}
-              </h3>
-              <p className="text-[13.5px] leading-[1.65] text-[#6E6860]">{s.copy}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-    </div>
+    </section>
   )
 }

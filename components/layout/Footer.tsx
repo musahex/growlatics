@@ -1,89 +1,64 @@
-import { Linkedin, Facebook, Instagram, MapPin } from 'lucide-react'
-import { FOOTER_CONTENT } from '@/lib/content'
+import Link from 'next/link'
+import { nav, site } from '@/content'
+import Logo from '@/components/brand/Logo'
 
-const SOCIAL_ICONS: Record<string, React.ReactNode> = {
-  LinkedIn: <Linkedin size={18} />,
-  Facebook: <Facebook size={18} />,
-  Instagram: <Instagram size={18} />,
+const linkCls = 'inline-flex min-h-11 items-center text-body-s text-text-2 transition-colors duration-fast ease-out hover:text-text sm:min-h-0 sm:py-1.5'
+
+function FooterLink({ href, label }: { href: string; label: string }) {
+  return /^(https?:|mailto:|tel:)/.test(href) ? (
+    <a href={href} className={linkCls}>
+      {label}
+    </a>
+  ) : (
+    <Link href={href} className={linkCls}>
+      {label}
+    </Link>
+  )
 }
 
 export default function Footer() {
   return (
-    <footer data-cursor-surface="dark" className="bg-[#0D0C0B] border-t border-white/[0.08]">
-      <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
-          {/* Brand column */}
-          <div className="lg:col-span-2">
-            {/* Text wordmark — avoids JPEG white-background inversion issue */}
-            <a href="/" className="inline-block mb-5">
-              <span className="text-[17px] font-black tracking-[-0.02em] text-white">
-                Growlatics
-              </span>
-            </a>
-            <p className="text-sm text-text-muted leading-relaxed max-w-xs mb-6">
-              {FOOTER_CONTENT.tagline}
-            </p>
-
-            {/* Branches */}
-            <div className="flex flex-col gap-2">
-              {FOOTER_CONTENT.branches.map((branch) => (
-                <div key={branch.city} className="flex items-center gap-2 text-xs text-text-muted">
-                  <MapPin size={12} className="text-brand-orange shrink-0" />
-                  <span>
-                    {branch.city}, {branch.country}
-                  </span>
-                </div>
+    <footer data-surface="dark" data-cursor-surface="dark" className="border-t border-line bg-bg text-text">
+      <div className="mx-auto max-w-container px-gutter py-section-tight">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          <div className="max-w-sm">
+            <Logo />
+            <p className="mt-4 text-body text-text">{site.tagline}</p>
+            <p className="mt-2 text-body-s text-text-3">{site.geography}</p>
+            <ul className="mt-6 flex flex-wrap gap-x-5">
+              {site.social.map((s) => (
+                <li key={s.label}>
+                  <a href={s.href} target="_blank" rel="noopener noreferrer" aria-label={`Growlatics on ${s.label}`} className={linkCls}>
+                    {s.label}
+                  </a>
+                </li>
               ))}
-            </div>
-
-            {/* Social links */}
-            <div className="flex gap-3 mt-6">
-              {FOOTER_CONTENT.social.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={s.label}
-                  className="w-9 h-9 rounded-lg glass flex items-center justify-center text-text-muted hover:text-white hover:border-brand-orange/40 transition-all duration-200"
-                >
-                  {SOCIAL_ICONS[s.label]}
-                </a>
-              ))}
-            </div>
+            </ul>
           </div>
-
-          {/* Link columns */}
-          {Object.entries(FOOTER_CONTENT.links).map(([group, links]) => (
-            <div key={group}>
-              <h4 className="text-sm font-semibold text-white mb-4">{group}</h4>
-              <ul className="flex flex-col gap-3">
-                {links.map((link) => (
-                  <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-sm text-text-muted hover:text-white transition-colors duration-200"
-                    >
-                      {link.label}
-                    </a>
+          {nav.footer.map((col) => (
+            <div key={col.heading}>
+              <p className="mb-3 font-mono text-data uppercase text-text-3">{col.heading}</p>
+              <ul>
+                {col.links.map((l) => (
+                  <li key={l.href}>
+                    <FooterLink {...l} />
                   </li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
-
-        {/* Bottom bar */}
-        <div className="mt-12 pt-8 border-t border-surface-border flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-text-muted">{FOOTER_CONTENT.copyright}</p>
-          <div className="flex gap-6">
-            <a href="#" className="text-xs text-text-muted hover:text-white transition-colors">
-              Privacy Policy
-            </a>
-            <a href="#" className="text-xs text-text-muted hover:text-white transition-colors">
-              Terms of Service
-            </a>
-          </div>
+        <div className="mt-16 flex flex-col gap-3 border-t border-line pt-6 text-body-s text-text-3 sm:flex-row sm:justify-between">
+          <p>{nav.copyright(new Date().getFullYear())}</p>
+          {nav.legal.length > 0 && (
+            <ul className="flex gap-5">
+              {nav.legal.map((l) => (
+                <li key={l.href}>
+                  <FooterLink {...l} />
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </footer>

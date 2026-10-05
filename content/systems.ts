@@ -1,0 +1,136 @@
+import type { SystemContent, SystemId } from './types'
+
+// Flow order: Acquire → Sell → Operate → Build (IA §3). Menus put Sell first (see nav.ts).
+// God decisions applied: Microsoft Ads, LinkedIn Ads, TikTok Ads dropped; outreach has no channel list.
+export const systems: SystemContent[] = [
+  {
+    id: 'acquire',
+    verb: 'Acquire',
+    service: 'Performance Marketing',
+    slug: 'performance-marketing',
+    href: '/services/performance-marketing/',
+    emphasis: false,
+    short: 'Demand you can measure: paid, search, social and video, built to feed the pipeline.',
+    long: 'Acquire is the demand layer. We plan and run paid search, paid social, SEO, social and YouTube performance programs, and build the landing pages and funnels behind them. Campaigns are measured on what reaches sales — qualified leads and booked conversations — not on clicks alone.',
+    tags: ['Paid search', 'Paid social', 'SEO', 'YouTube'],
+    capabilities: [
+      { id: 'acquire.paid-search', label: 'Paid search and shopping (Google Ads)', short: 'Paid search' },
+      { id: 'acquire.paid-social', label: 'Paid social (Meta)', short: 'Paid social' },
+      { id: 'acquire.seo', label: 'SEO and content for search', short: 'SEO' },
+      { id: 'acquire.social', label: 'Social media management', short: 'Social' },
+      { id: 'acquire.youtube', label: 'YouTube performance', short: 'YouTube' },
+      { id: 'acquire.lead-generation', label: 'Lead generation programs', short: 'Lead gen' },
+      { id: 'acquire.funnels', label: 'Landing pages and funnel optimization', short: 'Funnels' },
+      { id: 'acquire.ecommerce-campaigns', label: 'Ecommerce campaigns', short: 'Ecommerce ads' },
+      { id: 'acquire.tracking', label: 'Tracking, attribution and reporting', short: 'Tracking' },
+    ],
+    stages: ['attract', 'qualify'],
+    pairsWith: [
+      { system: 'sell', line: 'Every lead followed up fast, by people who know where it came from.' },
+      { system: 'build', line: 'Landing pages, tracking and integrations built properly.' },
+      { system: 'operate', line: 'Customer feedback that sharpens targeting.' },
+    ],
+    exploreLabel: 'Explore Performance Marketing',
+  },
+  {
+    id: 'sell',
+    verb: 'Sell',
+    service: 'Sales & BPO',
+    slug: 'sales-bpo',
+    href: '/services/sales-bpo/',
+    emphasis: true,
+    short: 'Operational sales capacity: outbound, inbound, qualification and booked meetings, run inside your process.',
+    // OWNER-VERIFY (IA §9.1): "work in your CRM" is an operating commitment.
+    verify: true,
+    long: 'Sell extends your revenue operation with trained, managed sales capacity. We run cold outreach, outbound and inbound calling, telesales, lead qualification and appointment setting, and the sales operations work that keeps a pipeline clean. Our teams work in your CRM, to your scripts and qualification criteria, and report on the same pipeline your own team sees.',
+    positioning: 'Not a call center. A sales operation that plugs into yours.',
+    tags: ['Cold outreach', 'Appointment setting', 'Lead qualification', 'Telesales'],
+    capabilities: [
+      { id: 'sell.cold-outreach', label: 'Cold outreach', short: 'Outreach', group: 'Pipeline generation' },
+      { id: 'sell.outbound-calling', label: 'Outbound calling', short: 'Outbound', group: 'Pipeline generation' },
+      { id: 'sell.list-building', label: 'List building and research', short: 'Lists', group: 'Pipeline generation' },
+      { id: 'sell.campaign-support', label: 'Campaign support', short: 'Campaigns', group: 'Pipeline generation' },
+      { id: 'sell.inbound', label: 'Inbound response and follow-up', short: 'Inbound', group: 'Conversion' },
+      { id: 'sell.lead-qualification', label: 'Lead qualification', short: 'Qualification', group: 'Conversion' },
+      { id: 'sell.appointment-setting', label: 'Appointment setting', short: 'Appointments', group: 'Conversion' },
+      { id: 'sell.telesales', label: 'Telesales', short: 'Telesales', group: 'Conversion' },
+      { id: 'sell.crm-hygiene', label: 'CRM hygiene and data entry', short: 'CRM hygiene', group: 'Sales operations' },
+      { id: 'sell.pipeline-reporting', label: 'Pipeline reporting', short: 'Reporting', group: 'Sales operations' },
+      { id: 'sell.scripts-cadence', label: 'Script and cadence design', short: 'Scripts', group: 'Sales operations' },
+      { id: 'sell.sales-operations', label: 'Sales process support', short: 'Sales ops', group: 'Sales operations' },
+      // OWNER-VERIFY: BPO task scope (IA §9.1)
+      {
+        id: 'sell.bpo',
+        label: 'Back-office and business-process execution that supports the revenue cycle (order processing, follow-up workflows, data and admin tasks)',
+        short: 'BPO',
+        group: 'Business process outsourcing (BPO)',
+        verify: true,
+      },
+    ],
+    stages: ['qualify', 'close'],
+    pairsWith: [
+      { system: 'acquire', line: 'More, better-targeted leads for your team to work.' },
+      { system: 'operate', line: 'New customers handed straight to onboarding and support.' },
+      { system: 'build', line: 'CRM, dialer and workflow setup so nothing is re-keyed.' },
+    ],
+    exploreLabel: 'Explore Sales & BPO',
+  },
+  {
+    id: 'operate',
+    verb: 'Operate',
+    service: 'Customer Operations',
+    slug: 'customer-operations',
+    href: '/services/customer-operations/',
+    emphasis: false,
+    short: 'Support and retention operations — chat, call and email — run to your standards.',
+    long: "Operate keeps the customers you've won. We staff and run customer support across chat, phone and email, build the workflows behind it, and handle retention and win-back programs. Every conversation is logged where your team can see it, so service, sales and marketing work from the same customer record.",
+    tags: ['Chat', 'Call', 'Retention', 'CX operations'],
+    capabilities: [
+      { id: 'operate.chat-email', label: 'Chat and email support', short: 'Chat' },
+      { id: 'operate.call', label: 'Call (voice) support', short: 'Call' },
+      { id: 'operate.team-operations', label: 'Customer service team operations (staffing, QA, escalation paths)', short: 'Support' },
+      { id: 'operate.retention', label: 'Retention and win-back workflows', short: 'Retention' },
+      { id: 'operate.onboarding', label: 'Onboarding and order support', short: 'Onboarding' },
+      { id: 'operate.cx-operations', label: 'CX operations: help-desk setup, macros, knowledge base, reporting', short: 'CX ops' },
+    ],
+    stages: ['retain'],
+    pairsWith: [
+      { system: 'sell', line: 'Upsell and renewal leads passed straight to sales.' },
+      { system: 'build', line: 'Help desk, CRM and automation connected.' },
+      { system: 'acquire', line: 'Real customer language for campaigns.' },
+    ],
+    exploreLabel: 'Explore Customer Operations',
+  },
+  {
+    id: 'build',
+    verb: 'Build',
+    service: 'Technology & Development',
+    slug: 'technology',
+    href: '/services/technology/',
+    emphasis: false,
+    short: 'The infrastructure layer: websites, ecommerce, products and the automation that connects every system.',
+    long: 'Build is the layer that connects the other three. We design and develop websites, ecommerce stores and digital products, and the automation and integrations that move a lead from an ad to a sales call to a support ticket without being re-keyed. Marketing, sales and support run on what Build puts in place.',
+    tags: ['Websites', 'Ecommerce', 'Automation', 'Apps'],
+    capabilities: [
+      { id: 'build.websites', label: 'Websites and landing pages (including WordPress)', short: 'Web' },
+      { id: 'build.ecommerce', label: 'Ecommerce builds', short: 'Ecommerce' },
+      { id: 'build.apps', label: 'Web and mobile app development, full-stack', short: 'Product' },
+      { id: 'build.ui-ux', label: 'UI/UX design', short: 'UI/UX' },
+      { id: 'build.automation', label: 'Automation and integrations (CRM, forms, help desk, data flows)', short: 'Automation' },
+      { id: 'build.qa', label: 'QA and testing', short: 'QA' },
+      { id: 'build.maintenance', label: 'Ongoing maintenance of digital systems', short: 'Maintenance' },
+    ],
+    stages: ['scale'],
+    pairsWith: [
+      { system: 'acquire', line: 'Pages and tracking for campaigns.' },
+      { system: 'sell', line: 'CRM, dialer and workflow setup.' },
+      { system: 'operate', line: 'Help desk and automation for support.' },
+    ],
+    exploreLabel: 'Explore Technology',
+  },
+]
+
+export const systemById = Object.fromEntries(systems.map((s) => [s.id, s])) as Record<SystemId, SystemContent>
+
+/** Sell first (menus, /services/ blocks); flow order elsewhere. */
+export const systemsSellFirst: SystemContent[] = [systemById.sell, systemById.acquire, systemById.operate, systemById.build]

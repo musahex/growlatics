@@ -33,7 +33,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         try { localStorage.setItem('theme', next) } catch (_) {}
       }
 
-      if (typeof document !== 'undefined' && 'startViewTransition' in document) {
+      // Reduced motion: instant swap, no view transition (DIRECTION §4.5).
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      if (!reduced && 'startViewTransition' in document) {
         document.startViewTransition(apply)
       } else {
         apply()
