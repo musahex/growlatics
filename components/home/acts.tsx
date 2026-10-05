@@ -47,11 +47,12 @@ export function Hero() {
     <section id="hero" data-act={1} aria-labelledby="hero-h" className="text-text">
       <div className="relative lg:flex lg:min-h-screen lg:flex-col">
         {/* lg:static so the lg figure (absolute) spans the whole hero; text stays positioned above the canvas. */}
-        <div className={cn(wrap, 'flex flex-1 flex-col pb-section-tight pt-32 lg:static lg:pt-40')}>
+        <div className={cn(wrap, 'flex flex-1 flex-col pb-section-tight pt-32 lg:static lg:pb-12 lg:pt-28')}>
           {/* Static in SSR: the H1 is the LCP element and never waits for JS. */}
           <div className={cn(col, 'relative')}>
             <p className="mb-5 text-label uppercase text-signal-ink">{h.eyebrow}</p>
-            <h1 id="hero-h" className="max-w-headline text-display-xl text-text">
+            {/* lg: at most 3 lines, so the System index stays above a 900px fold (DIRECTION §7 act 1). */}
+            <h1 id="hero-h" className="max-w-headline text-display-xl text-text lg:max-w-none lg:text-[clamp(3.25rem,1.2rem+3.4vw,4.25rem)]">
               {h.heading}
             </h1>
             <p className="mt-6 max-w-measure text-body-l text-text-2">{h.lead}</p>
@@ -69,7 +70,7 @@ export function Hero() {
             </div>
           </div>
           <ActFigure act={1} title={homeUi.figures.hero} className="mt-12" />
-          <div className="relative mt-12 lg:mt-auto lg:max-w-[74%] lg:pt-16">
+          <div className="relative mt-12 lg:mt-auto lg:max-w-[74%] lg:pt-10">
             <SystemIndex />
           </div>
         </div>
