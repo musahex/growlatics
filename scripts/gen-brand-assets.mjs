@@ -1,6 +1,6 @@
 // Regenerates the raster brand assets in public/ from the canonical five-bar mark (app/icon.svg geometry)
 // with headless Chrome: node scripts/gen-brand-assets.mjs (after `npm run build`, for the Inter font in out/).
-// Writes og-image.png (1200×630), logo.png (512), apple-touch-icon.png (180), icon-192/512.png, favicon.ico (32).
+// Writes public/{og-image.png (1200×630), logo.png (512), icon-192/512.png} and app/{apple-icon.png (180), favicon.ico (32)}.
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, writeFileSync, readFileSync, readdirSync, existsSync } from 'node:fs'
 import { tmpdir, homedir } from 'node:os'
@@ -48,11 +48,11 @@ const og = `
 const files = {
   'og-image.png': shoot('og', 1200, 630, og),
   'logo.png': shoot('logo', 512, 512, icon(512, '#FFFFFF')),
-  'apple-touch-icon.png': shoot('apple', 180, 180, icon(180, '#070605')),
   'icon-192.png': shoot('i192', 192, 192, icon(192, '#070605')),
   'icon-512.png': shoot('i512', 512, 512, icon(512, '#070605')),
 }
 for (const [name, src] of Object.entries(files)) writeFileSync(join(PUB, name), readFileSync(src))
+writeFileSync(resolve('app/apple-icon.png'), readFileSync(shoot('apple', 180, 180, icon(180, '#070605'))))
 
 // favicon.ico = one 32×32 PNG wrapped in an ICO header (PNG-in-ICO, supported by every current browser).
 const png = readFileSync(shoot('fav', 32, 32, icon(32), true))
@@ -60,5 +60,5 @@ const head = Buffer.alloc(22)
 head.writeUInt16LE(0, 0); head.writeUInt16LE(1, 2); head.writeUInt16LE(1, 4) // reserved, type icon, 1 image
 head.writeUInt8(32, 6); head.writeUInt8(32, 7); head.writeUInt16LE(1, 10); head.writeUInt16LE(32, 12) // 32×32, 1 plane, 32 bpp
 head.writeUInt32LE(png.length, 14); head.writeUInt32LE(22, 18)
-writeFileSync(join(PUB, 'favicon.ico'), Buffer.concat([head, png]))
-console.log('wrote', [...Object.keys(files), 'favicon.ico'].join(', '))
+writeFileSync(resolve('app/favicon.ico'), Buffer.concat([head, png]))
+console.log('wrote', [...Object.keys(files), 'app/apple-icon.png', 'app/favicon.ico'].join(', '))

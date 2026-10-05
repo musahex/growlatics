@@ -24,7 +24,10 @@ for (const p of pages.sort()) {
   const robots = meta(html, 'robots')
   const body = html.replace(/<script[\s\S]*?<\/script>/g, '')
   const heads = [...body.matchAll(/<h([1-6])[\s>]/g)].map((m) => +m[1])
-  const jsonld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].flatMap((m) => { const j = JSON.parse(m[1]); return (j['@graph'] || [j]).map((x) => x['@type']) })
+  const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1])
+  const jsonld = ld.flatMap((t) => { const j = JSON.parse(t); return (j['@graph'] || [j]).map((x) => x['@type']) })
+  // Factual-only structured data: none of these may appear (IA §7, brief §5).
+  const banned = ld.join('').match(/"(address|aggregateRating|review|ratingValue|foundingDate|numberOfEmployees|offers|price|LocalBusiness)"/g)
   const hrefs = [...body.matchAll(/<a [^>]*href="([^"]*)"/g)].map((m) => m[1].replace(/&amp;/g, '&'))
   links[route] = hrefs.filter((h) => h.startsWith('/')).map((h) => h.split(/[?#]/)[0])
   const skip = []; for (let i = 1; i < heads.length; i++) if (heads[i] > heads[i - 1] + 1) skip.push(`h${heads[i - 1]}→h${heads[i]}`)
@@ -33,6 +36,8 @@ for (const p of pages.sort()) {
   rows.push(r)
   const err = (m) => problems.push(`${route}: ${m}`)
   if (!title) err('no <title>')
+  if (banned) err(`JSON-LD has ${[...new Set(banned)].join(' ')}`)
+  for (const icon of ['/favicon.ico', '/apple-icon.png', '/icon.svg', '/site.webmanifest']) if (!html.includes(`href="${icon}`)) err(`no ${icon} link`)
   if (r.h1 !== 1) err(`${r.h1} h1`)
   if (skip.length) err(`heading skip ${r.skip}`)
   if (!noindex) {

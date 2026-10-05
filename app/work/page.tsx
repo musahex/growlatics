@@ -1,5 +1,5 @@
 import { engagement, proof, schematicLabels, systems, work, workProofHeadings } from '@/content'
-import { pageMetadata } from '@/lib/seo'
+import { breadcrumbJsonLd, ldJson, pageMetadata } from '@/lib/seo'
 import PageHero from '@/components/patterns/PageHero'
 import SystemSchematic from '@/components/patterns/SystemSchematic'
 import SignalRail from '@/components/patterns/SignalRail'
@@ -15,6 +15,7 @@ export default function WorkPage() {
   const [measure, report] = work.sections
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(breadcrumbJsonLd(work.route)) }} />
       <PageHero hero={work.hero} />
 
       <Section id={measure.id} rule aria-labelledby="measure-h">
