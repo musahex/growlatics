@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import {
   connectedHeading,
   journey,
@@ -22,6 +21,7 @@ import SystemSchematic from '@/components/patterns/SystemSchematic'
 import SignalRail from '@/components/patterns/SignalRail'
 import Ledger from '@/components/patterns/Ledger'
 import ConvergenceCTA from '@/components/patterns/ConvergenceCTA'
+import Button from '@/components/ui/Button'
 import Section from '@/components/ui/Section'
 import SectionHeader from '@/components/ui/SectionHeader'
 
@@ -111,9 +111,9 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
           className="mt-12"
           rows={sys.pairsWith.map((p) => ({ term: pairsWithLabel(systemById[p.system].verb), description: p.line, href: systemById[p.system].href }))}
         />
-        <Link href={reportLink.href} className="mt-8 inline-flex min-h-11 items-center text-body-s font-semibold text-signal-ink hover:text-text">
-          {reportLink.label} →
-        </Link>
+        <Button href={reportLink.href} variant="text" arrow className="mt-8">
+            {reportLink.label}
+          </Button>
       </Section>
 
       {page.faq && (

@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { engagement, journey, services, site, stageTitles, systemById, systemsSellFirst } from '@/content'
 import { breadcrumbJsonLd, ldJson, pageMetadata } from '@/lib/seo'
 import { cn } from '@/lib/utils'
@@ -8,6 +7,7 @@ import HandoffStrip from '@/components/patterns/HandoffStrip'
 import SignalRail from '@/components/patterns/SignalRail'
 import Ledger from '@/components/patterns/Ledger'
 import ConvergenceCTA from '@/components/patterns/ConvergenceCTA'
+import Button from '@/components/ui/Button'
 import Section from '@/components/ui/Section'
 import SectionHeader from '@/components/ui/SectionHeader'
 import Reveal from '@/components/ui/Reveal'
@@ -43,9 +43,9 @@ export default function ServicesPage() {
                     </li>
                   ))}
                 </ul>
-                <Link href={s.href} className="mt-6 inline-flex min-h-11 items-center text-body-s font-semibold text-signal-ink hover:text-text">
-                  {s.exploreLabel} →
-                </Link>
+                <Button href={s.href} variant="text" arrow className="mt-6">
+            {s.exploreLabel}
+          </Button>
               </div>
             </Reveal>
           ))}

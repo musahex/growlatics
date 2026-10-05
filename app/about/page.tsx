@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { about, site, stageTitles, systemById } from '@/content'
 import { breadcrumbJsonLd, ldJson, pageMetadata } from '@/lib/seo'
 import PageHero from '@/components/patterns/PageHero'
@@ -6,6 +5,7 @@ import PageStage from '@/components/pages/PageStage'
 import HandoffStrip from '@/components/patterns/HandoffStrip'
 import Ledger from '@/components/patterns/Ledger'
 import ConvergenceCTA from '@/components/patterns/ConvergenceCTA'
+import Button from '@/components/ui/Button'
 import Section from '@/components/ui/Section'
 import SectionHeader from '@/components/ui/SectionHeader'
 
@@ -28,9 +28,9 @@ export default function AboutPage() {
             <ul className="mt-8 flex flex-wrap gap-x-8">
               {s.links.map((l) => (
                 <li key={l.href}>
-                  <Link href={l.href} className="inline-flex min-h-11 items-center text-body-s font-semibold text-signal-ink hover:text-text">
-                    {l.label} →
-                  </Link>
+                  <Button href={l.href} variant="text" arrow>
+            {l.label}
+          </Button>
                 </li>
               ))}
             </ul>

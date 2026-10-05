@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { engagement, proof, schematicLabels, systems, work, workProofHeadings } from '@/content'
 import { breadcrumbJsonLd, ldJson, pageMetadata } from '@/lib/seo'
 import PageHero from '@/components/patterns/PageHero'
@@ -7,6 +6,7 @@ import SignalRail from '@/components/patterns/SignalRail'
 import Ledger from '@/components/patterns/Ledger'
 import ConvergenceCTA from '@/components/patterns/ConvergenceCTA'
 import { CaseStudyList, LogoRow, MetricSlot, TestimonialSlot } from '@/components/patterns/Proof'
+import Button from '@/components/ui/Button'
 import Section from '@/components/ui/Section'
 import SectionHeader from '@/components/ui/SectionHeader'
 
@@ -36,9 +36,9 @@ export default function WorkPage() {
       <Section id={report.id} rule aria-labelledby="report-h">
         <SectionHeader id="report-h" heading={report.heading} body={report.body} />
         {report.links?.map((l) => (
-          <Link key={l.href} href={l.href} className="mt-8 inline-flex min-h-11 items-center text-body-s font-semibold text-signal-ink hover:text-text">
-            {l.label} →
-          </Link>
+          <Button key={l.href} href={l.href} variant="text" arrow className="mt-8">
+            {l.label}
+          </Button>
         ))}
       </Section>
 
