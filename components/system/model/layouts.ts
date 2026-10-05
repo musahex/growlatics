@@ -68,17 +68,17 @@ function states(p: Pose, fn: (s: SystemId, i: number) => NodeState) {
   for (let i = 0; i < N; i++) p.node[i] = LEVEL[fn(sysOf(i), i)]
 }
 
-type EdgeMode = 'fragmented' | 'connected' | 'flowing' | 'band' | 'converge'
+type EdgeMode = 'fragmented' | 'connected' | 'flowing' | 'converge'
 function edges(p: Pose, mode: EdgeMode) {
   EDGES.forEach((ed, i) => {
     const market = ed.a.startsWith('market.')
     const na = p.node[NODE_INDEX[ed.a]], nb = p.node[NODE_INDEX[ed.b]]
     const lit = Math.min(na, nb) >= LEVEL.idle
     let v: number
-    if (market) v = mode === 'band' ? 3 : 0
-    else if (ed.kind === 'internal') v = mode === 'band' ? 0.6 : lit ? 2 : Math.min(na, nb) >= 1 ? 0.6 : 0
+    if (market) v = 0
+    else if (ed.kind === 'internal') v = lit ? 2 : Math.min(na, nb) >= 1 ? 0.6 : 0
     else if (ed.kind === 'handoff') v = mode === 'fragmented' ? 1 : 0
-    else v = mode === 'fragmented' || mode === 'band' ? 0 : mode === 'flowing' || mode === 'converge' ? (lit ? 2.6 : 0.6) : lit ? 2 : 0.6
+    else v = mode === 'fragmented' ? 0 : mode === 'flowing' || mode === 'converge' ? (lit ? 2.6 : 0.6) : lit ? 2 : 0.6
     p.edge[i] = v
   })
 }
@@ -227,20 +227,15 @@ function act6(): Pose {
   return p
 }
 
-// ── Act 7: a 24-hour band; markets at their UTC offsets ──
+// ── Act 7: the network spreads into a flat band and steps back to the field; the DOM band (home/GlobalBand)
+// carries the 24-hour ribbon, ticks and markets so they line up with the copy on every tier. ──
 function act7(): Pose {
   const p = emptyPose()
-  const caps = NODES.filter((x) => !x.id.startsWith('market.') && x.system !== 'core')
-  caps.forEach((x, k) => {
-    const i = NODE_INDEX[x.id]
-    p.pos.set([0.08 + (k / (caps.length - 1)) * 0.84, 0.42 + (k % 2 ? 0.02 : -0.02), -0.3], i * 3)
-  })
-  p.pos.set([0.5, 0.42, 0], CORE * 3)
-  const utc = { 'market.us': -5, 'market.gb': 0, 'market.pk': 5 }
-  for (const [id, off] of Object.entries(utc)) p.pos.set([(off + 12) / 24, 0.3, 0.2], NODE_INDEX[id] * 3)
-  states(p, (s) => (s === 'market' ? 'active' : 'dormant'))
-  edges(p, 'band')
-  for (const id of Object.keys(utc)) p.label[NODE_INDEX[id]] = 1
+  const caps = NODES.filter((x) => !x.id.startsWith('market.'))
+  caps.forEach((x, k) => p.pos.set([0.08 + (k / (caps.length - 1)) * 0.84, 0.5 + (k % 2 ? 0.02 : -0.02), -0.3], NODE_INDEX[x.id] * 3))
+  parkMarkets(p)
+  states(p, () => 'hidden')
+  p.field = 0.6
   return p
 }
 

@@ -13,6 +13,7 @@ import Inspector from '@/components/patterns/Inspector'
 import { CaseStudyList, LogoRow, MetricSlot, TestimonialSlot } from '@/components/patterns/Proof'
 import { ActFigure, FocusInAct, SystemIndex } from './stage'
 import TraceLanes from './TraceLanes'
+import GlobalBand from './GlobalBand'
 
 const wrap = 'relative mx-auto w-full max-w-container px-gutter'
 // Text keeps the left of the viewport; the network owns the right (text-safe zone, §7 act 1).
@@ -279,9 +280,8 @@ export function Global() {
         <div className="relative">
           <SectionHeader id={`${c.id}-h`} eyebrow={c.eyebrow} heading={c.heading} />
         </div>
-        <ActFigure act={7} title={homeUi.figures.global} className="mt-8" />
-        {/* lg: the 24-hour band runs through the gap between heading and body. */}
-        <div className={cn(col, 'relative mt-6 lg:mt-[30vh]')}>
+        <GlobalBand className="mt-16" />
+        <div className={cn(col, 'relative mt-16')}>
           <p className="max-w-measure text-body-l text-text-2">{c.body}</p>
           <p className="mt-6 font-mono text-data uppercase text-text-3">{site.markets.map((m) => m.label).join(' · ')}</p>
           {c.links?.map((l) => <MoreLink key={l.href} href={l.href} label={l.label} />)}
