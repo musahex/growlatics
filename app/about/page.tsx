@@ -36,8 +36,12 @@ export default function AboutPage() {
             )}
             {s.id === 'international' && (
               // The act-7 market band (US, UK, Pakistan on a 24-hour ribbon): About's one network figure.
-              <div className="mt-12 hidden aspect-[16/5] w-full md:block">
-                <PageStage act={7} title={stageTitles.international} />
+              // The act-7 pose draws the band at about 36% of the stage height: a 2x-tall stage, offset up,
+              // centres it in a short 4:1 frame instead of leaving the lower half empty.
+              <div className="relative mt-12 hidden aspect-[4/1] w-full overflow-hidden md:block">
+                <div className="absolute inset-x-0 -top-[22%] h-[200%]">
+                  <PageStage act={7} title={stageTitles.international} />
+                </div>
               </div>
             )}
             {s.links && (
