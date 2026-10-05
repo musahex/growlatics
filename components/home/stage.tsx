@@ -52,24 +52,31 @@ export function HomeStage() {
   )
 }
 
+const subscribeNothing = () => () => {}
+/** false in the static HTML and during hydration, true afterwards. */
+const useHydrated = () => useSyncExternalStore(subscribeNothing, () => true, () => false)
+
 /**
  * An act's network figure. lg+: the full-viewport composition behind the act's text (absolute; hidden
- * while the fixed stage draws live). Below lg (and the SSR / no-JS view): a framed inline figure.
+ * while the fixed stage draws live). Below lg: a framed inline figure. The static HTML carries both and
+ * CSS shows the right one, so desktop does not shift when hydration swaps the phone figure out (hero CLS)
+ * and no-JS desktop gets the desktop composition.
  */
 export function ActFigure({ act, stage, title, className }: { act: number; stage?: number; title?: string; className?: string }) {
+  const hydrated = useHydrated()
   const wide = useMedia(WIDE)
   const tablet = useMedia(TABLET)
-  if (wide)
-    return (
-      <NetworkSVG
-        act={act}
-        stage={stage}
-        hideWhenLive
-        title={title}
-        className="pointer-events-none absolute inset-0 h-full w-full"
-      />
-    )
-  return (
+  const desktop = (
+    <NetworkSVG
+      act={act}
+      stage={stage}
+      hideWhenLive
+      title={title}
+      className={cn('pointer-events-none absolute inset-0 h-full w-full', !hydrated && 'hidden lg:block')}
+    />
+  )
+  if (hydrated && wide) return desktop
+  const inline = (
     <SystemStage
       act={act}
       stage={stage}
@@ -77,8 +84,15 @@ export function ActFigure({ act, stage, title, className }: { act: number; stage
       portrait={!tablet}
       intro={act === 1}
       title={title}
-      className={cn('w-full', tablet ? 'aspect-[16/10]' : 'aspect-[4/5]', className)}
+      className={cn('w-full aspect-[4/5] md:aspect-[16/10]', !hydrated && 'lg:hidden', className)}
     />
+  )
+  if (hydrated) return inline
+  return (
+    <>
+      {desktop}
+      {inline}
+    </>
   )
 }
 

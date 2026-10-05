@@ -185,6 +185,14 @@
     html { scroll-behavior: auto; }
   }
 
+  /* R1 Rise for above-the-fold page heroes, as CSS so LCP does not wait for hydration (Reveal load). */
+  @keyframes rise-in { from { opacity: 0; transform: translateY(16px); } }
+  @keyframes fade-in { from { opacity: 0; } }
+  .rise-load { animation: rise-in var(--dur-slow) var(--ease-out) both; }
+  @media (prefers-reduced-motion: reduce) {
+    .rise-load { animation: fade-in var(--dur-fast) var(--ease-out) both; }
+  }
+
   /* No JS: reveals never run, so their server-rendered hidden state must not stick. */
   @media (scripting: none) {
     [data-reveal] { opacity: 1 !important; transform: none !important; }
