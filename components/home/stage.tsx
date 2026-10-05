@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 import { SystemStage } from '@/components/system/stage/SystemStage'
 import { NetworkSVG } from '@/components/system/render-svg/NetworkSVG'
 import { SpatialLabel } from '@/components/system/overlay/SpatialLabel'
-import { setFocus, useSystem } from '@/components/system/runtime'
+import { setFocus, sys } from '@/components/system/runtime'
 
 const WIDE = '(min-width: 1024px)'
 const TABLET = '(min-width: 768px)'
@@ -52,24 +52,31 @@ export function HomeStage() {
   )
 }
 
+const subscribeNothing = () => () => {}
+/** false in the static HTML and during hydration, true afterwards. */
+const useHydrated = () => useSyncExternalStore(subscribeNothing, () => true, () => false)
+
 /**
  * An act's network figure. lg+: the full-viewport composition behind the act's text (absolute; hidden
- * while the fixed stage draws live). Below lg (and the SSR / no-JS view): a framed inline figure.
+ * while the fixed stage draws live). Below lg: a framed inline figure. The static HTML carries both and
+ * CSS shows the right one, so desktop does not shift when hydration swaps the phone figure out (hero CLS)
+ * and no-JS desktop gets the desktop composition.
  */
 export function ActFigure({ act, stage, title, className }: { act: number; stage?: number; title?: string; className?: string }) {
+  const hydrated = useHydrated()
   const wide = useMedia(WIDE)
   const tablet = useMedia(TABLET)
-  if (wide)
-    return (
-      <NetworkSVG
-        act={act}
-        stage={stage}
-        hideWhenLive
-        title={title}
-        className="pointer-events-none absolute inset-0 h-full w-full"
-      />
-    )
-  return (
+  const desktop = (
+    <NetworkSVG
+      act={act}
+      stage={stage}
+      hideWhenLive
+      title={title}
+      className={cn('pointer-events-none absolute inset-0 h-full w-full', !hydrated && 'hidden lg:block')}
+    />
+  )
+  if (hydrated && wide) return desktop
+  const inline = (
     <SystemStage
       act={act}
       stage={stage}
@@ -77,20 +84,43 @@ export function ActFigure({ act, stage, title, className }: { act: number; stage
       portrait={!tablet}
       intro={act === 1}
       title={title}
-      className={cn('w-full', tablet ? 'aspect-[16/10]' : 'aspect-[4/5]', className)}
+      className={cn('w-full aspect-[4/5] md:aspect-[16/10]', !hydrated && 'lg:hidden', className)}
     />
+  )
+  if (hydrated) return inline
+  return (
+    <>
+      {desktop}
+      {inline}
+    </>
   )
 }
 
-/** Lights one system on the fixed stage while `act` is current (the capability inspector's open item). */
+/**
+ * Lights one system while its act sits under the middle of the viewport (the capability inspector's
+ * open item). Observes the act section itself, so it works on every tier: the store's act index only
+ * moves while the live fixed stage runs.
+ */
 export function FocusInAct({ system, act }: { system: SystemId; act: number }) {
-  const current = useSystem('act')
+  const ref = useRef<HTMLSpanElement>(null)
   useEffect(() => {
-    if (current !== act) return
-    setFocus(system)
-    return () => setFocus(null)
-  }, [current, act, system])
-  return null
+    const el = ref.current?.closest(`[data-act="${act}"]`)
+    if (!el) return
+    let on = false
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting === on) return
+      on = e.isIntersecting
+      if (on) setFocus(system)
+      else if (sys.focus === system) setFocus(null)
+    }, { rootMargin: '-50% 0px -50% 0px' })
+    io.observe(el)
+    return () => {
+      io.disconnect()
+      // An exiting inspector panel unmounts after the next one mounted: never clear its focus.
+      if (on && sys.focus === system) setFocus(null)
+    }
+  }, [act, system])
+  return <span ref={ref} hidden />
 }
 
 /** Act 1 System index: four rows linking to the service pages; hover/focus lights that cluster (200ms grace). */

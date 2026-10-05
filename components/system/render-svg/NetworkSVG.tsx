@@ -9,6 +9,7 @@ import { FIELD, FIELD_POINTS } from '../model/flow'
 import { css } from '../model/palette'
 import { useSystem } from '../runtime/useSystem'
 import { MarkRects } from '../overlay/MarkBars'
+import { place } from '../model/place'
 
 const SYSTEM_NAMES: Record<string, string> = { acquire: 'Acquire', sell: 'Sell', operate: 'Operate', build: 'Build' }
 
@@ -34,6 +35,10 @@ export function NetworkSVG({ act, stage = 0, follow, labels = true, portrait, ti
   const storeAct = useSystem('act')
   const storeStage = useSystem('stage')
   const live = useSystem('live')
+  // Focus (System index, inspector): same rule as the live renderers (flow.ts): the focused system lights, the rest dims to 0.4.
+  const focus = useSystem('focus')
+  const fa = (i: number) => (!focus || NODES[i].system === focus || i === CORE ? 1 : 0.4)
+  const focused = (i: number) => !!focus && NODES[i].system === focus
   const a = follow ? storeAct : act
   const s = follow ? storeStage : stage
 
@@ -98,7 +103,7 @@ export function NetworkSVG({ act, stage = 0, follow, labels = true, portrait, ti
               d={d}
               stroke={brokenEdge ? css.edgeBroken : lv >= 2.4 ? css.edgeHot : css.edge}
               strokeDasharray={brokenEdge ? '4 8' : undefined}
-              opacity={brokenEdge ? Math.min(1, lv) : 1}
+              opacity={(brokenEdge ? Math.min(1, lv) : 1) * Math.min(fa(EDGE_A[e]), fa(EDGE_B[e]))}
             />
           )
         })}
@@ -108,15 +113,15 @@ export function NetworkSVG({ act, stage = 0, follow, labels = true, portrait, ti
         {EDGES.map((_, e) => {
           if (p.edge[e] < 2.4) return null
           const { mx, my } = edgePath(e)
-          return <circle key={e} cx={mx} cy={my} r={3.5} fill={css.packet} />
+          return <circle key={e} cx={mx} cy={my} r={3.5} fill={css.packet} opacity={Math.min(fa(EDGE_A[e]), fa(EDGE_B[e]))} />
         })}
         {NODES.map((n, i) => {
-          const lv = p.node[i]
+          const lv = focused(i) ? Math.max(p.node[i], 3) : p.node[i]
           if (lv < 0.5) return null
           const r = 3.5 + n.weight * 1.6
           const fill = lv >= 2.5 ? css.active : lv >= 1.5 ? css.idle : css.dormant
           return (
-            <g key={n.id}>
+            <g key={n.id} opacity={fa(i)}>
               {lv >= 2.5 && <circle cx={X(i)} cy={Y(i)} r={r * 4} fill={css.glow} />}
               <circle cx={X(i)} cy={Y(i)} r={r} fill={fill} />
             </g>
@@ -125,14 +130,22 @@ export function NetworkSVG({ act, stage = 0, follow, labels = true, portrait, ti
       </g>
       {labels && (
         <g fontFamily={font} fontSize={portrait ? 22 : 15} fill={css.label} letterSpacing="0.04em">
-          {NODES.map((n, i) => {
-            const show = p.node[i] >= 1 && (labels === 'all' || p.label[i] > 0.5) && i !== CORE
-            return show ? (
-              <text key={n.id} x={X(i) + 12} y={Y(i) + 5}>
-                {labelFor(n)}
-              </text>
-            ) : null
-          })}
+          {(() => {
+            // Same greedy placement as the live overlay; mono glyphs ≈ 0.64em wide incl. tracking.
+            const fs = portrait ? 22 : 15
+            const placed: number[] = []
+            return NODES.map((n, i) => {
+              const show = (p.node[i] >= 1 || focused(i)) && (labels === 'all' || p.label[i] > 0.5 || focused(i)) && i !== CORE
+              if (!show) return null
+              const text = labelFor(n)
+              const [x, y] = place(placed, X(i), Y(i), text.length * fs * 0.64, fs, 0, W)
+              return (
+                <text key={n.id} x={x} y={y + fs * 0.8} opacity={fa(i)}>
+                  {text}
+                </text>
+              )
+            })
+          })()}
           {centroids.map((c) =>
             c && p.mark < 0.5 ? (
               <text key={c.sid} x={c.x} y={c.y} textAnchor="middle" fill={css.text} fontSize={portrait ? 26 : 17} fontWeight={600}>

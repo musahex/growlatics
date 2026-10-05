@@ -19,20 +19,22 @@ export default function SectionHeader({
   id?: string
   className?: string
 }) {
+  // The page H1 is above the fold: it rises with CSS on first paint instead of waiting for JS (LCP).
+  const load = H === 'h1'
   return (
-    <Reveal group className={cn('max-w-3xl', className)}>
+    <Reveal group={!load} load={load} className={cn('max-w-3xl', className)}>
       {eyebrow && (
-        <Reveal item as="p" className="mb-4 text-label uppercase text-signal-ink">
+        <Reveal item={!load} load={load} as="p" className="mb-4 text-label uppercase text-signal-ink">
           {eyebrow}
         </Reveal>
       )}
-      <Reveal item>
+      <Reveal item={!load} load={load} delay={load ? 60 : 0}>
         <H id={id} className={cn('text-text', size === 'display-xl' ? 'text-display-xl' : size === 'display-l' ? 'text-display-l' : 'text-display-m')}>
           {heading}
         </H>
       </Reveal>
       {body && (
-        <Reveal item as="p" className="mt-6 max-w-measure text-body-l text-text-2">
+        <Reveal item={!load} load={load} delay={load ? 120 : 0} as="p" className="mt-6 max-w-measure text-body-l text-text-2">
           {body}
         </Reveal>
       )}

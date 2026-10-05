@@ -1,8 +1,8 @@
 'use client'
 
 import { useId, useRef, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { swap } from '@/lib/motion'
+import { AnimatePresence, motion } from 'framer-motion'
+import { swap, useReducedMotion } from '@/lib/motion'
 import { cn } from '@/lib/utils'
 
 export interface InspectorItem {

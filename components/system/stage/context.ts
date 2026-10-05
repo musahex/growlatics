@@ -18,6 +18,8 @@ export type StageCtx = {
   draw: ((dt: number, t: number) => void) | null
   /** Renderer calls this after its first frame; the stage cross-fades it in over the SVG. */
   ready: () => void
+  /** Overlay frame work (labels), run by the stage's own task right after draw, so it pauses with the stage. */
+  overlays: Set<(dt: number, t: number) => void>
   /** Renderer hook for theme changes (palette already re-read). */
   onPalette: (() => void) | null
 }

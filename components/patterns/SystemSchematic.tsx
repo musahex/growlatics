@@ -1,7 +1,7 @@
 'use client'
 
-import { motion, useReducedMotion } from 'framer-motion'
-import { trace, viewportOnce } from '@/lib/motion'
+import { motion } from 'framer-motion'
+import { trace, viewportOnce, useReducedMotion } from '@/lib/motion'
 
 /**
  * P1 System schematic: inputs → capabilities → outputs, drawn from data (labels via content/).

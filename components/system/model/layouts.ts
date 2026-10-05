@@ -190,12 +190,13 @@ function act5(): Pose {
   const p = emptyPose()
   place(p, [
     ...bySystem({
-      sell: { x: 0.72, y: 0.22, z: 0, r: 0.1 },
-      operate: { x: 0.88, y: 0.5, z: 0, r: 0.07 },
-      build: { x: 0.72, y: 0.8, z: 0, r: 0.08 },
-      acquire: { x: 0.56, y: 0.5, z: 0, r: 0.075 },
+      // Ring sits right of the text column (≥ 0.6 at 1440): Acquire's name and nodes stay off the copy.
+      sell: { x: 0.75, y: 0.22, z: 0, r: 0.11 },
+      operate: { x: 0.9, y: 0.5, z: 0, r: 0.065 },
+      build: { x: 0.75, y: 0.8, z: 0, r: 0.08 },
+      acquire: { x: 0.62, y: 0.5, z: 0, r: 0.065 },
     }),
-    [['core.growlatics'], CORE_C(0.72, 0.5)],
+    [['core.growlatics'], CORE_C(0.75, 0.5)],
   ])
   parkMarkets(p)
   states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' ? 'active' : 'idle'))
