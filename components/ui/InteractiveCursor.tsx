@@ -1,216 +1,146 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+// Custom cursor (DIRECTION §9). No listeners or rAF of its own: it reads sys.pointer and runs as
+// scheduler task order 40. Runs only with a fine pointer and without reduced motion; otherwise the
+// native cursor shows. Colours come from tokens; surface awareness comes from copying
+// data-surface="dark" from the element under the pointer onto the cursor, so tokens re-declare.
+import { useEffect, useRef } from 'react'
+import { useRuntime } from '@/components/system/runtime/SystemProvider'
+import { useSystem } from '@/components/system/runtime/useSystem'
+import { pointerHooks, sys } from '@/components/system/runtime/store'
+import { addTask, damp, removeTask } from '@/components/system/runtime/scheduler'
+import { css } from '@/components/system/model/palette'
 
-const INTERACTIVE_SELECTORS =
-  'a, button, [role="button"], input, textarea, select, label, [data-cursor]'
+type CursorState = 'default' | 'interactive' | 'cta' | 'panel' | 'node' | 'text'
 
-type CursorState = 'default' | 'interactive' | 'cta' | 'panel'
+const TEXT = 'input:not([type=button]):not([type=submit]):not([type=checkbox]):not([type=radio]), textarea, [contenteditable=""], [contenteditable="true"]'
+const INTERACTIVE = 'a, button, [role="button"], select, label, [data-cursor]'
 
-function resolveState(el: Element | null): CursorState {
+function resolve(el: Element | null): CursorState {
   if (!el) return 'default'
-  const dc = (el as HTMLElement).dataset.cursor
-  if (dc === 'cta')         return 'cta'
-  if (dc === 'panel')       return 'panel'
-  if (dc === 'interactive') return 'interactive'
-  const tag = el.tagName.toLowerCase()
-  if (
-    tag === 'a' || tag === 'button' || tag === 'input' ||
-    tag === 'textarea' || tag === 'select' || tag === 'label' ||
-    el.getAttribute('role') === 'button'
-  ) return 'interactive'
-  return 'default'
+  if (el.closest(TEXT)) return 'text'
+  const hit = el.closest(INTERACTIVE) as HTMLElement | null
+  if (!hit) return 'default'
+  const dc = hit.dataset.cursor
+  if (dc === 'cta') return 'cta'
+  if (dc === 'panel') return 'panel'
+  return 'interactive'
 }
 
-// ── Standard styling (dark mode globally, or light mode over light sections) ─
+const DOT: Record<CursorState, number> = { default: 1, interactive: 1.25, cta: 1.45, panel: 1.1, node: 1.2, text: 0 }
+const RING: Record<CursorState, number> = { default: 1, interactive: 1.42, cta: 1.72, panel: 1.28, node: 0.72, text: 0 }
 
-const RING_SHADOW: Record<CursorState, string> = {
-  default:     'none',
-  interactive: '0 0 12px rgba(210,64,26,0.22)',
-  cta:         '0 0 22px rgba(210,64,26,0.38), 0 0 8px rgba(210,64,26,0.55)',
-  panel:       '0 0 10px rgba(210,64,26,0.14)',
-}
-
-const RING_BORDER: Record<CursorState, string> = {
-  default:     'var(--cursor-ring-color)',
-  interactive: 'rgba(210,64,26,0.55)',
-  cta:         'rgba(210,64,26,0.78)',
-  panel:       'rgba(210,64,26,0.38)',
-}
-
-// ── Dark-surface styling ─────────────────────────────────────────────────────
-// Applied only when site is in light mode AND cursor is inside an element with
-// [data-cursor-surface="dark"] in its ancestor chain.
-// Dot becomes white; ring shifts to white (default) or warm orange (interactive).
-
-const RING_SHADOW_DS: Record<CursorState, string> = {
-  default:     'none',
-  interactive: '0 0 12px rgba(210,64,26,0.32)',
-  cta:         '0 0 22px rgba(210,64,26,0.48), 0 0 8px rgba(210,64,26,0.65)',
-  panel:       '0 0 10px rgba(210,64,26,0.20)',
-}
-
-const RING_BORDER_DS: Record<CursorState, string> = {
-  default:     'rgba(255,255,255,0.30)',
-  interactive: 'rgba(210,64,26,0.60)',
-  cta:         'rgba(210,64,26,0.82)',
-  panel:       'rgba(255,255,255,0.22)',
-}
-
-// Scale targets per state (lerped each frame)
-const RING_SCALE: Record<CursorState, number> = {
-  default:     1,
-  interactive: 1.42,
-  cta:         1.72,
-  panel:       1.28,
-}
-const DOT_SCALE: Record<CursorState, number> = {
-  default:     1,
-  interactive: 1.25,
-  cta:         1.45,
-  panel:       1.1,
+function paint(dot: HTMLDivElement, ring: HTMLDivElement, s: CursorState) {
+  dot.style.backgroundColor = s === 'default' ? css.text : css.signal
+  ring.style.borderColor = s === 'default' ? css.line3 : s === 'cta' || s === 'node' ? css.signal : css.signalLine
+  ring.style.boxShadow = s === 'cta' ? css.shSignal : 'none'
+  ring.style.opacity = s === 'panel' ? '0.6' : '1'
 }
 
 export default function InteractiveCursor() {
-  const dotRef  = useRef<HTMLDivElement>(null)
-  const ringRef = useRef<HTMLDivElement>(null)
-
-  const rawPos     = useRef({ x: -300, y: -300 })
-  const smoothPos  = useRef({ x: -300, y: -300 })
-  const scales     = useRef({ dot: 1, ring: 1 })
-  const curState   = useRef<CursorState>('default')
-  const themeRef   = useRef<'dark' | 'light'>('dark')
-  const surfaceRef = useRef<'light' | 'dark'>('light')
-
-  const rafRef  = useRef(0)
-  const [show, setShow] = useState(false)
+  useRuntime()
+  const fine = useSystem('fine')
+  const reduced = useSystem('reduced')
+  const on = fine && !reduced
+  const wrap = useRef<HTMLDivElement>(null)
+  const dot = useRef<HTMLDivElement>(null)
+  const ring = useRef<HTMLDivElement>(null)
+  const link = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!window.matchMedia('(pointer: fine)').matches) return
-    if ( window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const w = wrap.current, d = dot.current, r = ring.current, l = link.current
+    if (!on || !w || !d || !r || !l) return
+    const root = document.documentElement
+    root.classList.add('custom-cursor-active')
+    let state: CursorState = 'default'
+    let target: Element | null = null
+    let surface = false
+    const pos = { dx: -100, dy: -100, rx: -100, ry: -100, ds: 1, rs: 1, la: 0, shown: -1 }
+    paint(d, r, state)
 
-    setShow(true)
-
-    // Signal to CSS that the custom cursor is running — hides native cursor
-    document.documentElement.classList.add('custom-cursor-active')
-
-    // Read initial theme before first paint
-    themeRef.current =
-      (document.documentElement.getAttribute('data-theme') ?? 'dark') as 'dark' | 'light'
-
-    // ── Styling helper — no React re-renders ─────────────────────────────────
-    const applyState = (state: CursorState) => {
-      if (!dotRef.current || !ringRef.current) return
-
-      // Switch to dark-surface variant only when the page is in light mode and
-      // the cursor is physically inside a [data-cursor-surface="dark"] section.
-      const onDarkSurface = themeRef.current === 'light' && surfaceRef.current === 'dark'
-      const border = (onDarkSurface ? RING_BORDER_DS : RING_BORDER)[state]
-      const shadow = (onDarkSurface ? RING_SHADOW_DS : RING_SHADOW)[state]
-
-      dotRef.current.style.backgroundColor =
-        onDarkSurface
-          ? (state === 'default' ? 'rgba(255,255,255,0.88)' : '#D2401A')
-          : (state === 'default' ? 'var(--cursor-color)'    : '#D2401A')
-
-      ringRef.current.style.borderColor = border
-      ringRef.current.style.boxShadow   = shadow
-    }
-
-    // Watch data-theme attribute so toggling recolours the cursor immediately
-    const themeObs = new MutationObserver(() => {
-      themeRef.current =
-        (document.documentElement.getAttribute('data-theme') ?? 'dark') as 'dark' | 'light'
-      applyState(curState.current)
-    })
-    themeObs.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme'],
-    })
-
-    // ── Event handlers ───────────────────────────────────────────────────────
-    const onMove = (e: MouseEvent) => {
-      rawPos.current.x = e.clientX
-      rawPos.current.y = e.clientY
-    }
-
-    const onOver = (e: MouseEvent) => {
-      const target  = e.target as Element
-      // closest() walks up the DOM, so any element inside the marked section matches
-      const surface = target.closest('[data-cursor-surface="dark"]') ? 'dark' : 'light'
-      const el      = target.closest(INTERACTIVE_SELECTORS)
-      const next    = resolveState(el)
-
-      const stateChanged   = next    !== curState.current
-      const surfaceChanged = surface !== surfaceRef.current
-
-      if (stateChanged)   curState.current   = next
-      if (surfaceChanged) surfaceRef.current = surface as 'dark' | 'light'
-      if (stateChanged || surfaceChanged) applyState(curState.current)
-    }
-
-    const onLeaveDoc = () => {
-      rawPos.current.x = -300
-      rawPos.current.y = -300
-    }
-
-    window.addEventListener('mousemove', onMove, { passive: true })
-    document.addEventListener('mouseover', onOver, { passive: true })
-    document.addEventListener('mouseleave', onLeaveDoc)
-
-    // ── RAF animation loop ───────────────────────────────────────────────────
-    const tick = () => {
-      const raw = rawPos.current
-      const sm  = smoothPos.current
-      const sc  = scales.current
-      const st  = curState.current
-
-      sm.x += (raw.x - sm.x) * 0.11
-      sm.y += (raw.y - sm.y) * 0.11
-
-      sc.dot  += (DOT_SCALE[st]  - sc.dot)  * 0.12
-      sc.ring += (RING_SCALE[st] - sc.ring) * 0.10
-
-      if (dotRef.current) {
-        dotRef.current.style.transform =
-          `translate(${raw.x}px, ${raw.y}px) translate(-50%, -50%) scale(${sc.dot.toFixed(3)})`
+    let awake = false
+    const tick = (dt: number) => {
+      const p = sys.pointer
+      if (p.target !== target) {
+        target = p.target
+        const dark = !!target?.closest('[data-surface="dark"]')
+        if (dark !== surface) {
+          surface = dark
+          if (dark) w.setAttribute('data-surface', 'dark')
+          else w.removeAttribute('data-surface')
+        }
       }
-      if (ringRef.current) {
-        ringRef.current.style.transform =
-          `translate(${sm.x}px, ${sm.y}px) translate(-50%, -50%) scale(${sc.ring.toFixed(3)})`
+      let next = resolve(target)
+      if (next === 'default' && sys.near.d < 48) next = 'node'
+      if (next !== state) {
+        // Text fields show the native I-beam.
+        if (next === 'text') root.classList.remove('custom-cursor-active')
+        else if (state === 'text') root.classList.add('custom-cursor-active')
+        state = next
+        paint(d, r, state)
       }
+      const nodeLock = state === 'node'
+      const tx = nodeLock ? sys.near.x : p.x, ty = nodeLock ? sys.near.y : p.y
+      if (pos.dx < -50) {
+        pos.dx = pos.rx = p.x
+        pos.dy = pos.ry = p.y
+      }
+      pos.dx = damp(pos.dx, p.x, 40, dt)
+      pos.dy = damp(pos.dy, p.y, 40, dt)
+      pos.rx = damp(pos.rx, tx, 14, dt)
+      pos.ry = damp(pos.ry, ty, 14, dt)
+      pos.ds = damp(pos.ds, DOT[state], 16, dt)
+      pos.rs = damp(pos.rs, RING[state], 14, dt)
+      const show = p.active ? 1 : 0
+      if (show !== pos.shown) w.style.opacity = String((pos.shown = show))
+      d.style.transform = `translate3d(${pos.dx.toFixed(1)}px,${pos.dy.toFixed(1)}px,0) translate(-50%,-50%) scale(${pos.ds.toFixed(3)})`
+      r.style.transform = `translate3d(${pos.rx.toFixed(1)}px,${pos.ry.toFixed(1)}px,0) translate(-50%,-50%) scale(${pos.rs.toFixed(3)})`
 
-      rafRef.current = requestAnimationFrame(tick)
+      // Tier-2 home: a hairline from the ring to a node within 120px.
+      const la = damp(pos.la, sys.near.d < 120 && state !== 'text' ? 1 : 0, 15, dt)
+      pos.la = la
+      if (la > 0.01) {
+        const vx = sys.near.x - pos.rx, vy = sys.near.y - pos.ry
+        l.style.width = `${Math.hypot(vx, vy).toFixed(1)}px`
+        l.style.transform = `translate3d(${pos.rx.toFixed(1)}px,${pos.ry.toFixed(1)}px,0) rotate(${Math.atan2(vy, vx).toFixed(4)}rad)`
+      }
+      l.style.opacity = la > 0.01 ? la.toFixed(2) : '0'
+
+      // Sleep when settled so the shared loop can stop; the next pointer event wakes it.
+      const settled =
+        Math.abs(pos.dx - p.x) + Math.abs(pos.dy - p.y) + Math.abs(pos.rx - tx) + Math.abs(pos.ry - ty) < 0.2 &&
+        Math.abs(pos.ds - DOT[state]) + Math.abs(pos.rs - RING[state]) < 0.002 &&
+        (la < 0.01 || la > 0.99) &&
+        !(sys.near.d < 120)
+      if (settled) {
+        awake = false
+        removeTask('cursor')
+      }
     }
-
-    rafRef.current = requestAnimationFrame(tick)
+    const wakeCursor = () => {
+      if (awake) return
+      awake = true
+      addTask('cursor', tick, 40)
+    }
+    pointerHooks.add(wakeCursor)
+    wakeCursor()
 
     return () => {
-      window.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseover', onOver)
-      document.removeEventListener('mouseleave', onLeaveDoc)
-      themeObs.disconnect()
-      cancelAnimationFrame(rafRef.current)
-      document.documentElement.classList.remove('custom-cursor-active')
+      pointerHooks.delete(wakeCursor)
+      removeTask('cursor')
+      root.classList.remove('custom-cursor-active')
     }
-  }, [])
+  }, [on])
 
-  if (!show) return null
+  if (!on) return null
 
+  const base = { position: 'fixed', left: 0, top: 0, pointerEvents: 'none', willChange: 'transform' } as const
+  const colours = 'background-color 200ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1)'
   return (
-    <>
-      <div
-        ref={dotRef}
-        aria-hidden
-        className="cursor-dot pointer-events-none fixed left-0 top-0 z-[9999]"
-        style={{ willChange: 'transform' }}
-      />
-      <div
-        ref={ringRef}
-        aria-hidden
-        className="cursor-ring pointer-events-none fixed left-0 top-0 z-[9999]"
-        style={{ willChange: 'transform' }}
-      />
-    </>
+    <div ref={wrap} aria-hidden style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 'var(--z-cursor, 100)' as unknown as number, opacity: 0 }}>
+      <div ref={link} style={{ ...base, height: 1, width: 0, transformOrigin: '0 50%', background: css.edgeHot, opacity: 0 }} />
+      <div ref={ring} style={{ ...base, width: 28, height: 28, borderRadius: 9999, border: '1.5px solid', transition: colours }} />
+      <div ref={dot} style={{ ...base, width: 6, height: 6, borderRadius: 9999, transition: colours }} />
+    </div>
   )
 }
