@@ -69,6 +69,3 @@ export function startStageController() {
     }
   }
 }
-
-/** Re-measure after a layout change that does not resize <body> (e.g. fonts). */
-export const remeasure = measure
