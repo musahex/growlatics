@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 import { SystemStage } from '@/components/system/stage/SystemStage'
 import { NetworkSVG } from '@/components/system/render-svg/NetworkSVG'
 import { SpatialLabel } from '@/components/system/overlay/SpatialLabel'
-import { setFocus, useSystem } from '@/components/system/runtime'
+import { setFocus, sys } from '@/components/system/runtime'
 
 const WIDE = '(min-width: 1024px)'
 const TABLET = '(min-width: 768px)'
@@ -82,15 +82,31 @@ export function ActFigure({ act, stage, title, className }: { act: number; stage
   )
 }
 
-/** Lights one system on the fixed stage while `act` is current (the capability inspector's open item). */
+/**
+ * Lights one system while its act sits under the middle of the viewport (the capability inspector's
+ * open item). Observes the act section itself, so it works on every tier: the store's act index only
+ * moves while the live fixed stage runs.
+ */
 export function FocusInAct({ system, act }: { system: SystemId; act: number }) {
-  const current = useSystem('act')
+  const ref = useRef<HTMLSpanElement>(null)
   useEffect(() => {
-    if (current !== act) return
-    setFocus(system)
-    return () => setFocus(null)
-  }, [current, act, system])
-  return null
+    const el = ref.current?.closest(`[data-act="${act}"]`)
+    if (!el) return
+    let on = false
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting === on) return
+      on = e.isIntersecting
+      if (on) setFocus(system)
+      else if (sys.focus === system) setFocus(null)
+    }, { rootMargin: '-50% 0px -50% 0px' })
+    io.observe(el)
+    return () => {
+      io.disconnect()
+      // An exiting inspector panel unmounts after the next one mounted: never clear its focus.
+      if (on && sys.focus === system) setFocus(null)
+    }
+  }, [act, system])
+  return <span ref={ref} hidden />
 }
 
 /** Act 1 System index: four rows linking to the service pages; hover/focus lights that cluster (200ms grace). */

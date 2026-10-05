@@ -9,6 +9,7 @@ import { addTask, removeTask } from '../runtime/scheduler'
 import { sys } from '../runtime/store'
 import { useStage } from '../stage/context'
 import { MarkRects } from './MarkBars'
+import { place } from '../model/place'
 
 const labelStyle = {
   position: 'absolute',
@@ -71,15 +72,23 @@ export function SpatialLabelLayer() {
   useEffect(() => {
     if (!stage) return
     const last = new Float32Array(NODES.length).fill(-1)
+    const width = new Float32Array(NODES.length) // measured once per label (fixed font)
+    const slot = new Uint8Array(NODES.length) // last placement, tried first (no flicker)
+    const placed: number[] = [] // x, y, w of labels already placed this frame (shared rule: model/place.ts)
     let lastMark = -1
     addTask(`labels:${id}`, () => {
       const f = stage.field
+      placed.length = 0
       for (let i = 0; i < NODES.length; i++) {
         const el = refs.current[i]
         if (!el) continue
         const a = Math.round(f.labelA[i] * Math.min(1, f.level[i]) * f.pose.dim * 100) / 100
         if (a !== last[i]) el.style.opacity = String((last[i] = a))
-        if (a > 0) el.style.transform = `translate3d(${(f.screen[i * 2] + 12).toFixed(1)}px,${(f.screen[i * 2 + 1] - 6).toFixed(1)}px,0)`
+        if (a <= 0) continue
+        if (!width[i]) width[i] = el.offsetWidth || 80
+        const [x, y, k] = place(placed, f.screen[i * 2], f.screen[i * 2 + 1], width[i], 11, slot[i])
+        slot[i] = k
+        el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`
       }
       const m = Math.round(f.pose.mark * 100) / 100
       const el = mark.current
