@@ -138,7 +138,7 @@ export function NetworkSVG({ act, stage = 0, follow, labels = true, portrait, ti
               const show = (p.node[i] >= 1 || focused(i)) && (labels === 'all' || p.label[i] > 0.5 || focused(i)) && i !== CORE
               if (!show) return null
               const text = labelFor(n)
-              const [x, y] = place(placed, X(i), Y(i), text.length * fs * 0.64, fs)
+              const [x, y] = place(placed, X(i), Y(i), text.length * fs * 0.64, fs, 0, W)
               return (
                 <text key={n.id} x={x} y={y + fs * 0.8} opacity={fa(i)}>
                   {text}

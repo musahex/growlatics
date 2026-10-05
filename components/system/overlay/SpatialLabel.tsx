@@ -86,7 +86,7 @@ export function SpatialLabelLayer() {
         if (a !== last[i]) el.style.opacity = String((last[i] = a))
         if (a <= 0) continue
         if (!width[i]) width[i] = el.offsetWidth || 80
-        const [x, y, k] = place(placed, f.screen[i * 2], f.screen[i * 2 + 1], width[i], 11, slot[i])
+        const [x, y, k] = place(placed, f.screen[i * 2], f.screen[i * 2 + 1], width[i], 11, slot[i], stage.rect.width || Infinity)
         slot[i] = k
         el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`
       }

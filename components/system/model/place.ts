@@ -9,12 +9,12 @@ export function slotXY(k: number, nx: number, ny: number, w: number, h: number):
   return k === 0 ? [nx + gap, ny - h * 0.5] : k === 1 ? [nx - gap - w, ny - h * 0.5] : k === 2 ? [nx + gap, ny + h * 0.9] : [nx + gap, ny - h * 2]
 }
 
-/** placed: flat [x, y, w, ...]. Returns [x, y, slot], trying `first` first (no flicker live); pushes the box. */
-export function place(placed: number[], nx: number, ny: number, w: number, h: number, first = 0): [number, number, number] {
+/** placed: flat [x, y, w, ...]; maxX = figure width. Returns [x, y, slot], trying `first` first (no flicker live); pushes the box. */
+export function place(placed: number[], nx: number, ny: number, w: number, h: number, first = 0, maxX = Infinity): [number, number, number] {
   for (let t = 0; t < SLOT_COUNT; t++) {
     const k = (first + t) % SLOT_COUNT
     const [x, y] = slotXY(k, nx, ny, w, h)
-    let ok = true
+    let ok = x >= 0 && x + w <= maxX // stay inside the figure
     for (let j = 0; j < placed.length && ok; j += 3) ok = !(x < placed[j] + placed[j + 2] + h * 0.5 && placed[j] < x + w + h * 0.5 && Math.abs(y - placed[j + 1]) < h * 1.15)
     if (ok) {
       placed.push(x, y, w)
