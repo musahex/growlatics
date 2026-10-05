@@ -1,10 +1,11 @@
-import { engagement, journey, services, site, stageTitles, systemById, systemsSellFirst } from '@/content'
+import { engagement, journey, services, site, stageTitles, systemById, systems, systemsSellFirst } from '@/content'
 import { breadcrumbJsonLd, ldJson, pageMetadata } from '@/lib/seo'
 import { cn } from '@/lib/utils'
 import PageHero from '@/components/patterns/PageHero'
 import PageStage from '@/components/pages/PageStage'
 import HandoffStrip from '@/components/patterns/HandoffStrip'
 import SignalRail from '@/components/patterns/SignalRail'
+import OwnershipLanes from '@/components/patterns/OwnershipLanes'
 import Ledger from '@/components/patterns/Ledger'
 import ConvergenceCTA from '@/components/patterns/ConvergenceCTA'
 import Button from '@/components/ui/Button'
@@ -20,7 +21,7 @@ export default function ServicesPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(breadcrumbJsonLd(services.route)) }} />
-      <PageHero hero={services.hero} stage={<PageStage act={3} title={stageTitles.services} />}>
+      <PageHero hero={services.hero} stage={<PageStage act={5} title={stageTitles.services} />}>
           <HandoffStrip upstream={[node('acquire')]} current={node('sell')} downstream={[node('operate')]} base={node('build')} />
       </PageHero>
 
@@ -32,7 +33,6 @@ export default function ServicesPage() {
               <div>
                 <p className="mb-3 text-label uppercase text-signal-ink">{s.verb}</p>
                 <h3 className={cn('text-text', s.emphasis ? 'text-display-m' : 'text-title')}>{s.service}</h3>
-                {s.positioning && <p className="mt-4 text-body text-text-2">{s.positioning}</p>}
               </div>
               <div>
                 <p className="max-w-measure text-body text-text-2">{s.long}</p>
@@ -54,9 +54,14 @@ export default function ServicesPage() {
 
       <Section tone="surface" aria-labelledby="map-h">
         <SectionHeader id="map-h" heading={services.journeyMap.heading} body={services.journeyMap.body} />
-        <SignalRail
+        <OwnershipLanes
           className="mt-16"
-          items={journey.stages.map((st) => ({ index: st.number, title: st.name, body: st.line, tags: st.systems.map((id) => systemById[id].verb) }))}
+          stages={journey.stages.map((st) => ({ index: st.number, title: st.name, body: st.line }))}
+          lanes={systems.map((s) => ({
+            label: s.verb,
+            owns: journey.stages.flatMap((st, i) => (st.systems.includes(s.id) ? [i] : [])),
+            base: s.id === 'build',
+          }))}
         />
       </Section>
 
@@ -65,7 +70,7 @@ export default function ServicesPage() {
         <SignalRail className="mt-16" items={engagement.steps.map((s) => ({ index: `0${s.number}`, title: s.title, body: s.body }))} />
       </Section>
 
-      <Section id="faq" rule aria-labelledby="faq-h">
+      <Section id="faq" rule space="tight" aria-labelledby="faq-h">
         <SectionHeader id="faq-h" heading={services.faqHeading} />
         <Ledger className="mt-12" rows={(services.faq ?? []).map((q) => ({ term: q.question, description: q.answer }))} />
       </Section>

@@ -454,7 +454,7 @@ export const draftNotice = 'Draft — pending owner legal approval. Not linked a
 // ─── Network figures (accessible names) and page-specific schematic lanes ────
 
 export const stageTitles = {
-  services: 'Acquire, Sell, Operate and Build reconnected through Growlatics as one system',
+  services: 'Acquire, Sell, Operate and Build around the Growlatics core, with Sell leading',
   about: 'Marketing, sales, customer operations and technology connected through Growlatics',
   international: 'Growlatics serving the United States, the United Kingdom and Pakistan',
   service: (service: string) => `${service} in the Growlatics network, lit, with its handoffs to the other systems`,
