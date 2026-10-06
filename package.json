@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "node -e \"for (const d of ['out/lab', 'out/_next/static/chunks/app/lab']) require('fs').rmSync(d, { recursive: true, force: true })\"",
+    "postbuild": "node -e \"for (const d of ['out/lab', 'out/_next/static/chunks/app/lab']) require('fs').rmSync(d, { recursive: true, force: true })\" && node scripts/preview-postbuild.mjs",
     "start": "next start",
     "lint": "next lint"
   },
