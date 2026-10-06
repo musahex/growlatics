@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: { absolute: notFoundPage.seo.title },
 
 export default function NotFound() {
   return (
-    <Section space="none" className="pb-section pt-40">
+    <Section space="none" className="pb-section pt-[calc(var(--header-clear)+5rem)]">
       <Mark size={48} state="progress" value={2} />
       <h1 className="mt-10 text-display-l text-text">{notFoundPage.heading}</h1>
       <p className="mt-6 max-w-measure text-body-l text-text-2">{notFoundPage.body}</p>

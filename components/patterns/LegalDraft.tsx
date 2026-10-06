@@ -4,7 +4,7 @@ import Section from '@/components/ui/Section'
 /** Draft legal page body: flagged, unlinked, noindex until the owner approves. */
 export default function LegalDraft({ doc }: { doc: LegalDoc }) {
   return (
-    <Section space="none" className="pb-section pt-32 sm:pt-40">
+    <Section space="none" className="pb-section pt-[calc(var(--header-clear)+3.5rem)] sm:pt-[calc(var(--header-clear)+5rem)]">
       <p role="note" className="mb-8 rounded-sm border border-signal-line bg-signal-soft px-4 py-3 text-body-s text-text">
         {draftNotice} {doc.status}
         {doc.ownerRequired.length > 0 && <> Owner to provide: {doc.ownerRequired.join(', ')}.</>}
