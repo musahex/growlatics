@@ -217,8 +217,11 @@ export default function Header() {
       <div ref={rootRef} className="hdr pointer-events-auto relative mx-auto max-w-[calc(var(--container)-2*var(--gutter)+40px)]">
         <div aria-hidden className="hdr-bar glass-elevated rounded-liquid absolute inset-0" />
 
-        <div className="relative flex h-[var(--hdr-h)] items-center justify-between gap-3 pl-4 pr-2 sm:pl-5 lg:gap-6 lg:pl-6 lg:pr-3">
-          <Logo replayOnNavigate />
+        {/* 1fr | auto | 1fr keeps the links on the true centre line whatever the side widths. */}
+        <div className="relative grid h-[var(--hdr-h)] grid-cols-[1fr_auto] items-center gap-3 pl-4 pr-2 sm:pl-5 lg:grid-cols-[1fr_auto_1fr] lg:gap-6 lg:pl-6 lg:pr-3">
+          <div className="justify-self-start">
+            <Logo replayOnNavigate />
+          </div>
 
           <nav aria-label="Main" className="hidden lg:block">
             <ul className="flex items-center gap-0.5">
@@ -236,17 +239,17 @@ export default function Header() {
             </ul>
           </nav>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1.5 justify-self-end sm:gap-2">
             <div className="hidden sm:block">
               <ThemeToggle />
             </div>
             <Magnetic>
-              <Button href={site.primaryCta.href} className="hidden px-5 min-[480px]:inline-flex" onClick={() => close(false)}>
+              <Button href={site.primaryCta.href} className="hidden px-5 sm:inline-flex" onClick={() => close(false)}>
                 <span className="md:hidden">Book a call</span>
                 <span className="hidden md:inline">{site.primaryCta.label}</span>
               </Button>
             </Magnetic>
-            <Button href={site.primaryCta.href} aria-label={site.primaryCta.label} className="w-11 px-0 min-[480px]:hidden" onClick={() => close(false)}>
+            <Button href={site.primaryCta.href} aria-label={site.primaryCta.label} className="w-11 px-0 sm:hidden" onClick={() => close(false)}>
               <CalendarClock size={18} strokeWidth={1.5} aria-hidden />
             </Button>
             <button
