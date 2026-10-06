@@ -281,7 +281,7 @@ export default function Header() {
               <ThemeToggle />
             </div>
             <Magnetic>
-              <Button href={site.primaryCta.href} className="hidden px-5 sm:inline-flex" onClick={() => close(false)}>
+              <Button href={site.primaryCta.href} className={cn('hidden px-5 sm:inline-flex', open && 'invisible lg:visible')} onClick={() => close(false)}>
                 <span className="md:hidden">Book a call</span>
                 <span className="hidden md:inline">{site.primaryCta.label}</span>
               </Button>
