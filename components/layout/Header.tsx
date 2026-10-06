@@ -171,6 +171,36 @@ export default function Header() {
     setServicesOpen(pathname.startsWith('/services/'))
   }, [pathname])
 
+  // Over a data-surface="dark" section (home acts 4/9, the CTA band, the footer) the bar takes the dark
+  // material, so the light theme's ivory glass never reads grey over black. Watches a 1px band at the
+  // bar's centre line; a no-op in the dark theme.
+  useEffect(() => {
+    const el = rootRef.current!
+    let io: IntersectionObserver | undefined
+    const watch = () => {
+      io?.disconnect()
+      const r = el.getBoundingClientRect()
+      const y = Math.round(r.top + r.height / 2)
+      const hits = new Set<Element>()
+      io = new IntersectionObserver(
+        (es) => {
+          es.forEach((e) => (e.isIntersecting ? hits.add(e.target) : hits.delete(e.target)))
+          if (hits.size) el.setAttribute('data-surface', 'dark')
+          else el.removeAttribute('data-surface')
+        },
+        { rootMargin: `${-y}px 0px ${y + 1 - innerHeight}px 0px` },
+      )
+      document.querySelectorAll('[data-surface="dark"]').forEach((s) => s !== el && io!.observe(s))
+    }
+    watch()
+    addEventListener('resize', watch)
+    return () => {
+      io?.disconnect()
+      removeEventListener('resize', watch)
+      el.removeAttribute('data-surface')
+    }
+  }, [pathname])
+
   // Open menu = modal: the rest of the page is inert, scroll locked, Tab wraps inside the header,
   // Escape closes and returns focus to the toggle. Crossing to desktop width closes it.
   useEffect(() => {
