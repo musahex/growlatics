@@ -4,6 +4,9 @@ import { nav, site, type Seo } from '@/content'
 const OG_IMAGE = { url: '/og-image.png', width: 1200, height: 630, alt: site.positioning }
 const SUFFIX = ' | Growlatics'
 const ORG_ID = `${site.url}/#organization`
+// GitHub Pages preview (docs/v2/PREVIEW.md): every page noindex; canonical/OG stay on site.url.
+const NOINDEX = { index: false, follow: false }
+const PREVIEW = process.env.NEXT_PUBLIC_SITE_ENV === 'preview'
 
 /** Site-wide defaults for the root layout only: no canonical, so 404 and noindex routes never inherit Home's.
  *  Icons are file conventions (app/icon.svg, app/favicon.ico, app/apple-icon.png): those override metadata `icons`. */
@@ -14,7 +17,8 @@ export const siteMetadata: Metadata = {
   description: site.description,
   openGraph: { siteName: site.name, type: 'website', locale: 'en_US', images: [OG_IMAGE] },
   twitter: { card: 'summary_large_image', images: [OG_IMAGE] },
-  manifest: '/site.webmanifest',
+  manifest: `${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/site.webmanifest`,
+  robots: PREVIEW ? NOINDEX : undefined,
 }
 
 /** JSON-LD as a string safe to drop into <script type="application/ld+json">. */
@@ -28,7 +32,7 @@ export function pageMetadata(route: string, seo: Seo): Metadata {
     title: { absolute: seo.title },
     description,
     alternates: { canonical: route },
-    robots: seo.noindex ? { index: false, follow: false } : undefined,
+    robots: seo.noindex || PREVIEW ? NOINDEX : undefined,
     openGraph: {
       title: ogTitle,
       description,

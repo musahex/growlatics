@@ -4,7 +4,7 @@ import Mark from '@/components/brand/Mark'
 import Button from '@/components/ui/Button'
 import Section from '@/components/ui/Section'
 
-export const metadata: Metadata = { title: { absolute: notFoundPage.seo.title }, robots: { index: false, follow: true } }
+export const metadata: Metadata = { title: { absolute: notFoundPage.seo.title }, robots: { index: false, follow: process.env.NEXT_PUBLIC_SITE_ENV !== 'preview' } }
 
 export default function NotFound() {
   return (
