@@ -6,6 +6,11 @@ import { bookingHref, normalizeUrl, submitLead, validateEmail, validatePhone, va
 import Mark from '@/components/brand/Mark'
 import Button from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
+import { glassClass } from '@/components/ui/Glass'
+import { flat } from './glass'
+
+// The qualification surface: flat glass (the page behind it is static, so no backdrop blur).
+const shell = glassClass('base', {}, cn('scroll-mt-24 p-6 sm:p-10', flat))
 
 // P8 Qualification flow (IA §6): five steps, one question each, Mark progress, answers in state only.
 
@@ -262,7 +267,7 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
       </div>
     )
     return (
-      <div id={id} ref={rootRef} aria-live="polite" className="scroll-mt-24 rounded-lg border border-line-2 bg-elevated p-6 shadow-2 sm:p-10">
+      <div id={id} ref={rootRef} aria-live="polite" className={shell}>
         <Mark size={28} state="progress" value={5} />
         {result.status === 'sent' && (
           <>
@@ -351,7 +356,7 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
   ]
 
   return (
-    <div id={id} ref={rootRef} className="scroll-mt-24 rounded-lg border border-line-2 bg-elevated p-6 shadow-2 sm:p-10">
+    <div id={id} ref={rootRef} className={shell}>
       <div className="mb-8 flex items-center gap-4">
         <Mark size={28} state="progress" value={step + 1} />
         <p className="font-mono text-data text-text-3" aria-live="polite">
