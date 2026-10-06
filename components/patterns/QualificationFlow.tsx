@@ -9,8 +9,9 @@ import { cn } from '@/lib/utils'
 import { glassClass } from '@/components/ui/Glass'
 import { flat } from './glass'
 
-// The qualification surface: flat glass (the page behind it is static, so no backdrop blur).
-const shell = glassClass('base', {}, cn('scroll-mt-24 p-6 sm:p-10', flat))
+// The qualification surface: flat glass (the page behind it is static, so no backdrop blur). One shell;
+// inside it, option tiles are inner wells, progress is a rail on its top edge, actions sit in a footer row.
+const shell = glassClass('base', {}, cn('relative scroll-mt-24 p-6 sm:p-10', flat))
 
 // P8 Qualification flow (IA §6): five steps, one question each, Mark progress, answers in state only.
 
@@ -116,9 +117,9 @@ function Choice({ type, name, value, label, checked, onChange, invalid }: { type
   return (
     <label
       className={cn(
-        'flex min-h-12 cursor-pointer items-center gap-3 rounded-md border px-4 py-3 text-body-s transition-colors duration-fast ease-out',
+        'flex min-h-12 cursor-pointer items-center gap-3 px-4 py-3 text-body-s transition-colors duration-fast ease-out',
         'has-[:focus-visible]:shadow-focus',
-        checked ? 'border-signal-line bg-signal-soft text-text' : 'border-line-2 bg-elevated text-text-2 hover:border-line-3',
+        checked ? glassClass('base', { signal: true, inner: true }, cn('text-text', flat)) : 'rounded-liquid-inner border border-transparent bg-text/[0.04] text-text-2 hover:bg-text/[0.07]',
       )}
     >
       <input type={type} name={name} value={value} checked={checked} onChange={onChange} aria-invalid={invalid || undefined} className="sr-only" />
@@ -357,11 +358,10 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
 
   return (
     <div id={id} ref={rootRef} className={shell}>
-      <div className="mb-8 flex items-center gap-4">
-        <Mark size={28} state="progress" value={step + 1} />
-        <p className="font-mono text-data text-text-3" aria-live="polite">
-          {f.nav.step(step + 1, STEPS.length)}
-        </p>
+      <div aria-hidden className="absolute inset-x-12 top-0 flex gap-1">
+        {STEPS.map((s, i) => (
+          <span key={s} className={cn('h-[3px] flex-1 rounded-b-full transition-colors duration-base ease-out', i === step ? 'bg-signal' : i < step ? 'bg-text/40' : 'bg-line-2')} />
+        ))}
       </div>
 
       <form
@@ -421,13 +421,17 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
           </fieldset>
         )}
 
-        <div className="mt-10 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-          {step > 0 ? (
+        <div className="-mx-6 mt-10 flex flex-wrap items-center gap-3 border-t border-line px-6 pt-6 sm:-mx-10 sm:px-10">
+          <div className="mr-auto flex items-center gap-3">
+            <Mark size={20} state="progress" value={step + 1} />
+            <p className="font-mono text-data text-text-3" aria-live="polite">
+              {f.nav.step(step + 1, STEPS.length)}
+            </p>
+          </div>
+          {step > 0 && (
             <Button variant="secondary" onClick={back}>
               {f.nav.back}
             </Button>
-          ) : (
-            <span />
           )}
           <Button type="submit" disabled={sending} arrow={key !== 'contact'}>
             {key === 'contact' ? (sending ? f.sendingLabel : f.submitLabel) : f.nav.next}

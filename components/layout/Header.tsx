@@ -75,8 +75,16 @@ function ServicesMenu({ pathname }: { pathname: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
   const timer = useRef<ReturnType<typeof setTimeout>>()
+  const pinned = useRef(false) // opened by a click: mouse-leave no longer closes it
 
-  useEffect(() => setOpen(false), [pathname])
+  const close = () => {
+    pinned.current = false
+    setOpen(false)
+  }
+  useEffect(() => {
+    pinned.current = false
+    setOpen(false)
+  }, [pathname])
   useEffect(() => () => clearTimeout(timer.current), [])
 
   const enter = () => {
@@ -84,7 +92,14 @@ function ServicesMenu({ pathname }: { pathname: string }) {
     setOpen(true)
   }
   const leave = () => {
-    timer.current = setTimeout(() => setOpen(false), 200)
+    if (!pinned.current) timer.current = setTimeout(close, 200)
+  }
+  // A mouse click on a hover-opened panel pins it instead of closing it; otherwise (and for the keyboard,
+  // detail 0) the click toggles as before.
+  const click = (e: React.MouseEvent) => {
+    if (e.detail && open && !pinned.current) return void (pinned.current = true)
+    pinned.current = !open
+    setOpen(!open)
   }
 
   return (
@@ -95,10 +110,10 @@ function ServicesMenu({ pathname }: { pathname: string }) {
       onMouseLeave={leave}
       onKeyDown={(e) => {
         if (e.key !== 'Escape' || !open) return
-        setOpen(false)
+        close()
         btnRef.current?.focus() // focus may be inside the panel that is about to hide
       }}
-      onBlur={(e) => !ref.current?.contains(e.relatedTarget as Node) && setOpen(false)}
+      onBlur={(e) => !ref.current?.contains(e.relatedTarget as Node) && close()}
     >
       <div className="flex items-center">
         <Link href={services.href} className={cn(navLink, 'pr-1.5')} aria-current={isCurrent(pathname, services.href) ? 'page' : undefined}>
@@ -110,7 +125,7 @@ function ServicesMenu({ pathname }: { pathname: string }) {
           aria-expanded={open}
           aria-controls="services-panel"
           aria-label="Show services"
-          onClick={() => setOpen((v) => !v)}
+          onClick={click}
           className="inline-flex h-11 w-7 items-center justify-center rounded-[10px] text-text-3 transition-colors duration-fast ease-out hover:text-text"
         >
           <ChevronDown size={15} strokeWidth={1.5} aria-hidden className={cn('transition-transform duration-base ease-out', open && 'rotate-180')} />
@@ -281,7 +296,7 @@ export default function Header() {
               <ThemeToggle />
             </div>
             <Magnetic>
-              <Button href={site.primaryCta.href} className="hidden px-5 sm:inline-flex" onClick={() => close(false)}>
+              <Button href={site.primaryCta.href} className={cn('hidden px-5 sm:inline-flex', open && 'invisible lg:visible')} onClick={() => close(false)}>
                 <span className="md:hidden">Book a call</span>
                 <span className="hidden md:inline">{site.primaryCta.label}</span>
               </Button>

@@ -393,6 +393,14 @@
   transition-delay: 0s;
 }
 .hdr-panel > * { min-height: 0; overflow: hidden; }
+/* Menu open: pin the scrolled material whatever the scroll position, plus an alpha floor (~.91 light,
+   ~.85 dark) so hero type behind the panel cannot smear through. Via --glass-a, so the data-surface="dark"
+   switch still applies; flat mode's !important solid alpha still wins. */
+.hdr:has(> .hdr-panel[data-open='true']) > .hdr-bar {
+  --g-a: calc(var(--glass-a) + 0.25);
+  --g-blur: calc(var(--glass-blur) + 6px);
+}
+.hdr:has(> .hdr-panel[data-open='true']) > .hdr-bar::after { opacity: 1; }
 
 /* Services panel and theme icon: a short drop/turn on open, nothing on reduced motion. */
 @keyframes glass-drop { from { opacity: 0; transform: translateY(-6px) scale(0.985); } }

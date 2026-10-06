@@ -23,9 +23,6 @@ import SignalRail from '@/components/patterns/SignalRail'
 import Ledger from '@/components/patterns/Ledger'
 import ConvergenceCTA from '@/components/patterns/ConvergenceCTA'
 import Button from '@/components/ui/Button'
-import { glassClass } from '@/components/ui/Glass'
-import { flat } from '@/components/patterns/glass'
-import { cn } from '@/lib/utils'
 import Section from '@/components/ui/Section'
 import SectionHeader from '@/components/ui/SectionHeader'
 
@@ -84,8 +81,8 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
       <Section id="capabilities" tone="surface" aria-labelledby="cap-h">
         <SectionHeader id="cap-h" heading={page.capabilities.heading} />
         <Ledger className="mt-12" rows={ledger(page.capabilities.items)} />
-        {/* Sales & BPO: the operational modules read as one system surface (GLASS_BRIEF §11); other services stay flat. */}
-        <div className={cn('mt-16', sell && glassClass('base', {}, cn('p-6 md:p-8', flat)))}>
+        {/* A diagram on a clean field, no glass: Sales & BPO keeps its glass on the two handoff strips (REVIEW_GLASS #3). */}
+        <div className="mt-16">
           <SystemSchematic
             title={`${sys.service}: ${sys.capabilities.map((c) => c.short).join(', ')}`}
             labels={schematicLabels}
