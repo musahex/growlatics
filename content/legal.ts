@@ -20,7 +20,7 @@ export const OWNER = {
   effective: '[EFFECTIVE DATE — SET ON APPROVAL]',
 }
 
-const status = `Draft — pending legal review. Not yet in effect. Effective date: ${OWNER.effective}.`
+const status = `Not yet in effect. Effective date: ${OWNER.effective}.`
 const email = site.contact.email
 
 export const privacy: LegalDoc = {
