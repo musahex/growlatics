@@ -1,6 +1,6 @@
 // Self-check for the lead adapter. Run: node -e "require('jiti')(process.cwd()+'/', {alias:{'@':process.cwd()}})('./lib/leads/selfcheck.ts')"
 import assert from 'node:assert/strict'
-import { buildMailto, leadEmailBody, normalizeUrl, submitLead, validateEmail, validatePhone, validateUrl } from './index'
+import { buildMailto, leadConfig, leadEmailBody, normalizeUrl, providers, submitLead, validateEmail, validatePhone, validateUrl } from './index'
 import type { LeadSubmission } from './index'
 
 const lead: LeadSubmission = {
@@ -39,7 +39,14 @@ assert.equal(normalizeUrl('example.com'), 'https://example.com/')
 assert.equal(validateUrl('not a url'), 'url')
 assert.equal(validateUrl(''), null)
 
-submitLead(lead).then((r) => {
-  assert.equal(r.status, 'mailto') // no NEXT_PUBLIC_LEAD_WEBHOOK_URL set
+assert.equal(leadConfig.provider, 'mailto') // no NEXT_PUBLIC_LEAD_PROVIDER / _WEBHOOK_URL set
+assert.ok(providers.mailto && providers.webhook)
+
+;(async () => {
+  assert.equal((await submitLead(lead)).status, 'mailto')
+  assert.equal((await providers.webhook(lead)).status, 'mailto') // webhook without a URL falls back, never throws
+  leadConfig.provider = 'nope'
+  assert.equal((await submitLead(lead)).status, 'mailto') // unknown provider → mailto
+  leadConfig.provider = 'mailto'
   console.log('lib/leads selfcheck: ok')
-})
+})()
