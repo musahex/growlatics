@@ -22,7 +22,7 @@ export default function ServicesPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(breadcrumbJsonLd(services.route)) }} />
       <PageHero hero={services.hero} stage={<PageStage act={5} title={stageTitles.services} />}>
-          <HandoffStrip upstream={[node('acquire')]} current={node('sell')} downstream={[node('operate')]} base={node('build')} />
+          <HandoffStrip glass upstream={[node('acquire')]} current={node('sell')} downstream={[node('operate')]} base={node('build')} />
       </PageHero>
 
       <Section id="systems" rule aria-labelledby="systems-h">

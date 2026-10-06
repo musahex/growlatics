@@ -23,6 +23,9 @@ import SignalRail from '@/components/patterns/SignalRail'
 import Ledger from '@/components/patterns/Ledger'
 import ConvergenceCTA from '@/components/patterns/ConvergenceCTA'
 import Button from '@/components/ui/Button'
+import { glassClass } from '@/components/ui/Glass'
+import { flat } from '@/components/patterns/glass'
+import { cn } from '@/lib/utils'
 import Section from '@/components/ui/Section'
 import SectionHeader from '@/components/ui/SectionHeader'
 
@@ -71,7 +74,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(breadcrumbJsonLd(page.route)) }} />
 
       <PageHero hero={{ ...page.hero, primary: page.hero.primary && { ...page.hero.primary, href: `/contact/?system=${sys.slug}#book` } }} stage={<PageStage act={5} focus={sys.id} title={stageTitles.service(sys.service)} />}>
-          <HandoffStrip upstream={hero.upstream} current={node(sys.id)} downstream={hero.downstream} base={flow.base ? node('build') : undefined} />
+          <HandoffStrip glass upstream={hero.upstream} current={node(sys.id)} downstream={hero.downstream} base={flow.base ? node('build') : undefined} />
       </PageHero>
 
       <Section rule space="tight" aria-labelledby="problem-h">
@@ -81,7 +84,8 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
       <Section id="capabilities" tone="surface" aria-labelledby="cap-h">
         <SectionHeader id="cap-h" heading={page.capabilities.heading} />
         <Ledger className="mt-12" rows={ledger(page.capabilities.items)} />
-        <div className="mt-16">
+        {/* Sales & BPO: the operational modules read as one system surface (GLASS_BRIEF §11); other services stay flat. */}
+        <div className={cn('mt-16', sell && glassClass('base', {}, cn('p-6 md:p-8', flat)))}>
           <SystemSchematic
             title={`${sys.service}: ${sys.capabilities.map((c) => c.short).join(', ')}`}
             labels={schematicLabels}
@@ -98,7 +102,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
           <SectionHeader id="how-h" heading={page.howItWorks.heading} />
           {sell && (
             <div className="mt-12">
-              <HandoffStrip label={salesHandoff.team.label} upstream={salesHandoff.team.upstream} current={salesHandoff.team.current} downstream={salesHandoff.team.downstream} />
+              <HandoffStrip glass label={salesHandoff.team.label} upstream={salesHandoff.team.upstream} current={salesHandoff.team.current} downstream={salesHandoff.team.downstream} />
             </div>
           )}
           <SignalRail className="mt-12" items={(page.howItWorks.items ?? []).map((i, k) => ({ index: String(k + 1).padStart(2, '0'), title: i.title, body: i.body }))} />
