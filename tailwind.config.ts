@@ -69,6 +69,7 @@ const config: Config = {
         section: 'var(--space-section)',
         'section-tight': 'var(--space-section-tight)',
         gutter: 'var(--gutter)',
+        'header-clear': 'var(--header-clear)',
       },
       maxWidth: {
         container: 'var(--container)',
@@ -83,6 +84,7 @@ const config: Config = {
         lg: 'var(--r-lg)',
         xl: 'var(--r-xl)',
         full: 'var(--r-full)',
+        glass: 'var(--r-glass)',
       },
       boxShadow: {
         1: 'var(--sh-1)',

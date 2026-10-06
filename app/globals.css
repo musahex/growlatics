@@ -42,10 +42,30 @@
   --net-packet: 210 64 26;
   --net-blend: normal;
 
-  /* glass */
-  --glass-bg: 253 252 250 / 0.78;
-  --glass-line: 12 11 10 / 0.1;
-  --glass-blur: 16px;
+  /* glass material (GLASS_BRIEF §7, docs/v2/GLASS_SYSTEM.md). Channels, so alpha is set per variant.
+     Light = warm ivory, never cold white. */
+  --glass-tint: 252 250 246;
+  --glass-a: 0.66;             /* base background alpha */
+  --glass-a-solid: 0.94;       /* no backdrop-filter support */
+  --glass-blur: 18px;
+  --glass-sat: 1.5;
+  --glass-edge: 60 40 20 / 0.11;
+  --glass-hi: 255 255 255 / 0.75;   /* inner top highlight */
+  --glass-sheen: 255 255 255 / 0.34; /* top-down inner gradient */
+  --glass-shadow: 0 18px 44px -22px rgb(60 36 16 / 0.28), 0 2px 6px -2px rgb(60 36 16 / 0.08);
+  --glass-signal-edge: 210 64 26 / 0.34;
+  --glass-signal-glow: 210 64 26 / 0.16;
+  --r-glass: 26px;
+  --r-glass-inner: 14px;
+  /* legacy aliases (.glass consumers before phase 9) */
+  --glass-bg: var(--glass-tint) / var(--glass-a);
+  --glass-line: var(--glass-edge);
+
+  /* floating header geometry (GLASS_BRIEF §2, §6) */
+  --hdr-y: 10px;
+  --hdr-x: 12px;
+  --hdr-h: 60px;
+  --header-clear: calc(env(safe-area-inset-top, 0px) + var(--hdr-y) + var(--hdr-h));
 
   /* shadows */
   --sh-1: 0 1px 2px rgb(40 24 12 / 0.06);
@@ -96,8 +116,8 @@
   color-scheme: light;
 }
 
-@media (min-width: 640px) { :root { --gutter: 24px; } }
-@media (min-width: 1024px) { :root { --gutter: 32px; } }
+@media (min-width: 640px) { :root { --gutter: 24px; --hdr-y: 16px; --hdr-x: 20px; --hdr-h: 64px; } }
+@media (min-width: 1024px) { :root { --gutter: 32px; --hdr-y: 22px; --hdr-x: 28px; --hdr-h: 72px; } }
 @media (min-width: 1536px) { :root { --gutter: 48px; } }
 
 [data-theme="dark"],
@@ -130,8 +150,17 @@
   --net-packet: 240 102 60;
   --net-blend: additive;
 
-  --glass-bg: 12 11 10 / 0.72;
-  --glass-line: 244 241 236 / 0.08;
+  --glass-tint: 12 11 10;
+  --glass-a: 0.6;
+  --glass-a-solid: 0.95;
+  --glass-blur: 20px;
+  --glass-sat: 1.35;
+  --glass-edge: 244 241 236 / 0.09;
+  --glass-hi: 255 248 240 / 0.07;
+  --glass-sheen: 255 248 240 / 0.035;
+  --glass-shadow: 0 22px 50px -20px rgb(0 0 0 / 0.7), 0 2px 8px -2px rgb(0 0 0 / 0.35);
+  --glass-signal-edge: 210 64 26 / 0.42;
+  --glass-signal-glow: 210 64 26 / 0.2;
 
   --sh-1: 0 1px 2px rgb(0 0 0 / 0.4);
   --sh-2: 0 8px 24px -8px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(244 241 236 / 0.03);
@@ -150,6 +179,7 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--header-clear) + 16px);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -202,17 +232,170 @@
 /* ─── Utilities ────────────────────────────────────────────────────────── */
 
 @layer utilities {
-  .glass {
-    background: rgb(var(--c-elevated) / 0.96);
-    border: 1px solid rgb(var(--glass-line));
+  /* ─── Glass material (GLASS_BRIEF §7; usage: docs/v2/GLASS_SYSTEM.md) ───
+     One material rule; variants only set its --g-* inputs. Idle glass is neutral/warm;
+     orange appears only through .glass-signal (active state, §10). */
+  .glass,
+  .glass-elevated,
+  .glass-dark,
+  .glass-light {
+    --g-tint: var(--glass-tint);
+    --g-a: var(--glass-a);
+    --g-blur: var(--glass-blur);
+    --g-sat: var(--glass-sat);
+    --g-edge: var(--glass-edge);
+    --g-hi: var(--glass-hi);
+    --g-sheen: var(--glass-sheen);
+    --g-shadow: var(--glass-shadow);
+    --g-glow: 0 0 #0000;
+    border: 1px solid rgb(var(--g-edge));
+    background: linear-gradient(180deg, rgb(var(--g-sheen)), transparent 48%), rgb(var(--g-tint) / var(--glass-a-solid));
+    box-shadow: inset 0 1px 0 rgb(var(--g-hi)), var(--g-glow), var(--g-shadow);
   }
-  @supports (backdrop-filter: blur(1px)) {
-    .glass {
-      background: rgb(var(--glass-bg));
-      backdrop-filter: blur(var(--glass-blur));
-      -webkit-backdrop-filter: blur(var(--glass-blur));
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass,
+    .glass-elevated,
+    .glass-dark,
+    .glass-light {
+      background: linear-gradient(180deg, rgb(var(--g-sheen)), transparent 48%), rgb(var(--g-tint) / var(--g-a));
+      -webkit-backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
+      backdrop-filter: blur(var(--g-blur)) saturate(var(--g-sat));
     }
   }
+  .glass-elevated {
+    --g-a: calc(var(--glass-a) + 0.14);
+    --g-blur: calc(var(--glass-blur) + 6px);
+  }
+  /* Fixed dark material for light backgrounds: pair with data-surface="dark" so text tokens flip. */
+  .glass-dark {
+    --g-tint: 12 11 10;
+    --g-a: 0.64;
+    --g-edge: 244 241 236 / 0.1;
+    --g-hi: 255 248 240 / 0.08;
+    --g-sheen: 255 248 240 / 0.04;
+    --g-shadow: 0 22px 50px -20px rgb(0 0 0 / 0.6), 0 2px 8px -2px rgb(0 0 0 / 0.3);
+  }
+  /* Fixed ivory material for dark backgrounds. Material only: text inside must use dark ink explicitly. */
+  .glass-light {
+    --g-tint: 252 250 246;
+    --g-a: 0.74;
+    --g-edge: 60 40 20 / 0.12;
+    --g-hi: 255 255 255 / 0.8;
+    --g-sheen: 255 255 255 / 0.36;
+    --g-shadow: 0 18px 44px -20px rgb(0 0 0 / 0.45);
+  }
+  /* Modifier: the active state of a glass surface (never idle). */
+  .glass-signal {
+    --g-edge: var(--glass-signal-edge);
+    --g-glow: inset 0 -18px 32px -22px rgb(var(--glass-signal-glow)), 0 0 0 1px rgb(var(--glass-signal-glow));
+  }
+
+  /* "Liquid" corners: continuous squircle where supported, a faintly elliptical radius elsewhere. */
+  .rounded-liquid { border-radius: var(--r-glass) / calc(var(--r-glass) * 0.9); }
+  .rounded-liquid-inner { border-radius: var(--r-glass-inner) / calc(var(--r-glass-inner) * 0.9); }
+  @supports (corner-shape: squircle) {
+    .rounded-liquid { border-radius: calc(var(--r-glass) * 1.7); corner-shape: squircle; }
+    .rounded-liquid-inner { border-radius: calc(var(--r-glass-inner) * 1.7); corner-shape: squircle; }
+  }
+}
+
+/* ─── Floating header (GLASS_BRIEF §2–6) ─────────────────────────────────
+   --hk: 0 at the top of the page → 1 after ~160px of scroll, driven by a CSS scroll timeline
+   (no JS, no listener). Browsers without scroll timelines stay at 1: the readable state. */
+
+@property --hk {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+@keyframes hdr-k { from { --hk: 0; } to { --hk: 1; } }
+
+/* .hdr = the moving wrapper (holds content); .hdr-bar = its material layer, a sibling of the
+   content so the services panel's own backdrop-filter is not nested inside another (backdrop root). */
+.hdr { transform: translate3d(0, calc(-4px * var(--hk)), 0); }
+@supports (animation-timeline: scroll()) {
+  .hdr {
+    animation: hdr-k linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0 160px;
+  }
+}
+.hdr-bar {
+  --g-a: calc(var(--glass-a) - 0.2 + 0.32 * var(--hk));
+  --g-blur: calc(var(--glass-blur) - 6px + 12px * var(--hk));
+}
+/* Depth arrives with scroll: a shadow layer whose opacity follows --hk (opacity is cheap; shadows are not). */
+.hdr-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  corner-shape: inherit;
+  box-shadow: var(--glass-shadow);
+  opacity: calc(0.25 + 0.75 * var(--hk));
+  pointer-events: none;
+}
+
+/* Nav link: neutral hairline on hover, a glass well + signal dot when current. */
+.nav-link { position: relative; }
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 16px;
+  height: 1px;
+  margin-left: -8px;
+  background: rgb(var(--c-text-3));
+  transform: scaleX(0);
+  opacity: 0;
+  transition: transform var(--dur-base) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+}
+.nav-link:hover::after { transform: scaleX(1); opacity: 1; }
+.nav-link[aria-current='page'] {
+  background: rgb(var(--c-text) / 0.06);
+  box-shadow: inset 0 0 0 1px rgb(var(--glass-edge)), inset 0 1px 0 rgb(var(--glass-hi));
+}
+.nav-link[aria-current='page']::after {
+  bottom: 6px;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: var(--r-full);
+  background: rgb(var(--c-signal));
+  box-shadow: 0 0 8px 1px rgb(var(--glass-signal-glow));
+  transform: none;
+  opacity: 1;
+}
+
+/* Mobile menu: the header surface unfolds downward (grid-rows 0fr → 1fr). */
+.hdr-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden; /* closed = out of the tab order and the a11y tree, even before hydration */
+  transition: grid-template-rows var(--dur-base) var(--ease-out), opacity var(--dur-fast) var(--ease-out), visibility 0s linear var(--dur-base);
+}
+.hdr-panel[data-open='true'] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.hdr-panel > * { min-height: 0; overflow: hidden; }
+
+/* Services panel and theme icon: a short drop/turn on open, nothing on reduced motion. */
+@keyframes glass-drop { from { opacity: 0; transform: translateY(-6px) scale(0.985); } }
+@keyframes icon-turn { from { opacity: 0; transform: rotate(-60deg) scale(0.7); } }
+.glass-drop { animation: glass-drop var(--dur-base) var(--ease-out) both; transform-origin: top center; }
+.icon-turn { animation: icon-turn var(--dur-base) var(--ease-out) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hdr { transform: none; }
+  .hdr-panel { transition: opacity var(--dur-fast) linear, visibility 0s linear var(--dur-fast); }
+  .nav-link::after { transition: none; }
+  .glass-drop, .icon-turn { animation: fade-in var(--dur-fast) linear both; }
 }
 
 /* ─── Theme view transition (instant under reduced motion) ─────────────── */
