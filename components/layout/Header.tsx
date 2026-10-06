@@ -177,15 +177,16 @@ export default function Header() {
     setServicesOpen(pathname.startsWith('/services/'))
   }, [pathname])
 
-  // Over a data-surface="dark" section (home acts 4/9, the CTA band, the footer) the bar takes the dark
+  // Over a data-surface="dark" section (home acts 4/9, the CTA band, the footer) the header takes the dark
   // material, so the light theme's ivory glass never reads grey over black. Watches a 1px band at the
   // bar's centre line; a no-op in the dark theme.
   useEffect(() => {
-    const el = rootRef.current!
+    const bar = rootRef.current!
+    const el = bar.closest('header')! // the menu scrim flips with the bar
     let io: IntersectionObserver | undefined
     const watch = () => {
       io?.disconnect()
-      const r = el.getBoundingClientRect()
+      const r = bar.getBoundingClientRect()
       const y = Math.round(r.top + r.height / 2)
       const hits = new Set<Element>()
       io = new IntersectionObserver(
