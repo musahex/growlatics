@@ -73,6 +73,7 @@ function Magnetic({ children }: { children: React.ReactNode }) {
 function ServicesMenu({ pathname }: { pathname: string }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
   const timer = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => setOpen(false), [pathname])
@@ -92,7 +93,11 @@ function ServicesMenu({ pathname }: { pathname: string }) {
       className="relative"
       onMouseEnter={enter}
       onMouseLeave={leave}
-      onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
+      onKeyDown={(e) => {
+        if (e.key !== 'Escape' || !open) return
+        setOpen(false)
+        btnRef.current?.focus() // focus may be inside the panel that is about to hide
+      }}
       onBlur={(e) => !ref.current?.contains(e.relatedTarget as Node) && setOpen(false)}
     >
       <div className="flex items-center">
@@ -100,6 +105,7 @@ function ServicesMenu({ pathname }: { pathname: string }) {
           {services.label}
         </Link>
         <button
+          ref={btnRef}
           type="button"
           aria-expanded={open}
           aria-controls="services-panel"
