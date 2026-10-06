@@ -1,8 +1,10 @@
 'use client'
 
 // Wires the R3F root to the scheduler (frameloop="never" + advance()) and adapts DPR (§6.6):
-// start at min(dpr, 1.5); if the mean frame time over 90 frames exceeds 20ms, drop to 1.25, then
-// to 1.0, once each, never raising it again this session.
+// start at min(dpr, 1.5); if the mean frame time over 90 frames exceeds 20ms, first flatten the glass
+// (html[data-glass="flat"]: no backdrop-filter, near-opaque tint; any blur over the canvas costs a
+// slow GPU a full extra pass, GLASS_QA §2), then drop to 1.25, then to 1.0, once each, never raising
+// either again this session.
 import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import type { StageCtx } from '../stage/context'
@@ -31,7 +33,9 @@ export function SceneEnvironment({ stage }: { stage: StageCtx }) {
         // Next step strictly below the current DPR (a 1× screen must not "drop" to 1.25).
         const cur = initialDpr()
         const next = STEPS.findIndex((d) => d < cur)
-        if (sum / n > 0.02 && next >= 0) {
+        const root = document.documentElement
+        if (sum / n > 0.02 && !root.dataset.glass) root.dataset.glass = 'flat'
+        else if (sum / n > 0.02 && next >= 0) {
           session = { step: next }
           setDpr(STEPS[next])
         }

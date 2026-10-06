@@ -299,6 +299,15 @@
   }
 }
 
+/* Slow GPU (SceneEnvironment measured > 20ms frames): glass keeps its tint, edge, sheen and shadow
+   but drops the blur and goes near-opaque, the same look as browsers without backdrop-filter.
+   [class*] also catches responsive variants (lg:glass). */
+[data-glass='flat'] [class*='glass'] {
+  --g-a: var(--glass-a-solid) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
 /* ─── Floating header (GLASS_BRIEF §2–6) ─────────────────────────────────
    --hk: 0 at the top of the page → 1 after ~160px of scroll, driven by a CSS scroll timeline
    (no JS, no listener). Browsers without scroll timelines stay at 1: the readable state. */

@@ -73,6 +73,7 @@ function Magnetic({ children }: { children: React.ReactNode }) {
 function ServicesMenu({ pathname }: { pathname: string }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
   const timer = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => setOpen(false), [pathname])
@@ -92,7 +93,11 @@ function ServicesMenu({ pathname }: { pathname: string }) {
       className="relative"
       onMouseEnter={enter}
       onMouseLeave={leave}
-      onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
+      onKeyDown={(e) => {
+        if (e.key !== 'Escape' || !open) return
+        setOpen(false)
+        btnRef.current?.focus() // focus may be inside the panel that is about to hide
+      }}
       onBlur={(e) => !ref.current?.contains(e.relatedTarget as Node) && setOpen(false)}
     >
       <div className="flex items-center">
@@ -100,6 +105,7 @@ function ServicesMenu({ pathname }: { pathname: string }) {
           {services.label}
         </Link>
         <button
+          ref={btnRef}
           type="button"
           aria-expanded={open}
           aria-controls="services-panel"
@@ -169,6 +175,37 @@ export default function Header() {
   useEffect(() => {
     setOpen(false)
     setServicesOpen(pathname.startsWith('/services/'))
+  }, [pathname])
+
+  // Over a data-surface="dark" section (home acts 4/9, the CTA band, the footer) the header takes the dark
+  // material, so the light theme's ivory glass never reads grey over black. Watches a 1px band at the
+  // bar's centre line; a no-op in the dark theme.
+  useEffect(() => {
+    const bar = rootRef.current!
+    const el = bar.closest('header')! // the menu scrim flips with the bar
+    let io: IntersectionObserver | undefined
+    const watch = () => {
+      io?.disconnect()
+      const r = bar.getBoundingClientRect()
+      const y = Math.round(r.top + r.height / 2)
+      const hits = new Set<Element>()
+      io = new IntersectionObserver(
+        (es) => {
+          es.forEach((e) => (e.isIntersecting ? hits.add(e.target) : hits.delete(e.target)))
+          if (hits.size) el.setAttribute('data-surface', 'dark')
+          else el.removeAttribute('data-surface')
+        },
+        { rootMargin: `${-y}px 0px ${y + 1 - innerHeight}px 0px` },
+      )
+      document.querySelectorAll('[data-surface="dark"]').forEach((s) => s !== el && io!.observe(s))
+    }
+    watch()
+    addEventListener('resize', watch)
+    return () => {
+      io?.disconnect()
+      removeEventListener('resize', watch)
+      el.removeAttribute('data-surface')
+    }
   }, [pathname])
 
   // Open menu = modal: the rest of the page is inert, scroll locked, Tab wraps inside the header,
