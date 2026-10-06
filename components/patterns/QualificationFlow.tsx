@@ -6,6 +6,11 @@ import { bookingHref, normalizeUrl, submitLead, validateEmail, validatePhone, va
 import Mark from '@/components/brand/Mark'
 import Button from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
+import { glassClass } from '@/components/ui/Glass'
+import { flat } from './glass'
+
+// The qualification surface: flat glass (the page behind it is static, so no backdrop blur).
+const shell = glassClass('base', {}, cn('scroll-mt-24 p-6 sm:p-10', flat))
 
 // P8 Qualification flow (IA §6): five steps, one question each, Mark progress, answers in state only.
 
@@ -251,9 +256,18 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
   // ── Result states ──
   if (result) {
     const lead = toLead(d)
-    const booking = result.status === 'sent' ? bookingHref(lead) : ''
+    // Booking only after a real hand-off: a webhook 'sent' or the mailto draft (never on 'error').
+    const booking = result.status === 'error' ? '' : bookingHref(lead)
+    const bookingCta = booking && (
+      <div className="mt-8 border-t border-line pt-6">
+        <p className="text-body text-text">{f.success.bookingPrompt}</p>
+        <Button href={booking} className="mt-4" target="_blank" rel="noopener noreferrer" arrow>
+          {f.success.bookingLabel}
+        </Button>
+      </div>
+    )
     return (
-      <div id={id} ref={rootRef} aria-live="polite" className="scroll-mt-24 rounded-lg border border-line-2 bg-elevated p-6 shadow-2 sm:p-10">
+      <div id={id} ref={rootRef} aria-live="polite" className={shell}>
         <Mark size={28} state="progress" value={5} />
         {result.status === 'sent' && (
           <>
@@ -261,14 +275,7 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
               {f.success.heading}
             </h2>
             <p className="mt-3 text-body text-text-2">{f.success.body(lead.email || '')}</p>
-            {booking && (
-              <div className="mt-8 border-t border-line pt-6">
-                <p className="text-body text-text">{f.success.bookingPrompt}</p>
-                <Button href={booking} className="mt-4" target="_blank" rel="noopener noreferrer" arrow>
-                  {f.success.bookingLabel}
-                </Button>
-              </div>
-            )}
+            {bookingCta}
           </>
         )}
         {result.status === 'mailto' && (
@@ -280,6 +287,7 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
             <Button variant="secondary" className="mt-6" onClick={() => copy(result.body)}>
               {copied ? f.mailto.copiedLabel : f.mailto.copyLabel}
             </Button>
+            {bookingCta}
           </>
         )}
         {result.status === 'error' && (
@@ -348,7 +356,7 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
   ]
 
   return (
-    <div id={id} ref={rootRef} className="scroll-mt-24 rounded-lg border border-line-2 bg-elevated p-6 shadow-2 sm:p-10">
+    <div id={id} ref={rootRef} className={shell}>
       <div className="mb-8 flex items-center gap-4">
         <Mark size={28} state="progress" value={step + 1} />
         <p className="font-mono text-data text-text-3" aria-live="polite">

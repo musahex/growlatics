@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { glassClass } from '@/components/ui/Glass'
+import { flat } from './glass'
 
 export interface HandoffNode {
   label: string
@@ -7,7 +9,7 @@ export interface HandoffNode {
   href?: string
 }
 
-function Node({ node, current }: { node: HandoffNode; current?: boolean }) {
+function Node({ node, current, lit }: { node: HandoffNode; current?: boolean; /** glass strip: the current node is the active signal well */ lit?: boolean }) {
   const inner = (
     <>
       <span aria-hidden className={cn('size-3 shrink-0 rounded-full border', current ? 'border-signal bg-signal' : 'border-net-idle bg-bg')} />
@@ -17,7 +19,7 @@ function Node({ node, current }: { node: HandoffNode; current?: boolean }) {
       </span>
     </>
   )
-  const cls = 'flex min-h-11 items-center gap-3'
+  const cls = cn('flex min-h-11 items-center gap-3', current && lit && glassClass('base', { signal: true, inner: true }, cn('px-4 py-2', flat)))
   return node.href && !current ? (
     <Link href={node.href} className={cn(cls, 'rounded-sm hover:[&_span]:text-text')}>
       {inner}
@@ -49,6 +51,7 @@ export default function HandoffStrip({
   downstream,
   base,
   label,
+  glass,
 }: {
   upstream: HandoffNode[]
   current: HandoffNode
@@ -56,9 +59,11 @@ export default function HandoffStrip({
   /** Layer underneath the flow (Build), drawn under a hairline. */
   base?: HandoffNode
   label?: string
+  /** Floating system surface (service heroes, Sales & BPO workflow): flat glass, the current node lit. */
+  glass?: boolean
 }) {
   return (
-    <div className="border-y border-line py-6">
+    <div className={glass ? glassClass('base', {}, cn('p-5 sm:p-6', flat)) : 'border-y border-line py-6'}>
       {label && <p className="mb-4 font-mono text-data text-text-3">{label}</p>}
       <div className="flex flex-col gap-2 pl-1 md:flex-row md:items-center md:gap-6 md:pl-0">
         {upstream.length > 0 && (
@@ -67,7 +72,7 @@ export default function HandoffStrip({
             <Edge />
           </>
         )}
-        <Node node={current} current />
+        <Node node={current} current lit={glass} />
         {downstream.length > 0 && (
           <>
             <Edge />

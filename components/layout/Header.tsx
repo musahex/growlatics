@@ -249,7 +249,7 @@ export default function Header() {
                 <span className="hidden md:inline">{site.primaryCta.label}</span>
               </Button>
             </Magnetic>
-            <Button href={site.primaryCta.href} aria-label={site.primaryCta.label} className="w-11 px-0 sm:hidden" onClick={() => close(false)}>
+            <Button href={site.primaryCta.href} aria-label={site.primaryCta.label} className={cn('w-11 px-0 sm:hidden', open && 'invisible')} onClick={() => close(false)}>
               <CalendarClock size={18} strokeWidth={1.5} aria-hidden />
             </Button>
             <button

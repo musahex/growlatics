@@ -10,7 +10,7 @@ import SectionHeader from '@/components/ui/SectionHeader'
  */
 export default function PageHero({ hero, stage, children }: { hero: Hero; stage?: React.ReactNode; children?: React.ReactNode }) {
   return (
-    <Section as="header" space="none" className="overflow-hidden pb-section-tight pt-32 sm:pt-40">
+    <Section as="header" space="none" className="overflow-hidden pb-section-tight pt-[calc(var(--header-clear)+3.5rem)] sm:pt-[calc(var(--header-clear)+5rem)]">
       <div className="relative">
       {stage && <div className="pointer-events-none absolute inset-x-0 -inset-y-16 hidden lg:block">{stage}</div>}
       <div className={stage ? 'relative lg:flex lg:min-h-[30rem] lg:max-w-[52%] lg:flex-col lg:justify-center' : undefined}>
