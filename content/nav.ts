@@ -3,6 +3,7 @@ import { site } from './site'
 
 export const nav: NavContent = {
   header: [
+    { label: 'Home', href: '/' },
     {
       label: 'Services',
       href: '/services/',

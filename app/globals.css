@@ -310,18 +310,19 @@
 }
 @keyframes hdr-k { from { --hk: 0; } to { --hk: 1; } }
 
-.hdr-bar {
-  --g-a: calc(var(--glass-a) - 0.2 + 0.32 * var(--hk));
-  --g-blur: calc(var(--glass-blur) - 6px + 12px * var(--hk));
-  --g-edge: var(--glass-edge);
-  transform: translate3d(0, calc(-4px * var(--hk)), 0);
-}
+/* .hdr = the moving wrapper (holds content); .hdr-bar = its material layer, a sibling of the
+   content so the services panel's own backdrop-filter is not nested inside another (backdrop root). */
+.hdr { transform: translate3d(0, calc(-4px * var(--hk)), 0); }
 @supports (animation-timeline: scroll()) {
-  .hdr-bar {
+  .hdr {
     animation: hdr-k linear both;
     animation-timeline: scroll(root block);
     animation-range: 0 160px;
   }
+}
+.hdr-bar {
+  --g-a: calc(var(--glass-a) - 0.2 + 0.32 * var(--hk));
+  --g-blur: calc(var(--glass-blur) - 6px + 12px * var(--hk));
 }
 /* Depth arrives with scroll: a shadow layer whose opacity follows --hk (opacity is cheap; shadows are not). */
 .hdr-bar::after {
@@ -373,9 +374,15 @@
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
-  transition: grid-template-rows var(--dur-base) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+  visibility: hidden; /* closed = out of the tab order and the a11y tree, even before hydration */
+  transition: grid-template-rows var(--dur-base) var(--ease-out), opacity var(--dur-fast) var(--ease-out), visibility 0s linear var(--dur-base);
 }
-.hdr-panel[data-open='true'] { grid-template-rows: 1fr; opacity: 1; }
+.hdr-panel[data-open='true'] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
 .hdr-panel > * { min-height: 0; overflow: hidden; }
 
 /* Services panel and theme icon: a short drop/turn on open, nothing on reduced motion. */
@@ -385,8 +392,8 @@
 .icon-turn { animation: icon-turn var(--dur-base) var(--ease-out) both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .hdr-bar { transform: none; }
-  .hdr-panel { transition: opacity var(--dur-fast) linear; }
+  .hdr { transform: none; }
+  .hdr-panel { transition: opacity var(--dur-fast) linear, visibility 0s linear var(--dur-fast); }
   .nav-link::after { transition: none; }
   .glass-drop, .icon-turn { animation: fade-in var(--dur-fast) linear both; }
 }
