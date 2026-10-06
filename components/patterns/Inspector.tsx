@@ -17,7 +17,7 @@ export interface InspectorItem {
  * triggers and panels interleave in DOM order, CSS grid places panels in the right column from md.
  * Arrow keys move between triggers; one item is always open.
  */
-export default function Inspector({ items, defaultId, label }: { items: InspectorItem[]; defaultId?: string; label: string }) {
+export default function Inspector({ items, defaultId, label, panelClassName }: { items: InspectorItem[]; defaultId?: string; label: string; /** md+ detail panel surface (e.g. glass). */ panelClassName?: string }) {
   const [active, setActive] = useState(defaultId ?? items[0]?.id)
   const reduced = useReducedMotion()
   const uid = useId()
@@ -64,7 +64,7 @@ export default function Inspector({ items, defaultId, label }: { items: Inspecto
               role="region"
               aria-labelledby={`${uid}-t-${item.id}`}
               hidden={!open}
-              className="py-6 md:col-start-2 md:py-0 md:[grid-row:1/span_var(--rows)]"
+              className={cn('py-6 md:col-start-2 md:py-0 md:[grid-row:1/span_var(--rows)] md:self-start', panelClassName)}
             >
               <AnimatePresence mode="wait" initial={false}>
                 {open && (

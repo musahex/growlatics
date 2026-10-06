@@ -1,7 +1,7 @@
 // The nine home acts (DIRECTION §7, IA §5.1). Every act is a data-act section over the fixed stage.
 // Sections are not positioned (their backgrounds paint under the fixed canvas); their content is,
 // so it paints above it. Copy comes from '@/content' only.
-import { engagement, getLabel, home, homeUi, journey, schematicLabels, site, systemById, systems, type SystemId } from '@/content'
+import { engagement, getLabel, home, homeUi, journey, proof, schematicLabels, site, systemById, systems, type SystemId } from '@/content'
 import { EDGES } from '@/components/system/model/graph'
 import { cn } from '@/lib/utils'
 import Button from '@/components/ui/Button'
@@ -12,6 +12,7 @@ import Inspector from '@/components/patterns/Inspector'
 import { CaseStudyList, LogoRow, MetricSlot, TestimonialSlot } from '@/components/patterns/Proof'
 import { ActFigure, FocusInAct, SystemIndex } from './stage'
 import TraceLanes from './TraceLanes'
+import { flatBelowLg } from '@/components/patterns/glass'
 import GlobalBand from './GlobalBand'
 
 const wrap = 'relative mx-auto w-full max-w-container px-gutter'
@@ -50,7 +51,7 @@ export function Hero() {
     <section id="hero" data-act={1} aria-labelledby="hero-h" className="text-text">
       <div className="relative lg:flex lg:min-h-screen lg:flex-col">
         {/* lg:static so the lg figure (absolute) spans the whole hero; text stays positioned above the canvas. */}
-        <div className={cn(wrap, 'flex flex-1 flex-col pb-section-tight pt-32 lg:static lg:pb-12 lg:pt-28')}>
+        <div className={cn(wrap, 'flex flex-1 flex-col pb-section-tight pt-[calc(var(--header-clear)+3.5rem)] lg:static lg:pb-8 lg:pt-[calc(var(--header-clear)+2rem)]')}>
           {/* Static in SSR: the H1 is the LCP element and never waits for JS. */}
           <div className={cn(col, 'relative')}>
             <p className="mb-5 text-label uppercase text-signal-ink">{h.eyebrow}</p>
@@ -73,7 +74,7 @@ export function Hero() {
             </div>
           </div>
           <ActFigure act={1} title={homeUi.figures.hero} className="mt-12" />
-          <div className="relative mt-12 lg:mt-auto lg:max-w-[74%] lg:pt-10">
+          <div className="relative mt-12 lg:mt-auto lg:max-w-[74%] lg:pt-8">
             <SystemIndex />
           </div>
         </div>
@@ -136,7 +137,7 @@ export function Journey() {
               <div className={cn(wrap, 'py-10 lg:static lg:py-24')}>
                 <div className="relative border-l border-line-2 pl-8 lg:max-w-[42%] lg:border-l-0 lg:pl-0">
                   <span aria-hidden className="absolute -left-1.5 top-1 size-3 rounded-full bg-signal lg:hidden" />
-                  <div className="lg:glass lg:rounded-lg lg:p-8">
+                  <div className="lg:glass lg:rounded-liquid lg:p-8">
                     <p className="font-mono text-data text-signal-ink">{homeUi.stageIndex(s.number, total)}</p>
                     <h3 className="mt-3 text-label uppercase text-text-3">{s.name}</h3>
                     <p className="mt-2 text-display-m text-text">{s.line}</p>
@@ -189,6 +190,7 @@ export function Capabilities() {
             <Inspector
               label={c.heading}
               defaultId="sell"
+              panelClassName={cn('md:glass md:rounded-liquid md:p-8', flatBelowLg)}
               items={systems.map((s, i) => ({
                 id: s.id,
                 meta: String(i + 1).padStart(2, '0'),
@@ -298,12 +300,14 @@ export function Work() {
       <div className={cn(wrap, 'py-section')}>
         <SectionHeader id={`${c.id}-h`} eyebrow={c.eyebrow} heading={c.heading} body={c.body} />
         <SignalRail className="mt-16" items={engagement.steps.map((s) => ({ index: `0${s.number}`, title: s.title, body: s.body }))} />
-        <div className="mt-16 grid gap-16 empty:hidden">
-          <MetricSlot />
-          <CaseStudyList />
-          <TestimonialSlot />
-          <LogoRow />
-        </div>
+        {proof.metrics.length + proof.caseStudies.length + proof.testimonials.length + proof.logos.length > 0 && (
+          <div className="mt-16 grid gap-16">
+            <MetricSlot />
+            <CaseStudyList />
+            <TestimonialSlot />
+            <LogoRow />
+          </div>
+        )}
         {c.links?.map((l) => <MoreLink key={l.href} href={l.href} label={l.label} />)}
       </div>
     </Act>

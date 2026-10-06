@@ -9,6 +9,8 @@ import { sys } from '../runtime/store'
 import { useStage } from '../stage/context'
 import { MarkRects } from './MarkBars'
 import { place, reserveNode } from '../model/place'
+import { cn } from '@/lib/utils'
+import { flat } from '@/components/patterns/glass'
 
 const labelStyle = {
   position: 'absolute',
@@ -59,6 +61,59 @@ export function SpatialLabel({ node, edge, act, dx = 12, dy = -6, children }: { 
     <span ref={ref} style={labelStyle}>
       {children}
     </span>
+  )
+}
+
+const CALLOUT_H = 22 // chip height (11px mono + padding + border)
+
+/**
+ * Edge callouts for one act (act 2 leaks) as small flat glass chips. Placed every frame with the shared
+ * rule (model/place.ts): clear of every lit node and of each other; a chip with no free slot hides.
+ * `items` must be stable (module scope).
+ */
+export function SpatialCallouts({ items, act }: { items: { edge: string; text: string }[]; act: number }) {
+  const stage = useStage()
+  const refs = useRef<(HTMLSpanElement | null)[]>([])
+  useEffect(() => {
+    if (!stage) return
+    const idx = items.map((it) => EDGE_INDEX[it.edge] ?? -1)
+    const last = new Float32Array(items.length).fill(-1)
+    const width = new Float32Array(items.length)
+    const slot = new Uint8Array(items.length)
+    const placed: number[] = []
+    const fn = () => {
+      const f = stage.field
+      const S = f.screen
+      const on = sys.act.index === act
+      placed.length = 0
+      if (on) for (let i = 0; i < NODES.length; i++) if (f.level[i] >= 1) reserveNode(placed, S[i * 2], S[i * 2 + 1], 3 * f.size[i] + 1, CALLOUT_H)
+      idx.forEach((ei, k) => {
+        const el = refs.current[k]
+        if (!el || ei < 0) return
+        let a = on ? Math.round(Math.min(1, f.edgeLevel[ei]) * 100) / 100 : 0
+        if (a > 0) {
+          const p = EDGE_A[ei], q = EDGE_B[ei]
+          if (!width[k]) width[k] = el.offsetWidth || 120
+          const at = place(placed, (S[p * 2] + S[q * 2]) / 2, (S[p * 2 + 1] + S[q * 2 + 1]) / 2, width[k], CALLOUT_H, slot[k], stage.rect.width || Infinity)
+          if (at) {
+            slot[k] = at[2]
+            el.style.transform = `translate3d(${at[0].toFixed(1)}px,${at[1].toFixed(1)}px,0)`
+          } else a = 0
+        }
+        if (a !== last[k]) el.style.opacity = String((last[k] = a))
+      })
+    }
+    stage.overlays.add(fn)
+    return () => void stage.overlays.delete(fn)
+  }, [stage, items, act])
+  return (
+    <>
+      {items.map((it, k) => (
+        <span key={it.edge} ref={(el) => void (refs.current[k] = el)} style={{ ...labelStyle, color: undefined }} className={cn('glass rounded-md px-2 py-1 text-text-2', flat)}>
+          {it.text}
+        </span>
+      ))}
+    </>
   )
 }
 
