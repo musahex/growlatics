@@ -59,7 +59,7 @@ export const home: HomeContent = {
     id: 'why',
     eyebrow: 'Why connected',
     heading: 'The gains are in the handoffs.',
-    body: "Most growth problems aren't inside one function. They sit between functions: the lead marketing generated that sales never called, the complaint support logged that product never saw. Connecting the system fixes problems no single vendor is positioned to see.",
+    body: "Most growth problems aren't inside one function. They sit between functions: the lead marketing generated that sales never called, the complaint support logged that product never saw. Connecting the system puts those gaps in front of one accountable partner.",
     separate: [
       'Separate reports and definitions of a "lead"',
       'Handoffs by email and spreadsheet',
@@ -72,25 +72,21 @@ export const home: HomeContent = {
       'One partner accountable for the gaps',
       'We coordinate; you decide',
     ],
-    // OWNER-VERIFY: metrics agreed before launch
-    note: 'We agree the metrics before launch and report against them every cycle.',
-    verify: true,
+    note: 'We agree the metrics with you before launch and report against them on a set cadence.',
   },
   global: {
     id: 'global',
-    eyebrow: 'Global delivery',
+    eyebrow: 'International delivery',
     heading: 'Built for international growth.',
-    body: 'Growlatics is a US / Pakistan business serving clients in the United States, the United Kingdom, Pakistan and other international markets. Distributed teams let us staff sales, support and technology work around the markets you sell into, with the same process and reporting wherever the work happens.',
+    body: 'Growlatics is a US / Pakistan business serving clients in the United States, the United Kingdom, Pakistan and other international markets. Distributed execution lets us run sales, support and technology work for the markets you sell into, with the same process and reporting wherever the work happens.',
     links: [{ label: 'How we work across markets', href: '/about/' }],
   },
   work: {
     id: 'work',
     eyebrow: 'How we measure work',
-    heading: 'Results agreed before launch, reported every cycle.',
+    heading: 'Metrics agreed before launch, reported on a set cadence.',
     body: 'Every engagement starts with the numbers that matter to your business — qualified leads, booked meetings, response times, retention — and a baseline to measure them against. We report on the whole system, not just the part we touched.',
     links: [{ label: 'How we measure work', href: '/work/' }],
-    // OWNER-VERIFY: metrics agreed before launch
-    verify: true,
   },
 }
 
@@ -121,7 +117,7 @@ export const engagement: { heading: string; id: string; steps: EngagementStep[] 
     { number: 1, title: 'Diagnose', body: 'We map your current funnel, teams and tools, and find where leads and customers drop out.' },
     { number: 2, title: 'Design', body: 'We agree the target system: who does what, which tools connect, and which metrics define success.' },
     { number: 3, title: 'Deploy', body: 'We stand up teams, campaigns and integrations, starting with the highest-pressure gap.' },
-    { number: 4, title: 'Operate', body: 'We run the system day to day and report against the agreed metrics every cycle.' },
+    { number: 4, title: 'Operate', body: 'We run the system day to day and report against the agreed metrics on a set cadence.' },
   ],
 }
 
@@ -161,12 +157,12 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
     seo: {
       title: 'Sales & BPO: outbound, inbound and appointment setting | Growlatics',
       description:
-        'Managed sales capacity for cold outreach, inbound and outbound calling, lead qualification, appointment setting and sales operations, inside your CRM.',
+        'Managed sales capacity for cold outreach, inbound and outbound calling, lead qualification, appointment setting and sales operations, connected to your CRM.',
     },
     hero: {
       eyebrow: 'Sell · Sales & BPO',
       heading: 'Sales capacity that plugs into your pipeline.',
-      lead: 'Trained, managed teams for outbound, inbound, qualification and appointment setting — working in your CRM, to your process, reporting on your pipeline. Not a call center. An extension of your revenue operation.',
+      lead: 'Managed sales capacity for outbound, inbound, qualification and appointment setting — working in your CRM, to your process, reporting on your pipeline. Not a call center. An extension of your revenue operation.',
       primary: book,
       secondary: seeCapabilities,
     },
@@ -188,11 +184,9 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
     },
     howItWorks: {
       heading: 'How it works with your team',
-      // OWNER-VERIFY: work in client tools; managed by team leads
-      verify: true,
       items: [
-        { title: 'Your process, your tools', body: 'We work in your CRM and calendars, with scripts and qualification rules agreed with you.', verify: true },
-        { title: 'Managed, not just staffed', body: 'Team leads handle training, quality review and daily performance, so you manage outcomes, not people.', verify: true },
+        { title: 'Your process, your tools', body: 'We work in your CRM and calendars where you have them, with scripts and qualification rules agreed with you.' },
+        { title: 'Managed, not just staffed', body: 'Training, quality review and day-to-day performance management are part of the service, so you manage outcomes, not people.' },
         { title: 'Visible pipeline', body: 'Every call, email and meeting is logged where you can see it. Reporting uses the same pipeline your team works from.' },
         { title: 'Clean handoffs', body: 'Agreed rules decide when a lead goes to your closers, and with what context.' },
       ],
@@ -231,7 +225,7 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
     },
     problem: {
       heading: "Traffic isn't the goal.",
-      body: 'Most marketing reports stop at clicks and cost per lead. What matters is whether those leads become conversations and customers. Because Growlatics also runs sales and support, we can see what happens after the click — and optimize for it.',
+      body: 'Most marketing reports stop at clicks and cost per lead. What matters is whether those leads become conversations and customers. When Growlatics also runs your sales and support, we can see what happens after the click — and optimize for it.',
     },
     capabilities: {
       id: 'capabilities',
@@ -266,7 +260,7 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
     },
     problem: {
       heading: 'Retention is a growth channel.',
-      body: 'Winning a customer costs more than keeping one, yet support is often the least connected part of the business. When support is part of the same system as sales and marketing, every conversation becomes something the business can act on.',
+      body: 'Winning a customer usually costs more than keeping one, yet support is often the least connected part of the business. When support is part of the same system as sales and marketing, every conversation becomes something the business can act on.',
     },
     capabilities: {
       id: 'capabilities',
@@ -345,11 +339,9 @@ export const about: PageContent = {
       id: 'beliefs',
       heading: 'What we believe',
       items: [
-        { title: 'Systems beat services.', body: 'A connected operation outperforms a stack of disconnected vendors.' },
-        // OWNER-VERIFY: outcomes agreed up front
-        { title: 'Accountability over activity.', body: 'We report on outcomes the business cares about, agreed up front.', verify: true },
-        // OWNER-VERIFY: work in client tools by default
-        { title: 'Your data stays yours.', body: 'We work in your tools by default.', verify: true },
+        { title: 'Systems beat services.', body: 'A connected operation closes the gaps a stack of disconnected vendors leaves open.' },
+        { title: 'Accountability over activity.', body: 'We report on the measures the business cares about, agreed up front.' },
+        { title: 'Your data stays yours.', body: 'Where you have the tools, we work in yours.' },
         { title: 'Honest numbers.', body: "We don't publish claims we can't back, and we won't promise results before we've seen your system." },
       ],
     },
@@ -361,7 +353,7 @@ export const about: PageContent = {
     {
       id: 'international',
       heading: 'International by design',
-      body: 'Growlatics is a US / Pakistan business serving clients in the United States, the United Kingdom, Pakistan and other international markets. Distributed teams and one shared operating process mean the work is run the same way wherever it happens.',
+      body: 'Growlatics is a US / Pakistan business serving clients in the United States, the United Kingdom, Pakistan and other international markets. Distributed execution and one shared operating process mean the work is run the same way wherever it happens.',
       links: [
         { label: 'The four systems', href: '/services/' },
         { label: 'Book a Growth Call', href: '/contact/#book' },
@@ -424,9 +416,7 @@ export const work: PageContent = {
     {
       id: 'report',
       heading: 'How we report',
-      // OWNER-VERIFY: metrics agreed before launch
-      body: 'Metrics and baselines are agreed in writing before launch. Reporting covers the whole system — not just the channel we run — and follows a cadence set with you.',
-      verify: true,
+      body: 'Metrics and baselines are agreed with you before launch. Reporting covers the whole system — not just the channel we run — and follows a cadence set with you.',
       // IA §1.4: /work/ main content links to /services/.
       links: [{ label: 'See the four systems', href: '/services/' }],
     },
@@ -465,7 +455,7 @@ export const stageTitles = {
 /**
  * Sales & BPO handoff strips (DIRECTION §8.1, review #5). Hero: inbound and outbound lanes into Sell and the
  * appointment handoff to the client's calendar. "How it works": your CRM ↔ our team ↔ your closers.
- * Every string reuses page copy above; the team strip restates owner-verify claims (work in your CRM, managed teams).
+ * Every string reuses page copy above (work in your CRM, managed sales capacity).
  */
 export const salesHandoff = {
   hero: {
@@ -476,8 +466,6 @@ export const salesHandoff = {
     downstream: [{ label: 'Handoff', sub: 'Your calendar' }],
   },
   team: {
-    // OWNER-VERIFY: work in client tools; managed by team leads
-    verify: true,
     label: 'How the work moves',
     upstream: [{ label: 'Your CRM', sub: 'Scripts and qualification rules' }],
     current: { label: 'Our team', sub: 'Managed sales capacity' },
@@ -493,12 +481,11 @@ export const serviceSchematics: Partial<Record<ServiceSlug, { inputs: string[]; 
 
 /**
  * Work page schematic (review: Work): its own column labels, not the service ones, and an outputs column.
- * Outputs restate the 'How we report' body (owner-verify: metrics agreed before launch).
+ * Outputs restate the 'How we report' body (metrics and baselines agreed before launch).
  */
 export const workSchematic = {
   labels: { inputs: 'Systems', capabilities: 'What we measure', outputs: 'Reported as' },
   outputs: ['Agreed baselines', 'Whole-system report'],
-  verify: true,
 }
 
 /** Work page proof slots (IA §5.9): headings render only when the slot has approved entries. */

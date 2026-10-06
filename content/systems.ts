@@ -26,7 +26,7 @@ export const systems: SystemContent[] = [
     ],
     stages: ['attract', 'qualify'],
     pairsWith: [
-      { system: 'sell', line: 'Every lead followed up fast, by people who know where it came from.' },
+      { system: 'sell', line: 'Leads followed up by people who know where they came from.' },
       { system: 'build', line: 'Landing pages, tracking and integrations built properly.' },
       { system: 'operate', line: 'Customer feedback that sharpens targeting.' },
     ],
@@ -40,9 +40,7 @@ export const systems: SystemContent[] = [
     href: '/services/sales-bpo/',
     emphasis: true,
     short: 'Operational sales capacity: outbound, inbound, qualification and booked meetings, run inside your process.',
-    // OWNER-VERIFY (IA §9.1): "work in your CRM" is an operating commitment.
-    verify: true,
-    long: 'Sell extends your revenue operation with trained, managed sales capacity. We run cold outreach, outbound and inbound calling, telesales, lead qualification and appointment setting, and the sales operations work that keeps a pipeline clean. Our teams work in your CRM, to your scripts and qualification criteria, and report on the same pipeline your own team sees.',
+    long: 'Sell extends your revenue operation with managed sales capacity. We run cold outreach, outbound and inbound calling, telesales, lead qualification and appointment setting, and the sales operations work that keeps a pipeline clean. The work runs in your CRM where you have one, to your scripts and qualification criteria, and reports on the same pipeline your own team sees.',
     positioning: 'Not a call center. A sales operation that plugs into yours.',
     tags: ['Cold outreach', 'Appointment setting', 'Lead qualification', 'Telesales'],
     capabilities: [
@@ -58,14 +56,8 @@ export const systems: SystemContent[] = [
       { id: 'sell.pipeline-reporting', label: 'Pipeline reporting', short: 'Reporting', group: 'Sales operations' },
       { id: 'sell.scripts-cadence', label: 'Script and cadence design', short: 'Scripts', group: 'Sales operations' },
       { id: 'sell.sales-operations', label: 'Sales process support', short: 'Sales ops', group: 'Sales operations' },
-      // OWNER-VERIFY: BPO task scope (IA §9.1). Scope sentence lives in the sales-bpo page ledger (content/pages.ts).
-      {
-        id: 'sell.bpo',
-        label: 'Back-office execution',
-        short: 'BPO',
-        group: 'Business process outsourcing (BPO)',
-        verify: true,
-      },
+      // BPO task scope (owner-verify) lives in the sales-bpo page ledger (content/pages.ts); this label is generic.
+      { id: 'sell.bpo', label: 'Back-office execution', short: 'BPO', group: 'Business process outsourcing (BPO)' },
     ],
     stages: ['qualify', 'close'],
     pairsWith: [

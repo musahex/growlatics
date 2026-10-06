@@ -1,14 +1,22 @@
-// Lead adapter (IA §6.4). One entry point; the UI never knows which provider ran.
-// Order: NEXT_PUBLIC_LEAD_WEBHOOK_URL set → POST JSON (10s timeout) → sent | error.
-//        Not set → prefilled mailto (§6.3) → mailto.
+// Lead adapter (IA §6.4, GLASS_BRIEF §12 D). One entry point, submitLead(); the UI never knows which provider ran.
+// A provider is (lead) => Promise<LeadResult>. Chosen at BUILD time by NEXT_PUBLIC_LEAD_PROVIDER:
+//   mailto  (default) prefilled email to ahsan@growlatics.com (§6.3) → 'mailto'
+//   webhook POST JSON to NEXT_PUBLIC_LEAD_WEBHOOK_URL (10s timeout) → 'sent' | 'error' (UI offers mailto fallback)
+// Unset provider + webhook URL set → webhook (backwards compatible). Unknown or misconfigured → mailto.
+// Booking (Calendly / Cal.com): NEXT_PUBLIC_BOOKING_URL, shown after a 'sent' result with name/email prefilled.
+// CRM form / Zapier / Make / n8n: use webhook. HubSpot: add a provider here (see docs/v2/LAUNCH.md §4).
 // No vendor SDK, no cookies, client-side only (static export).
 import { leadForm, optionLabel, type LeadResult, type LeadSubmission } from '@/content/lead'
 
 export type { LeadResult, LeadSubmission } from '@/content/lead'
 export * from './validate'
 
+export type LeadProvider = (lead: LeadSubmission) => Promise<LeadResult>
+
+const webhookUrl = process.env.NEXT_PUBLIC_LEAD_WEBHOOK_URL || ''
 export const leadConfig = {
-  webhookUrl: process.env.NEXT_PUBLIC_LEAD_WEBHOOK_URL || '',
+  provider: process.env.NEXT_PUBLIC_LEAD_PROVIDER || (webhookUrl ? 'webhook' : 'mailto'),
+  webhookUrl,
   bookingUrl: process.env.NEXT_PUBLIC_BOOKING_URL || '',
 }
 
@@ -74,9 +82,14 @@ async function postWebhook(url: string, lead: LeadSubmission): Promise<LeadResul
   }
 }
 
+export const providers: Record<string, LeadProvider> = {
+  mailto: async (lead) => ({ status: 'mailto', ...buildMailto(lead) }),
+  webhook: (lead) => (leadConfig.webhookUrl ? postWebhook(leadConfig.webhookUrl, lead) : providers.mailto(lead)),
+}
+
 export async function submitLead(lead: LeadSubmission, opts: { forceMailto?: boolean } = {}): Promise<LeadResult> {
-  if (leadConfig.webhookUrl && !opts.forceMailto) return postWebhook(leadConfig.webhookUrl, lead)
-  return { status: 'mailto', ...buildMailto(lead) }
+  const provider = (!opts.forceMailto && providers[leadConfig.provider]) || providers.mailto
+  return provider(lead)
 }
 
 /** Booking link for the success state, with name/email as query params. */

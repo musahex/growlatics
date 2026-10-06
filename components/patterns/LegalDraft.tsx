@@ -7,6 +7,7 @@ export default function LegalDraft({ doc }: { doc: LegalDoc }) {
     <Section space="none" className="pb-section pt-32 sm:pt-40">
       <p role="note" className="mb-8 rounded-sm border border-signal-line bg-signal-soft px-4 py-3 text-body-s text-text">
         {draftNotice} {doc.status}
+        {doc.ownerRequired.length > 0 && <> Owner to provide: {doc.ownerRequired.join(', ')}.</>}
       </p>
       <h1 className="text-display-l text-text">{doc.title}</h1>
       <div className="mt-12 max-w-measure">
