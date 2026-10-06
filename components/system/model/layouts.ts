@@ -101,7 +101,7 @@ function act1(): Pose {
       acquire: { x: 0.8, y: 0.25, z: -0.1, r: 0.085 },
       sell: { x: 0.77, y: 0.5, z: 0.35, r: 0.11 },
       operate: { x: 0.86, y: 0.72, z: 0, r: 0.07 },
-      build: { x: 0.82, y: 0.88, z: -0.75, r: 0.1 },
+      build: { x: 0.87, y: 0.88, z: -0.75, r: 0.09 }, // clear of the System index's right edge (touch 1024 tier 1)
     }),
     [['core.growlatics'], CORE_C(0.62, 0.52)],
   ])
@@ -289,7 +289,7 @@ function act1Portrait(): Pose {
       acquire: { x: 0.22, y: 0.6, z: -0.1, r: 0.08 },
       sell: { x: 0.5, y: 0.53, z: 0.35, r: 0.1 },
       operate: { x: 0.78, y: 0.6, z: 0, r: 0.065 },
-      build: { x: 0.5, y: 0.73, z: -0.75, r: 0.09 },
+      build: { x: 0.5, y: 0.69, z: -0.75, r: 0.08 }, // clear of the System index's top edge
     }),
     [['core.growlatics'], CORE_C(0.62, 0.47)],
   ])
