@@ -20,7 +20,7 @@ export const journey: JourneyContent = {
       number: '02',
       name: 'Qualify',
       line: 'Turn interest into real conversations.',
-      copy: 'Leads are answered fast, checked against your criteria and routed with full context. Nothing waits in an inbox and nothing reaches sales without a reason to be there.',
+      copy: 'Leads are followed up, checked against your criteria and routed with full context, so nothing reaches sales without a reason to be there.',
       systems: ['acquire', 'sell'],
     },
     {
@@ -28,7 +28,7 @@ export const journey: JourneyContent = {
       number: '03',
       name: 'Close',
       line: 'Move qualified buyers to a decision.',
-      copy: 'Trained sales teams run follow-up, booked meetings and telesales inside your process and your CRM. Pipeline stays visible, so you see what is moving and what is stuck.',
+      copy: 'Managed sales capacity runs follow-up, booked meetings and telesales inside your process and your CRM. Pipeline stays visible, so you see what is moving and what is stuck.',
       systems: ['sell'],
     },
     {
@@ -36,7 +36,7 @@ export const journey: JourneyContent = {
       number: '04',
       name: 'Retain',
       line: "Keep the customers you've won.",
-      copy: 'Support and retention teams answer on chat, phone and email to your standards. What customers say flows back to sales and marketing instead of disappearing in a ticket queue.',
+      copy: 'Support and retention work runs on chat, phone and email to your standards. What customers say flows back to sales and marketing instead of disappearing in a ticket queue.',
       systems: ['operate'],
     },
     {

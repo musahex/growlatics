@@ -5,38 +5,32 @@ export const faq: { services: FaqItem[]; salesBpo: FaqItem[] } = {
     {
       question: 'Can we start with one system?',
       answer:
-        'Yes. Most clients start where the pressure is highest — often sales capacity or lead flow — and connect other systems once the first is running.',
+        'Yes. Start where the pressure is highest — often sales capacity or lead flow — and connect other systems once the first is running.',
     },
     {
-      // OWNER-VERIFY: work in client tools by default
-      question: 'Do your teams use our tools?',
+      question: 'Do you work in our tools?',
       answer:
-        "Yes, by default. Sales and support work inside your CRM and help desk so your data stays yours. If you don't have the right tools yet, Build can set them up.",
-      verify: true,
+        "Yes, where you have them. Sales and support work can run inside your CRM and help desk so your data stays yours. If you don't have the right tools yet, Build can set them up.",
     },
     {
       question: 'Which markets do you work with?',
       answer: 'We serve clients in the United States, the United Kingdom, Pakistan and other international markets.',
     },
     {
-      // OWNER-VERIFY: metrics agreed before launch
       question: 'How do you report?',
-      answer: 'Against metrics agreed before launch, on a regular cadence set with you, covering the whole system rather than one channel.',
-      verify: true,
+      answer: 'Against metrics agreed with you before launch, on a cadence set with you, covering the whole system rather than one channel.',
     },
   ],
   salesBpo: [
     {
-      // OWNER-VERIFY: managers accountable for quality
       question: 'Is this a call center?',
       answer:
-        'No. We run sales work as part of your revenue process — targets, scripts, qualification rules and CRM included — with managers accountable for quality and pipeline, not just call volume.',
-      verify: true,
+        'No. We run sales work as part of your revenue process — targets, scripts, qualification rules and CRM included — measured on quality and pipeline, not call volume.',
     },
     {
-      // OWNER-VERIFY: work in client systems by default
+      // OWNER-VERIFY: data ownership is a contract term (docs/v2/OWNER_VERIFY.md)
       question: 'Who owns the leads and data?',
-      answer: 'You do. We work in your systems by default.',
+      answer: 'You do. Where you have the systems, we work in yours.',
       verify: true,
     },
     {
