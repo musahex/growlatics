@@ -5,6 +5,8 @@ name: Preview on GitHub Pages (manual)
 # Manual runs only: gh workflow run preview-pages.yml --ref v2. See docs/v2/PREVIEW.md.
 on:
   workflow_dispatch:
+  # Called by deploy.yml: GitHub only dispatches workflows that exist on the default branch (main).
+  workflow_call:
 
 permissions:
   contents: read
