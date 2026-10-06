@@ -52,3 +52,21 @@ Screenshot folder (not in git): `/Users/moses/HarnessAgents/hive/agents/worker-g
 - Frame cost of glass on real mid-range phones or GPUs (only this Mac's GPU).
 - Reduced-motion menu fade and keyboard paths (owned by the tech/QA review).
 - Pages other than Home, Services, Sales & BPO and Contact were not reshot (About, Work, legal pages have no glass by design).
+
+## Iterate
+
+Phase 9d, worker-gl-glass-iterate (temp). Branch `v2-glass-iterate` from v2 `e102d33`. Date 2026-10-06. Not pushed, not deployed.
+After-shots (not in git): `/Users/moses/HarnessAgents/hive/agents/worker-gl-glass-iterate/screenshots/`. Names: `after-<shot>-<width>-<theme>.png`.
+
+| # | Finding | Fix | Commit | After-shots |
+|---|---|---|---|---|
+| 1 | Menu opened at the page top uses the top-of-page alpha; hero H1 smears through | While `.hdr-panel[data-open]` the bar pins the scrolled blur and shadow, alpha floor `--glass-a + .25` (light .91, dark .85, read from computed style). Via `--glass-a`, so the `data-surface="dark"` switch still applies; flat mode's `!important` solid alpha still wins. CSS only (`:has`). | `995fcb5` | `after-menu-top-{390,820}-{dark,light}.png` |
+| 2 | Contact: box in a box, generic | Tiles are inner wells (`rounded-liquid-inner`, faint fill, no border), selected = `glass-signal` inner glass. 5-segment rail on the shell's top edge (current orange, done neutral). Footer row under a hairline: Mark + "Step n of 5" (still `aria-live`) left, Back / Continue right. No copy change; keyboard, error focus and lib/leads flow unchanged. | `f20630e` | `after-contact-{1440,820,390}-{dark,light}.png` |
+| 3 | Sales & BPO: three glass slabs in a row | Capabilities schematic sits on the clean field, no glass. Hero lanes strip and "How it works" CRM strip keep theirs. | `0b4d7b2` | `after-sales-bpo-schematic-*`, `after-sales-bpo-top-*` |
+| 4 | 820: two orange CTAs with the menu open | Bar CTA gets `invisible lg:visible` while open (note: `max-lg:` is not generated in this config, raw screens disable max-* variants). Probe: 1 visible "Book" CTA in the header at 390 and 820, both themes. | `ca7662d` | `after-menu-top-820-{dark,light}.png` |
+| 5 | Services dropdown: hover-open then chevron click closes it | A mouse click on a hover-opened panel pins it (mouse-leave no longer closes); a second click closes. Keyboard (click `detail` 0) toggles as before; Escape still returns focus to the toggle. Probe: hover open → click open → leave open → click hidden; Enter open → Enter hidden; Escape hidden, focus on toggle. | `689db6b` | — (interaction; probe output above) |
+| 6 | Touch 1024 tier 1: Build nodes under the System index edge (GLASS_QA §4.4) | Act 1: Build x .82 → .87, r .1 → .09 (landscape and 1440). Portrait key: Build y .73 → .69, r .09 → .08 (same issue at 1024×1366). | `d57951c` | `after-tier1-touch-1024-{landscape,portrait}.png` vs `before-…` |
+
+Gates: `npm run build` pass, routes unchanged (/ 165, /contact 152, /services/[slug] 161 kB) · `tsc --noEmit` pass · `next lint` 0 · `seo-crawl` 0 problems · `lib/leads` selfcheck ok · axe (WCAG 2 A/AA + best practice) **0 violations, 0 page errors on 30 runs**: /, /services/sales-bpo/, /contact/ × 390/820/1440 × dark/light, plus menu open at 390 and 820 · Contact keyboard-only run through all 5 steps at 1440 and 390 ends on the mailto heading with focus on it; Continue with nothing chosen focuses the first option and shows the error.
+
+Act 1 at 1440 tier 2 after the Build nudge: Build clear of the System index (`after-hero-top-1440-dark.png`). Not checked: real devices.
