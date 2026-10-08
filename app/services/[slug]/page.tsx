@@ -14,7 +14,7 @@ import {
   type ServiceSlug,
   type SystemId,
 } from '@/content'
-import { breadcrumbJsonLd, ldJson, pageMetadata, serviceJsonLd } from '@/lib/seo'
+import { ldJson, pageJsonLd, pageMetadata, serviceJsonLd } from '@/lib/seo'
 import PageHero from '@/components/patterns/PageHero'
 import PageStage from '@/components/pages/PageStage'
 import HandoffStrip from '@/components/patterns/HandoffStrip'
@@ -68,7 +68,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(serviceJsonLd(sys.service, page.route, page.seo.description)) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(breadcrumbJsonLd(page.route)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(pageJsonLd(page.route, page.seo)) }} />
 
       <PageHero hero={{ ...page.hero, primary: page.hero.primary && { ...page.hero.primary, href: `/contact/?system=${sys.slug}#book` } }} stage={<PageStage act={5} focus={sys.id} title={stageTitles.service(sys.service)} />}>
           <HandoffStrip glass upstream={hero.upstream} current={node(sys.id)} downstream={hero.downstream} base={flow.base ? node('build') : undefined} />

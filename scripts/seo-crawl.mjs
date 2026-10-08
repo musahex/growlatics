@@ -1,11 +1,15 @@
-// SEO crawl of the static export: node scripts/seo-crawl.mjs (after `npm run build`).
-// Checks per page: title, description, canonical, OG/Twitter, robots, H1 count, heading order,
-// JSON-LD types, internal links (dead, '#', legal drafts), and click depth to service pages.
+// SEO crawl of the static export: node scripts/seo-crawl.mjs (after `npm run build`; for a preview build run it
+// with NEXT_PUBLIC_SITE_ENV=preview too). Checks per page: title, description (unique), canonical, OG/Twitter,
+// robots, lang, H1 count, heading order, JSON-LD types and @id references, internal links (dead, '#', legal
+// drafts, missing #fragments, stray /growlatics/ paths), click depth, sitemap shape, robots.txt, legal drafts in out/.
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
 const OUT = 'out'
 const SITE = 'https://growlatics.us'
+const PREVIEW = process.env.NEXT_PUBLIC_SITE_ENV === 'preview'
+const BASE = PREVIEW ? '/growlatics' : ''
+const LEGAL = process.env.NEXT_PUBLIC_LEGAL_APPROVED === '1'
 const pages = []
 const walk = (d) => readdirSync(d).forEach((f) => { const p = join(d, f); statSync(p).isDirectory() ? (f !== '_next' && walk(p)) : f.endsWith('.html') && pages.push(p) })
 walk(OUT)
@@ -15,7 +19,9 @@ const meta = (html, key) => { for (const m of html.matchAll(/<meta [^>]*>/g)) if
 const routeOf = (p) => '/' + p.slice(OUT.length + 1).replace(/index\.html$/, '').replace(/\.html$/, '')
 const exists = (href) => { const clean = href.split(/[?#]/)[0]; if (!clean) return true; const p = join(OUT, clean); return existsSync(join(p, 'index.html')) || (existsSync(p) && statSync(p).isFile()) }
 
-const links = {}, problems = [], rows = []
+const links = {}, problems = [], rows = [], frags = [], ids = {}, ldIds = new Set(), ldRefs = []
+const walkLd = (x) => { if (Array.isArray(x)) return x.forEach(walkLd); if (!x || typeof x !== 'object') return
+  const keys = Object.keys(x); if (x['@id']) keys.length === 1 ? ldRefs.push(x['@id']) : ldIds.add(x['@id']); keys.forEach((k) => walkLd(x[k])) }
 for (const p of pages.sort()) {
   const html = readFileSync(p, 'utf8')
   const route = routeOf(p)
@@ -28,16 +34,25 @@ for (const p of pages.sort()) {
   const jsonld = ld.flatMap((t) => { const j = JSON.parse(t); return (j['@graph'] || [j]).map((x) => x['@type']) })
   // Factual-only structured data: none of these may appear (IA §7, brief §5).
   const banned = ld.join('').match(/"(address|aggregateRating|review|ratingValue|foundingDate|numberOfEmployees|offers|price|LocalBusiness)"/g)
-  const hrefs = [...body.matchAll(/<a [^>]*href="([^"]*)"/g)].map((m) => m[1].replace(/&amp;/g, '&'))
+  ld.forEach((t) => walkLd(JSON.parse(t)))
+  ids[route] = new Set([...body.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]))
+  const raw = [...body.matchAll(/<a [^>]*href="([^"]*)"/g)].map((m) => m[1].replace(/&amp;/g, '&'))
+  if (!PREVIEW && /(href|src)="\/growlatics\//.test(html)) problems.push(`${route}: preview path /growlatics/ in production HTML`)
+  if (PREVIEW) for (const h of raw) if (h.startsWith('/') && !h.startsWith(BASE + '/')) problems.push(`${route}: link ${h} misses basePath`)
+  const hrefs = raw.map((h) => (BASE && h.startsWith(BASE + '/') ? h.slice(BASE.length) : h))
   links[route] = hrefs.filter((h) => h.startsWith('/')).map((h) => h.split(/[?#]/)[0])
+  for (const h of hrefs) if (/^[/#]/.test(h) && h.length > 1 && h.includes('#')) frags.push([route, h])
   const skip = []; for (let i = 1; i < heads.length; i++) if (heads[i] > heads[i - 1] + 1) skip.push(`h${heads[i - 1]}→h${heads[i]}`)
   const noindex = /noindex/.test(robots || '')
-  const r = { route, title, desc: meta(html, 'description')?.length ?? 0, canonical, ogImg: !!meta(html, 'og:image'), ogUrl: meta(html, 'og:url'), tw: meta(html, 'twitter:card'), robots: robots || '', h1: heads.filter((h) => h === 1).length, skip: skip.join(' '), jsonld: jsonld.join(',') }
+  const r = { route, title, description: meta(html, 'description'), desc: meta(html, 'description')?.length ?? 0, canonical, ogImg: !!meta(html, 'og:image'), ogUrl: meta(html, 'og:url'), tw: meta(html, 'twitter:card'), robots: robots || '', h1: heads.filter((h) => h === 1).length, skip: skip.join(' '), jsonld: jsonld.join(',') }
   rows.push(r)
   const err = (m) => problems.push(`${route}: ${m}`)
   if (!title) err('no <title>')
+  if (!/<html lang="en"/.test(html)) err('html lang is not "en"')
+  if (PREVIEW && !/noindex/.test(robots || '')) err('preview page is indexable')
+  if (!PREVIEW && /noindex/.test(robots || '') && !/^\/(404|privacy|terms)/.test(route)) err('production page is noindex')
   if (banned) err(`JSON-LD has ${[...new Set(banned)].join(' ')}`)
-  for (const icon of ['/favicon.ico', '/apple-icon.png', '/icon.svg', '/site.webmanifest']) if (!html.includes(`href="${icon}`)) err(`no ${icon} link`)
+  for (const icon of ['/favicon.ico', '/apple-icon.png', '/icon.svg', '/site.webmanifest']) if (!html.includes(`href="${BASE}${icon}`)) err(`no ${icon} link`)
   if (r.h1 !== 1) err(`${r.h1} h1`)
   if (skip.length) err(`heading skip ${r.skip}`)
   if (!noindex) {
@@ -53,6 +68,20 @@ for (const p of pages.sort()) {
   }
 }
 
+// Unique titles/descriptions across indexable pages (the 404 has two copies: /404 and /404/).
+for (const key of ['title', 'description']) {
+  const seen = {}
+  for (const r of rows) if (!/noindex/.test(r.robots) || PREVIEW) if (r[key] && !/^\/404/.test(r.route)) (seen[r[key]] ??= []).push(r.route)
+  for (const [v, rs] of Object.entries(seen)) if (rs.length > 1) problems.push(`duplicate ${key} "${v.slice(0, 40)}" on ${rs.join(' ')}`)
+}
+
+// #fragment targets exist; JSON-LD @id references resolve to a node defined somewhere on the site.
+for (const [from, h] of frags) { const [path, frag] = h.split('#'); const to = path.split('?')[0] || from; if (frag && !ids[to]?.has(frag)) problems.push(`${from}: link ${h} has no #${frag} target`) }
+for (const ref of new Set(ldRefs)) if (!ldIds.has(ref)) problems.push(`JSON-LD @id ${ref} referenced but never defined`)
+
+// Legal drafts never ship unless approved (brief §16).
+for (const p of ['privacy', 'terms']) if (!LEGAL && existsSync(join(OUT, p))) problems.push(`legal draft out/${p} exported without NEXT_PUBLIC_LEGAL_APPROVED=1`)
+
 // Click depth from / (BFS over internal links).
 const depth = { '/': 0 }, q = ['/']
 while (q.length) { const r = q.shift(); for (const h of links[r] || []) if (!(h in depth)) { depth[h] = depth[r] + 1; q.push(h) } }
@@ -61,10 +90,14 @@ for (const s of ['/services/sales-bpo/', '/services/performance-marketing/', '/s
 
 // Sitemap / robots.
 const sitemap = existsSync(join(OUT, 'sitemap.xml')) ? readFileSync(join(OUT, 'sitemap.xml'), 'utf8') : ''
+if (!/^<\?xml version="1\.0" encoding="UTF-8"\?>\s*<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/.test(sitemap) || (sitemap.match(/<url>/g) || []).length !== (sitemap.match(/<loc>https:\/\/growlatics\.us\/[^<]*<\/loc>/g) || []).length)
+  problems.push('sitemap.xml malformed or has a non-growlatics.us <loc>')
+const robotsTxt = existsSync(join(OUT, 'robots.txt')) ? readFileSync(join(OUT, 'robots.txt'), 'utf8') : ''
+if (!robotsTxt || /Disallow:\s*\/\s*$/m.test(robotsTxt)) problems.push('robots.txt missing or Disallow: / (crawlers could not read noindex)')
 const inMap = [...sitemap.matchAll(/<loc>([^<]*)<\/loc>/g)].map((m) => m[1].replace(SITE, ''))
 for (const r of rows) {
   const ni = /noindex/.test(r.robots)
-  if (ni && inMap.includes(r.route)) problems.push(`sitemap lists noindex ${r.route}`)
+  if (ni && inMap.includes(r.route) && !PREVIEW) problems.push(`sitemap lists noindex ${r.route}`)
   if (!ni && !inMap.includes(r.route) && r.route !== '/404' && r.route !== '/404/') problems.push(`sitemap misses indexable ${r.route}`)
 }
 for (const u of inMap) if (!exists(u)) problems.push(`sitemap lists missing ${u}`)
