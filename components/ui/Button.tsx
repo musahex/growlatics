@@ -1,6 +1,9 @@
+'use client'
+
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { trackLink } from '@/lib/analytics'
 
 type Variant = 'primary' | 'secondary' | 'text'
 type Size = 'md' | 'lg'
@@ -50,14 +53,20 @@ export default function Button(props: LinkButtonProps | NativeButtonProps) {
   )
 
   if ('href' in rest && rest.href !== undefined) {
-    const { href, ...anchor } = rest as LinkButtonProps
+    const { href, onClick, ...anchor } = rest as LinkButtonProps
     const external = /^(https?:|mailto:|tel:)/.test(href)
+    // Events only (lib/analytics): no-op unless a tag manager created window.dataLayer.
+    const click = (e: React.MouseEvent<HTMLAnchorElement>) => {
+      const el = e.currentTarget
+      trackLink(href, el.closest('footer') ? 'footer' : !el.closest('main') ? 'site-header' : el.closest('[id]')?.id || 'main')
+      onClick?.(e)
+    }
     return external ? (
-      <a href={href} className={cls} data-cursor={cursor} {...anchor}>
+      <a href={href} className={cls} data-cursor={cursor} onClick={click} {...anchor}>
         {content}
       </a>
     ) : (
-      <Link href={href} className={cls} data-cursor={cursor} {...anchor}>
+      <Link href={href} className={cls} data-cursor={cursor} onClick={click} {...anchor}>
         {content}
       </Link>
     )

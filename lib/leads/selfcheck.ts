@@ -48,5 +48,26 @@ assert.ok(providers.mailto && providers.webhook)
   leadConfig.provider = 'nope'
   assert.equal((await submitLead(lead)).status, 'mailto') // unknown provider → mailto
   leadConfig.provider = 'mailto'
+
+  // Events: lead_submitted only on a confirmed webhook 2xx; never on a mailto open; no dataLayer → no-op.
+  await submitLead(lead) // no window/dataLayer: must not throw
+  const g = globalThis as unknown as { window: unknown; fetch: unknown }
+  const dataLayer: { event: string }[] = []
+  g.window = { dataLayer, location: { pathname: '/contact/' } }
+  const realFetch = g.fetch
+  const events = () => dataLayer.map((e) => e.event)
+  await submitLead(lead)
+  assert.deepEqual(events(), [], 'mailto must not emit lead_submitted')
+  Object.assign(leadConfig, { provider: 'webhook', webhookUrl: 'https://hook.test/x' })
+  g.fetch = async () => ({ ok: false, status: 500 })
+  assert.equal((await submitLead(lead)).status, 'error')
+  assert.deepEqual(events(), [], 'HTTP 500 must not emit lead_submitted')
+  g.fetch = async () => ({ ok: true, status: 200 })
+  assert.equal((await submitLead(lead)).status, 'sent')
+  assert.deepEqual(events(), ['lead_submitted'])
+  await submitLead(lead, { forceMailto: true })
+  assert.deepEqual(events(), ['lead_submitted'], 'forced mailto fallback must not emit lead_submitted')
+  Object.assign(leadConfig, { provider: 'mailto', webhookUrl: '' })
+  g.fetch = realFetch
   console.log('lib/leads selfcheck: ok')
 })()

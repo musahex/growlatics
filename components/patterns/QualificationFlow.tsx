@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { leadForm as f, optionLabel, type LeadResult, type LeadSubmission, type MarketId, type NeedId, type StageOfBusiness, type StartWindow } from '@/content'
 import { bookingHref, normalizeUrl, submitLead, validateEmail, validatePhone, validateText, validateUrl } from '@/lib/leads'
+import { captureAttribution, track } from '@/lib/analytics'
 import Mark from '@/components/brand/Mark'
 import Button from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
@@ -177,9 +178,12 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
   const rootRef = useRef<HTMLDivElement>(null)
   const headRef = useRef<HTMLElement>(null)
   const moved = useRef(false)
+  const started = useRef(false)
+  const done = useRef(new Set<StepKey>()) // each step reports once, even after Back / Edit
 
-  // Pre-select a need from ?system=<service-slug> (service-page CTAs).
+  // Pre-select a need from ?system=<service-slug> (service-page CTAs). Keep UTMs if the visit landed here.
   useEffect(() => {
+    captureAttribution()
     const sys = new URLSearchParams(window.location.search).get('system') as NeedId | null
     if (sys && NEEDS.includes(sys)) setD((p) => (p.needs.length ? p : { ...p, needs: [sys] }))
   }, [])
@@ -191,7 +195,19 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
   }, [step, result])
 
   const key = STEPS[step]
+  const start = () => {
+    if (started.current) return
+    started.current = true
+    track('contact_form_started', { preselected: d.needs.length > 0 })
+  }
+  const stepDone = () => {
+    start()
+    if (done.current.has(key)) return
+    done.current.add(key)
+    track('contact_step_completed', { step: key, step_number: step + 1 })
+  }
   const set = <K extends keyof Data>(k: K, v: Data[K]) => {
+    if (k !== 'company_website') start()
     setD((p) => ({ ...p, [k]: v }))
     if (errors[k]) setErrors((e) => ({ ...e, [k]: undefined }))
   }
@@ -222,6 +238,7 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
 
   const next = () => {
     if (!check()) return
+    stepDone()
     moved.current = true
     setStep((s) => s + 1)
   }
@@ -234,13 +251,18 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
   const send = async (forceMailto = false) => {
     if (!forceMailto && !check()) return
     moved.current = true
-    // Honeypot filled: show success silently, send nothing.
+    // Honeypot filled: show success silently, send nothing, track nothing.
     if (d.company_website) return setResult({ status: 'sent' })
+    if (!forceMailto) stepDone()
     setSending(true)
-    const r = await submitLead(toLead(d), { forceMailto })
+    const r = await submitLead(toLead(d), { forceMailto }) // lead_submitted fires inside, only on a confirmed webhook 2xx
     setSending(false)
     setResult(r)
-    if (r.status === 'mailto') window.location.href = r.href
+    if (r.status === 'mailto') {
+      // Intent only: we cannot know whether the visitor presses send. Never report this as a lead.
+      track('contact_email_intent', { method: forceMailto ? 'form_fallback' : 'form_mailto' })
+      window.location.href = r.href
+    }
   }
 
   const copy = async (text: string) => {
@@ -262,7 +284,7 @@ export default function QualificationFlow({ id = 'book' }: { id?: string }) {
     const bookingCta = booking && (
       <div className="mt-8 border-t border-line pt-6">
         <p className="text-body text-text">{f.success.bookingPrompt}</p>
-        <Button href={booking} className="mt-4" target="_blank" rel="noopener noreferrer" arrow>
+        <Button href={booking} className="mt-4" target="_blank" rel="noopener noreferrer" arrow onClick={() => track('booking_link_clicked', { target: 'scheduler', after: result.status })}>
           {f.success.bookingLabel}
         </Button>
       </div>
