@@ -9,8 +9,18 @@ import { CameraRig } from './CameraRig'
 import { NetworkField } from './NetworkField'
 import { SceneEnvironment, initialDpr } from './SceneEnvironment'
 import { BASE_DIST, FOV } from './world'
+import { setTierOverride } from '../runtime/SystemProvider'
 
 const noEvents = () => ({ enabled: false, priority: 0 })
+
+// Context loss (GPU reset, driver crash, tab memory pressure): three.js waits for a restore. If none
+// comes within 2s, drop to the Canvas2D tier so the network never vanishes behind its labels.
+const onLoss = ({ gl }: { gl: { domElement: HTMLCanvasElement } }) => {
+  const c = gl.domElement
+  let t: ReturnType<typeof setTimeout> | undefined
+  c.addEventListener('webglcontextlost', () => (t = setTimeout(() => setTierOverride(1), 2000)))
+  c.addEventListener('webglcontextrestored', () => clearTimeout(t))
+}
 
 export default function NetworkScene() {
   const stage = useStage()
@@ -28,6 +38,7 @@ export default function NetworkScene() {
       camera={{ fov: FOV, position: [0, 0, BASE_DIST], near: 0.1, far: 60 }}
       gl={{ antialias: dpr <= 1.25, powerPreference: 'high-performance', alpha: true }}
       style={{ position: 'absolute', inset: 0 }}
+      onCreated={onLoss}
     >
       <SceneEnvironment stage={stage} />
       <CameraRig stage={stage} />
