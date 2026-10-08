@@ -74,6 +74,19 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
           <HandoffStrip glass upstream={hero.upstream} current={node(sys.id)} downstream={hero.downstream} base={flow.base ? node('build') : undefined} />
       </PageHero>
 
+      {/* Answer-first passage (AEO): a plain definition of the service before the narrative sections. */}
+      <Section rule space="tight" aria-labelledby="overview-h">
+        <SectionHeader id="overview-h" heading={page.overview.heading} body={page.overview.answer} />
+        <dl className="mt-12 border-b border-line">
+          {page.overview.facts.map((f) => (
+            <div key={f.term} className="grid gap-2 border-t border-line py-5 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] md:gap-8">
+              <dt className="text-body font-semibold text-text">{f.term}</dt>
+              <dd className="max-w-measure text-body text-text-2">{f.detail}</dd>
+            </div>
+          ))}
+        </dl>
+      </Section>
+
       <Section rule space="tight" aria-labelledby="problem-h">
         <SectionHeader id="problem-h" heading={page.problem.heading} body={page.problem.body} />
       </Section>

@@ -8,7 +8,7 @@ export const site: SiteContent = {
   tagline: 'The systems behind growth.',
   geography: 'US / Pakistan business; serving US, UK, Pakistan and international clients.',
   description:
-    'Growth operations, Sales & BPO and technology partner connecting marketing, sales, customer operations and technology.',
+    'US / Pakistan-based international growth operations, Sales & BPO and technology partner connecting marketing, sales, customer operations and technology.',
   markets: [
     { code: 'US', label: 'United States' },
     { code: 'GB', label: 'United Kingdom' },

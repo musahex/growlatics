@@ -11,9 +11,9 @@ const seeCapabilities = { label: 'See what we run', href: '#capabilities' }
 export const home: HomeContent = {
   route: '/',
   seo: {
-    title: 'Growlatics — Growth operations, Sales & BPO and technology',
+    title: 'Growlatics — Growth operations, Sales & BPO and technology partner',
     description:
-      'Growlatics builds and operates the systems behind growth: performance marketing, sales and BPO, customer operations and technology, connected as one.',
+      'US / Pakistan growth operations partner running Sales & BPO, performance marketing, customer operations and technology as one connected system.',
     ogTitle: 'We build and operate the systems behind growth.',
   },
   hero: {
@@ -130,9 +130,9 @@ export const reportLink = { label: 'How we report results', href: '/work/' }
 export const services: PageContent & { journeyMap: Section; faqHeading: string } = {
   route: '/services/',
   seo: {
-    title: 'Services: Acquire, Sell, Operate, Build | Growlatics',
+    title: 'Sales & BPO, Marketing, Support and Technology Services | Growlatics',
     description:
-      'Four connected systems: Performance Marketing, Sales & BPO, Customer Operations and Technology. Start with one or run growth as a single operation.',
+      'Four connected services: Sales & BPO, Performance Marketing, Customer Operations and Technology & Development. Start with one or run growth as one operation.',
   },
   hero: {
     heading: 'Four systems. One growth operation.',
@@ -176,7 +176,7 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
       items: [
         // God decision: cold outreach without a channel list.
         { title: 'Pipeline generation', body: 'Cold outreach; outbound calling; list building and prospect research; campaign support for launches and promotions.' },
-        { title: 'Conversion', body: "Fast inbound response and follow-up; lead qualification against your criteria; appointment setting into your team's calendars; telesales where the sale closes on the call." },
+        { title: 'Conversion', body: "Inbound response and follow-up; lead qualification against your criteria; appointment setting into your team's calendars; telesales where the sale closes on the call." },
         { title: 'Sales operations', body: 'CRM hygiene and data entry; pipeline reporting; script, cadence and objection-handling design; day-to-day sales process support.' },
         // OWNER-VERIFY: BPO scope
         { title: 'Business process outsourcing', body: "Back-office execution that supports the revenue cycle: order processing, follow-up workflows, and data and admin tasks your sellers shouldn't be doing.", verify: true },
@@ -201,6 +201,17 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
         { title: 'Overflow', body: 'Extra capacity on top of your in-house team for peaks, launches or new markets.' },
       ],
     },
+    overview: {
+      heading: 'What Growlatics Sales & BPO covers',
+      answer:
+        'Growlatics Sales & BPO is managed sales capacity for businesses that need dependable sales work and the process behind it. We run cold outreach, outbound and inbound calling, lead qualification, appointment setting, telesales and sales operations, plus back-office work that supports the revenue cycle, to your scripts and qualification criteria.',
+      facts: [
+        { term: "Who it's for", detail: 'Established and growing businesses whose good leads go uncalled, whose outbound starts and stops with each hire, or whose reps spend their day on admin instead of conversations.' },
+        { term: 'How it connects', detail: 'The work runs in your CRM where you have one. Demand arrives from Performance Marketing, won customers move to Customer Operations, and Technology & Development sets up the CRM, dialer and workflows.' },
+        { term: 'How it starts', detail: 'With a map of your current funnel, team and tools. Scripts, qualification rules and metrics are agreed with you before launch.' },
+        { term: 'Next step', detail: 'Book a Growth Call: we map where growth is stalling and suggest a first step.' },
+      ],
+    },
     journeyNote: 'Sell owns Qualify and Close. It receives demand from Acquire, hands won customers to Operate, and runs on the CRM and automation Build puts in place.',
     sections: [],
     faqHeading: 'Sales & BPO questions',
@@ -212,7 +223,7 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
     system: 'acquire',
     seo: {
       // God decision: LinkedIn / TikTok / Microsoft Ads dropped; description already platform-free.
-      title: 'Performance Marketing: paid, SEO, social and YouTube | Growlatics',
+      title: 'Performance Marketing: paid ads, SEO, social and YouTube | Growlatics',
       description:
         'Paid search, paid social, SEO, social and YouTube programs with landing pages and tracking, measured on qualified pipeline rather than clicks.',
     },
@@ -239,15 +250,28 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
         { title: 'Tracking and reporting', body: 'Conversion tracking and reporting tied to pipeline, not vanity metrics.' },
       ],
     },
+    overview: {
+      heading: 'What Growlatics Performance Marketing covers',
+      answer:
+        'Growlatics Performance Marketing plans and runs paid search and shopping (Google Ads), paid social (Meta), SEO and content, social media management and YouTube performance programs, with the landing pages, funnels and tracking behind them. Campaigns are measured on what reaches sales — qualified leads and booked conversations — not on clicks alone.',
+      facts: [
+        { term: "Who it's for", detail: 'Businesses, including ecommerce brands, that want marketing judged on qualified pipeline rather than traffic and cost per lead.' },
+        { term: 'How it connects', detail: 'Leads arrive in your CRM with their source and context attached. Sales & BPO can follow them up, Customer Operations feeds real customer language back into campaigns, and Technology & Development builds the pages and tracking.' },
+        { term: 'How it starts', detail: 'With a review of your current campaigns, tracking and what happens to leads after the click. Metrics are agreed with you before launch.' },
+        { term: 'Next step', detail: 'Book a Growth Call: we map where growth is stalling and suggest a first step.' },
+      ],
+    },
     journeyNote: 'Acquire owns Attract and shares Qualify with Sell. Leads arrive in your CRM with their source and context attached.',
     sections: [],
+    faqHeading: 'Performance Marketing questions',
+    faq: faq.performanceMarketing,
     finalCtaHeading: 'Want marketing measured on revenue?',
   },
   'customer-operations': {
     route: '/services/customer-operations/',
     system: 'operate',
     seo: {
-      title: 'Customer Operations: support and retention | Growlatics',
+      title: 'Customer Operations: chat, phone and email support | Growlatics',
       description:
         'Chat, phone and email support, retention workflows and CX operations, run to your standards and connected to sales and marketing.',
     },
@@ -266,7 +290,7 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
       id: 'capabilities',
       heading: 'What we run',
       items: [
-        { title: 'Chat and email support', body: 'Fast, consistent answers in your tone of voice.' },
+        { title: 'Chat and email support', body: 'Consistent answers in your tone of voice.' },
         { title: 'Call support', body: 'Inbound and outbound voice support for service, orders and follow-up.' },
         { title: 'Team operations', body: 'Staffing, quality review, escalation paths and daily management.' },
         { title: 'Retention and win-back', body: 'Renewal reminders, save offers and win-back outreach.' },
@@ -274,8 +298,21 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
         { title: 'CX operations', body: 'Help-desk setup, macros, knowledge base and service reporting.' },
       ],
     },
+    overview: {
+      heading: 'What Growlatics Customer Operations covers',
+      answer:
+        'Growlatics Customer Operations staffs and runs customer support across chat, phone and email, builds the help-desk workflows behind it, and handles onboarding, order support, retention and win-back programs. Conversations are logged where your team can see them, so service, sales and marketing work from the same customer record.',
+      facts: [
+        { term: "Who it's for", detail: 'Businesses that need support run to their standards, and want what customers say to reach sales and marketing instead of disappearing in a ticket queue.' },
+        { term: 'How it connects', detail: 'New customers arrive from Sales & BPO. Upsell and renewal leads go back to sales, customer language goes to marketing, and Technology & Development connects the help desk, CRM and automation.' },
+        { term: 'How it starts', detail: 'With a review of your current channels, help desk and escalation paths. Standards and metrics are agreed with you before launch.' },
+        { term: 'Next step', detail: 'Book a Growth Call: we map where growth is stalling and suggest a first step.' },
+      ],
+    },
     journeyNote: 'Operate owns Retain. It receives customers from Sell and sends what it learns back to Acquire and Sell.',
     sections: [],
+    faqHeading: 'Customer Operations questions',
+    faq: faq.customerOperations,
     finalCtaHeading: 'Keep more of the customers you win.',
   },
   technology: {
@@ -309,8 +346,21 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
         { title: 'QA and maintenance', body: 'Testing before launch and care after it.' },
       ],
     },
+    overview: {
+      heading: 'What Growlatics Technology & Development covers',
+      answer:
+        'Growlatics Technology & Development designs and builds websites and landing pages (including WordPress), ecommerce stores, web and mobile apps and UI/UX, and the automation and integrations that connect CRM, forms, help desk and data flows. QA, testing and ongoing maintenance are part of the service.',
+      facts: [
+        { term: "Who it's for", detail: 'Businesses whose campaigns, sales and support run on tools that don\'t talk to each other, or that need a site, store or product built to connect to the rest of their growth system.' },
+        { term: 'How it connects', detail: 'It builds the pages and tracking Performance Marketing runs on, the CRM, dialer and workflow setup Sales & BPO uses, and the help desk and automation Customer Operations needs.' },
+        { term: 'How it starts', detail: 'With a map of the tools you already use and where data is re-keyed between them. Scope is agreed with you before work starts.' },
+        { term: 'Next step', detail: 'Book a Growth Call: we map where growth is stalling and suggest a first step.' },
+      ],
+    },
     journeyNote: 'Build powers Scale and sits under every stage: the pages that Attract, the CRM that Qualifies and Closes, the help desk that Retains.',
     sections: [],
+    faqHeading: 'Technology & Development questions',
+    faq: faq.technology,
     finalCtaHeading: 'Build once. Connect everything.',
   },
 }
@@ -320,14 +370,14 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
 export const about: PageContent = {
   route: '/about/',
   seo: {
-    title: 'About | Growlatics',
+    title: 'About Growlatics: growth operations, Sales & BPO and technology',
     description:
-      'Growlatics is an international growth operations, BPO and technology partner, a US / Pakistan business serving US, UK, Pakistan and international clients.',
+      'Growlatics is an international growth operations, Sales & BPO and technology partner: a US / Pakistan business serving US, UK, Pakistan and international clients.',
   },
   hero: {
     eyebrow: 'About Growlatics',
     heading: 'We connect the work behind growth.',
-    lead: 'Growlatics is an international growth operations, BPO and technology partner. We build and run the marketing, sales, customer operations and technology systems that growing businesses depend on — as one connected operation.',
+    lead: 'Growlatics is an international growth operations, Sales & BPO and technology partner. We build and run the marketing, sales, customer operations and technology systems that growing businesses depend on — as one connected operation.',
   },
   sections: [
     {
@@ -393,7 +443,7 @@ export const contact: PageContent & { direct: { heading: string }; call: Section
 export const work: PageContent = {
   route: '/work/',
   seo: {
-    title: 'How we measure work | Growlatics',
+    title: 'Work: how we measure and report results | Growlatics',
     description:
       'How Growlatics defines, measures and reports results: metrics and baselines agreed before launch, reporting across the whole growth system.',
   },
