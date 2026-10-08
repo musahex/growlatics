@@ -1,2 +1,22 @@
-# Hostinger (Apache/LiteSpeed): serve the static export's branded 404 for unknown URLs.
+# Hostinger (Apache/LiteSpeed). Upload this dotfile with out/. Rationale and rollback: docs/v2/audit/tech-seo.md.
+
+# Serve the static export's branded 404 for unknown URLs.
 ErrorDocument 404 /404.html
+
+# One host: www.growlatics.us → growlatics.us (canonical tags already point at the apex).
+# HTTP → HTTPS is already done by Hostinger's CDN (verified 2026-10-09), so it is not repeated here.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_HOST} ^www\.growlatics\.us$ [NC]
+  RewriteRule ^ https://growlatics.us%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+# Security headers that cannot affect WebGL, fonts (self-hosted) or inline JSON-LD/theme scripts.
+# Not set here: an enforcing CSP (report-only first, see the audit) and HSTS (owner step once HTTPS is confirmed on every host).
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Content-Security-Policy "frame-ancestors 'self'; upgrade-insecure-requests"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()"
+</IfModule>

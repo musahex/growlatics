@@ -1,5 +1,5 @@
 import { about, site, systemById } from '@/content'
-import { breadcrumbJsonLd, ldJson, pageMetadata } from '@/lib/seo'
+import { ldJson, pageJsonLd, pageMetadata } from '@/lib/seo'
 import PageHero from '@/components/patterns/PageHero'
 import GlobalBand from '@/components/home/GlobalBand'
 import HandoffStrip from '@/components/patterns/HandoffStrip'
@@ -17,7 +17,7 @@ const node = (id: 'acquire' | 'sell' | 'operate' | 'build') => ({ label: systemB
 export default function AboutPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(breadcrumbJsonLd(about.route)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(pageJsonLd(about.route, about.seo)) }} />
       <PageHero hero={about.hero}>
           <HandoffStrip upstream={[node('acquire'), node('sell')]} current={{ label: site.name, sub: site.tagline }} downstream={[node('operate'), node('build')]} />
       </PageHero>

@@ -10,7 +10,7 @@ export const metadata = pageMetadata(home.route, home.seo)
 export default function Home() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(homeJsonLd()) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(homeJsonLd(home.seo)) }} />
       <div className="relative [clip-path:inset(0)]">
         <HomeStage />
         <Hero />

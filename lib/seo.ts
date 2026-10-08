@@ -49,10 +49,23 @@ export function pageMetadata(route: string, seo: Seo): Metadata {
 // tel:+14707556472 → +1-470-755-6472
 const telephone = site.contact.phoneHref.replace('tel:+1', '').replace(/(\d{3})(\d{3})(\d{4})/, '+1-$1-$2-$3')
 
-const areaServed = site.markets.filter((m) => m.code !== 'INTL').map((m) => m.code)
+const areaServed = site.markets.filter((m) => m.code !== 'INTL').map((m) => ({ '@type': 'Country', name: m.label }))
+const WEBSITE_ID = `${site.url}/#website`
 
-/** Organization + WebSite JSON-LD for Home. Every field comes from content; no address, ratings or counts (IA §7). */
-export function homeJsonLd() {
+/** WebPage node for a route; joins the page to the WebSite and, when given, its breadcrumb. */
+const webPage = (route: string, seo: Seo, breadcrumb?: string) => ({
+  '@type': 'WebPage',
+  '@id': `${site.url}${route}#webpage`,
+  url: `${site.url}${route}`,
+  name: seo.ogTitle ?? seo.title.replace(SUFFIX, ''),
+  description: seo.description,
+  inLanguage: 'en',
+  isPartOf: { '@id': WEBSITE_ID },
+  ...(breadcrumb && { breadcrumb: { '@id': breadcrumb } }),
+})
+
+/** Organization + WebSite + WebPage JSON-LD for Home. Every field comes from content; no address, ratings or counts (IA §7). */
+export function homeJsonLd(seo: Seo) {
   const organization = {
     '@type': 'Organization',
     '@id': ORG_ID,
@@ -66,8 +79,8 @@ export function homeJsonLd() {
     areaServed,
     contactPoint: { '@type': 'ContactPoint', contactType: 'sales', email: site.contact.email, telephone },
   }
-  const website = { '@type': 'WebSite', '@id': `${site.url}/#website`, name: site.name, url: site.url, publisher: { '@id': ORG_ID } }
-  return { '@context': 'https://schema.org', '@graph': [organization, website] }
+  const website = { '@type': 'WebSite', '@id': WEBSITE_ID, name: site.name, url: site.url, inLanguage: 'en', publisher: { '@id': ORG_ID } }
+  return { '@context': 'https://schema.org', '@graph': [organization, website, { ...webPage('/', seo), about: { '@id': ORG_ID } }] }
 }
 
 // Breadcrumb names: nav labels for sections, service names for service pages.
@@ -75,14 +88,16 @@ const crumbNames: Record<string, string> = Object.fromEntries(
   nav.header.flatMap((i) => [[i.href, i.label], ...(i.children ?? []).map((c) => [c.href, c.label])]),
 )
 
-/** BreadcrumbList JSON-LD for an inner route, e.g. /services/sales-bpo/ → Home › Services › Sales & BPO. */
-export function breadcrumbJsonLd(route: string) {
+/** WebPage + BreadcrumbList JSON-LD for an inner route, e.g. /services/sales-bpo/ → Home › Services › Sales & BPO. */
+export function pageJsonLd(route: string, seo: Seo) {
   const trail = ['/', ...route.split('/').filter(Boolean).map((_, i, parts) => `/${parts.slice(0, i + 1).join('/')}/`)]
-  return {
-    '@context': 'https://schema.org',
+  const id = `${site.url}${route}#breadcrumb`
+  const breadcrumb = {
     '@type': 'BreadcrumbList',
+    '@id': id,
     itemListElement: trail.map((r, i) => ({ '@type': 'ListItem', position: i + 1, name: r === '/' ? 'Home' : crumbNames[r] ?? r, item: `${site.url}${r}` })),
   }
+  return { '@context': 'https://schema.org', '@graph': [webPage(route, seo, id), breadcrumb] }
 }
 
 /** Service JSON-LD for a service page; provider → the Organization, no offers or prices. */
@@ -93,13 +108,14 @@ export function serviceJsonLd(name: string, route: string, description: string) 
     name,
     description,
     url: `${site.url}${route}`,
+    mainEntityOfPage: { '@id': `${site.url}${route}#webpage` },
     serviceType: name,
     provider: { '@type': 'Organization', '@id': ORG_ID, name: site.name, url: site.url },
     areaServed,
   }
 }
 
-/** Indexable routes for the sitemap (privacy/terms excluded until approved). */
+/** Indexable routes for the sitemap. privacy/terms stay out: unexported until NEXT_PUBLIC_LEGAL_APPROVED=1, and noindex drafts after that. */
 export const sitemapRoutes: { route: string; priority: number }[] = [
   { route: '/', priority: 1.0 },
   { route: '/services/', priority: 0.9 },
