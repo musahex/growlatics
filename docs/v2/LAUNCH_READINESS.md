@@ -10,23 +10,31 @@
 | **Business / legal approval** | **NOT GIVEN** | `OWNER_VERIFY.md` 1, 2, 3, 5 open (claims shown on live pages). Privacy/Terms unapproved (excluded from the build, so not published). Visual sign-off of v2. |
 | **Deploy permission** | **NOT GIVEN** | No owner instruction to upload to Hostinger or merge to `main`. |
 
-## 2. Owner decisions still open
+## 2. Owner blockers and interim decisions (2026-10-09)
 
-| # | Decision | Default if no answer | Where |
-|---|---|---|---|
-| 1 | BPO task scope ("order processing" etc.) | must be answered: copy is live | `OWNER_VERIFY.md` 1 |
-| 2 | Engagement models (Dedicated team / Campaign / Overflow; "named people") | must be answered | `OWNER_VERIFY.md` 2 |
-| 3 | "Who owns the leads and data? You do." | must be answered | `OWNER_VERIFY.md` 3 |
-| 4 | Legal entity name, governing law, retention, effective date; approve Privacy + Terms (incl. the marked UTM/sessionStorage sentence) | pages stay out of the export | `OWNER_VERIFY.md` 4, `content/legal.ts` |
-| 5 | Say where delivery teams work, or keep "Distributed execution" | keep vague | `OWNER_VERIFY.md` 5 |
-| 6 | Launch without a published privacy notice, or wait for #4 (take legal advice: the site invites personal data by email) | — | owner + counsel |
-| 7 | HSTS after a clean week on https | not set | `audit/tech-seo.md` TECH-04 |
-| 8 | AI training crawlers (GPTBot, ClaudeBot, Google-Extended, CCBot…): allow or block. Search/answer crawlers stay allowed | all allowed | `audit/tech-seo.md` §5 |
-| 9 | Analytics: GTM + GA4 IDs, consent platform (UK opt-in, US opt-out) | no tags, no banner | `CONVERSION_TRACKING_PLAN.md` O-2, O-3 |
-| 10 | Lead delivery: keep mailto or set a webhook/CRM; booking URL (Calendly/Cal.com) | mailto to ahsan@growlatics.com, no scheduler | `CONVERSION_TRACKING_PLAN.md` O-1, O-5; `LAUNCH.md` §4 |
-| 11 | Real Facebook page URL (the share short-link was removed; nothing invented) | no Facebook link | `content/site.ts` `social` |
-| 12 | Search Console + Bing Webmaster Tools access | not submitted | §5 step 10 |
-| 13 | Real-device QA: Safari macOS, iPhone, iPad portrait, mid-range Android | not done | `LAUNCH.md` §5 |
+**Remaining owner blockers** (HAG-21, ASK ME board):
+
+| # | Blocker | Where |
+|---|---|---|
+| 1 | Business/service claims: BPO scope incl. "order processing"; engagement models (Dedicated team / Campaign / Overflow); "Who owns the leads and data? You do."; where delivery teams work | `OWNER_VERIFY.md` 1, 2, 3, 5 |
+| 2 | Privacy and Terms legal approval (entity name, governing law, retention, effective date; incl. the marked UTM/sessionStorage sentence), or a decision to launch without them on legal advice | `OWNER_VERIFY.md` 4, `content/legal.ts` |
+| 3 | Real-device testing and visual sign-off: Safari macOS, iPhone, iPad, mid-range Android, on the live preview | `GLASS_HANDOFF.md` §17, `LAUNCH.md` §5 |
+| 4 | Final production deployment approval (Hostinger upload, merge `v2` → `main`) | §5 below |
+
+**Interim decisions (owner, 2026-10-09)** — in force until changed:
+
+| Topic | Decision |
+|---|---|
+| Delivery location | Wording stays neutral ("distributed execution") until team locations are confirmed |
+| HSTS | Deferred until production HTTPS is validated (`audit/tech-seo.md` TECH-04) |
+| AI crawlers | AI-search discoverability kept; AI-training crawler policy pending, robots unchanged (all allowed) |
+| Analytics / ads | No GA4, GTM or advertising trackers until consent/privacy approval; vendor-free event layer only |
+| Facebook | Stays removed until the correct profile URL is supplied |
+| Enquiries | Email (mailto to ahsan@growlatics.com) flow stays for now; webhook/booking later |
+| Deploy | No Hostinger deploy, no merge into `main` |
+| GitHub Pages | Intentionally serves the audited v2 preview (noindex); keep published until the owner says otherwise |
+
+Not blocking launch: Search Console + Bing submission (§5 step 10, after go-live).
 
 ## 3. Before uploading
 
@@ -71,10 +79,10 @@ Replace every `OWNER.*` placeholder in `content/legal.ts`, remove the `[DRAFT, O
 1. GitHub → Settings → Pages → **Unpublish site** (or `gh api -X DELETE repos/musahex/growlatics/pages`). Check https://musahex.github.io/growlatics/ returns 404.
 2. Settings → Environments → `github-pages` → Deployment branches: delete `v2`.
 3. On `v2`, revert the two preview commits before merging into `main` (§3 step 2).
-Until then the live preview still serves the pre-audit build (old `Disallow` robots, legal drafts present); a redeploy needs owner approval.
+Current state: the preview was redeployed from `v2` 9f8788a (2026-10-09, run 37850920277) and serves the audited build (robots `Allow`, every page noindex, no legal drafts). Keep it published until the owner decides; these steps are for later.
 
 ## 8. Blockers
 
-Technical: none. Business/legal: `OWNER_VERIFY` 1, 2, 3, 5 unanswered; no decision on launching without an approved privacy notice (§2 item 6); real-device QA on Safari macOS/iOS and Android not done (§2 item 13). Deploy: no owner permission to upload to Hostinger or merge to `main`.
+Technical: none (0 P0). Remaining owner blockers: (1) business/service claims confirmation, (2) Privacy and Terms legal approval, (3) real-device testing and visual sign-off, (4) final production deployment approval.
 
-LAUNCH_READY = NO (blockers: OWNER_VERIFY 1, 2, 3, 5 unanswered; owner/legal decision on launching without an approved privacy notice; real-device QA on Safari macOS/iOS and Android not done; no Hostinger deploy permission)
+LAUNCH_READY = NO (blockers: 1 business/service claims confirmation; 2 Privacy and Terms legal approval; 3 real-device testing and visual sign-off; 4 final production deployment approval)
