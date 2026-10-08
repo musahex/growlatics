@@ -12,7 +12,8 @@ export * from './pages'
 export * from './faq'
 export * from './proof'
 export * from './lead'
-export * from './legal'
+// legal.ts is NOT re-exported: the barrel is imported by client components, and the unapproved drafts must not ship
+// in shared JS. app/privacy and app/terms import '@/content/legal' directly.
 
 // Flat label map: system ids, capability ids (`<system>.<capability>`), stage ids, markets, core.
 const labels: Record<string, string> = {

@@ -81,6 +81,9 @@ for (const ref of new Set(ldRefs)) if (!ldIds.has(ref)) problems.push(`JSON-LD @
 
 // Legal drafts never ship unless approved (brief §16).
 for (const p of ['privacy', 'terms']) if (!LEGAL && existsSync(join(OUT, p))) problems.push(`legal draft out/${p} exported without NEXT_PUBLIC_LEGAL_APPROVED=1`)
+// Draft legal text must not ride along in shared JS either (content barrel leak, fixed 2026-10-09).
+const allFiles = (d) => readdirSync(d).flatMap((f) => (statSync(join(d, f)).isDirectory() ? allFiles(join(d, f)) : [join(d, f)]))
+if (!LEGAL) for (const f of allFiles(OUT)) if (/\.(js|html|txt)$/.test(f) && readFileSync(f, 'utf8').includes('OWNER TO PROVIDE')) problems.push(`legal draft text in ${f} without NEXT_PUBLIC_LEGAL_APPROVED=1`)
 
 // Click depth from / (BFS over internal links).
 const depth = { '/': 0 }, q = ['/']

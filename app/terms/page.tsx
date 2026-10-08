@@ -1,4 +1,4 @@
-import { terms } from '@/content'
+import { terms } from '@/content/legal'
 import { pageMetadata } from '@/lib/seo'
 import LegalDraft from '@/components/patterns/LegalDraft'
 

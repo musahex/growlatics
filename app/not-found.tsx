@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import { notFoundPage } from '@/content'
+import { siteMetadata } from '@/lib/seo'
 import Mark from '@/components/brand/Mark'
 import Button from '@/components/ui/Button'
 import Section from '@/components/ui/Section'
 
-export const metadata: Metadata = { title: { absolute: notFoundPage.seo.title }, robots: { index: false, follow: process.env.NEXT_PUBLIC_SITE_ENV !== 'preview' } }
+// og:title without the brand suffix (siteName already carries it); spread keeps the layout's OG image and siteName.
+export const metadata: Metadata = { title: { absolute: notFoundPage.seo.title }, openGraph: { ...siteMetadata.openGraph, title: notFoundPage.seo.title.replace(' | Growlatics', '') }, robots: { index: false, follow: process.env.NEXT_PUBLIC_SITE_ENV !== 'preview' } }
 
 export default function NotFound() {
   return (

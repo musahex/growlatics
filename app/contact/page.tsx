@@ -22,12 +22,12 @@ export default function ContactPage() {
             </h2>
             <ul className="mt-6 border-t border-line">
               <li className="border-b border-line py-2">
-                <a href={`mailto:${site.contact.email}`} className={linkCls}>
+                <a href={`mailto:${site.contact.email}`} className={linkCls} data-track="contact-aside">
                   {site.contact.email}
                 </a>
               </li>
               <li className="border-b border-line py-2">
-                <a href={site.contact.phoneHref} className={linkCls}>
+                <a href={site.contact.phoneHref} className={linkCls} data-track="contact-aside">
                   {site.contact.phone}
                 </a>
               </li>

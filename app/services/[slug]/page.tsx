@@ -67,7 +67,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(serviceJsonLd(sys.service, page.route, page.seo.description)) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(serviceJsonLd(sys.service, page.route, page.overview.answer)) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(pageJsonLd(page.route, page.seo)) }} />
 
       <PageHero hero={{ ...page.hero, primary: page.hero.primary && { ...page.hero.primary, href: `/contact/?system=${sys.slug}#book` } }} stage={<PageStage act={5} focus={sys.id} title={stageTitles.service(sys.service)} />}>
@@ -132,6 +132,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
         <SectionHeader id="journey-h" heading={journeyHeading(sys.verb)} body={page.journeyNote} />
         <SignalRail
           className="mt-16"
+          titleAs="p"
           isActive={(i) => sys.id === 'build' || sys.stages.includes(journey.stages[i].id)}
           items={journey.stages.map((st) => ({ index: st.number, title: st.name, body: st.line }))}
         />
@@ -158,7 +159,7 @@ export default function ServicePage({ params }: { params: { slug: string } }) {
         </Section>
       )}
 
-      <ConvergenceCTA heading={page.finalCtaHeading} />
+      <ConvergenceCTA heading={page.finalCtaHeading} href={`/contact/?system=${sys.slug}#book`} />
     </>
   )
 }

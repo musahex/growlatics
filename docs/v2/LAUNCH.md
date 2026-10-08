@@ -11,7 +11,7 @@ From the repo root (`/Users/moses/Growlatics`), on the branch to review:
 | Dev server (hot reload, not the shipped files) | `npm run dev` | http://localhost:3000/ |
 | The exact static export that ships | `npm run build && python3 -m http.server 4173 --directory out` | http://localhost:4173/ |
 
-Always build with `npm run build`, never `npx next build`: the `postbuild` step removes `out/lab/`. The Python preview has no `.htaccess`, so a bad URL shows Python's plain 404, not the branded one; check the branded 404 at http://localhost:4173/404.html. Drafts (unlinked, noindex): http://localhost:4173/privacy/ and /terms/.
+Always build with `npm run build`, never `npx next build`: the `postbuild` step (`scripts/postbuild.mjs`) removes `out/lab/` and the unapproved legal drafts (`out/privacy/`, `out/terms/`). To review the drafts locally, build with `NEXT_PUBLIC_LEGAL_APPROVED=1 npm run build` (never upload that build until the text is approved), then open http://localhost:4173/privacy/ and /terms/. The Python preview has no `.htaccess`, so a bad URL shows Python's plain 404, not the branded one; check the branded 404 at http://localhost:4173/404.html.
 
 ## 2. Turn off the old GitHub Pages copy (musahex.github.io/growlatics)
 
@@ -33,7 +33,7 @@ It is a stale second live site. The workflow `.github/workflows/deploy.yml` is a
 5. **Back up first.** Hostinger hPanel → **Files → File Manager** → `public_html/` → select all → **Compress** → download the zip (that is the live v1 site). Or hPanel → **Backups** → generate/download a files backup. Keep it until v2 has run cleanly for a week.
 6. Empty `public_html/` (so old `_next/` chunks do not linger). Do not touch anything outside `public_html/`.
 7. Upload the **contents** of `out/` (not the folder itself) into `public_html/`. Easiest: zip the contents of `out/` locally, upload the zip, **Extract** in File Manager, delete the zip.
-8. **Confirm `.htaccess` arrived**: it is a dotfile and many tools skip it. In File Manager enable "Show hidden files"; `public_html/.htaccess` must contain `ErrorDocument 404 /404.html`.
+8. **Confirm `.htaccess` arrived**: it is a dotfile and many tools skip it. In File Manager enable "Show hidden files"; `public_html/.htaccess` must contain `ErrorDocument 404 /404.html`, the www → apex redirect, the security headers and the cache/compression blocks (see `docs/v2/LAUNCH_READINESS.md` for the curl checks).
 9. HTTPS: hPanel → **Security → SSL** shows active for growlatics.us; force HTTPS on. Do not change DNS.
 10. Smoke test live (private window, desktop and phone): the 9 routes (`/`, `/services/`, the 4 service pages, `/work/`, `/about/`, `/contact/`); a bad URL (e.g. `/nope/`) shows the branded 404; light/dark toggle; `/robots.txt`; `/sitemap.xml`; OG preview (paste the URL into a link-preview checker).
 11. Contact flow: send one real request end to end; confirm it lands in ahsan@growlatics.com (or the configured provider).

@@ -155,7 +155,7 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
     route: '/services/sales-bpo/',
     system: 'sell',
     seo: {
-      title: 'Sales & BPO: outbound, inbound and appointment setting | Growlatics',
+      title: 'Sales & BPO: outbound, inbound, appointment setting | Growlatics',
       description:
         'Managed sales capacity for cold outreach, inbound and outbound calling, lead qualification, appointment setting and sales operations, connected to your CRM.',
     },
@@ -319,7 +319,7 @@ export const servicePages: Record<ServiceSlug, ServicePageContent> = {
     route: '/services/technology/',
     system: 'build',
     seo: {
-      title: 'Technology & Development: web, ecommerce and automation | Growlatics',
+      title: 'Technology: web, ecommerce and automation | Growlatics',
       description:
         'Websites, ecommerce, apps, UI/UX and the automation and integrations that connect marketing, sales and support into one system.',
     },

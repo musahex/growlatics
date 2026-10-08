@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import Attribution from '@/components/layout/Attribution'
 import InteractiveCursor from '@/components/ui/InteractiveCursor'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { SystemProvider } from '@/components/system/runtime'
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <SystemProvider>
             <InteractiveCursor />
+            <Attribution />
             <Header />
             <div className="relative z-content">
               <main id="main">{children}</main>
