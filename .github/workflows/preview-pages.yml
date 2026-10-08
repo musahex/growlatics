@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # basePath /growlatics, noindex meta; postbuild writes Disallow robots.txt and the prefixed manifest.
+      # basePath /growlatics, noindex meta; scripts/postbuild.mjs writes an Allow robots.txt (so crawlers can read the noindex), the prefixed manifest, and drops lab + legal drafts.
       - name: Build preview
         run: npm run build
         env:

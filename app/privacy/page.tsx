@@ -1,4 +1,4 @@
-import { privacy } from '@/content'
+import { privacy } from '@/content/legal'
 import { pageMetadata } from '@/lib/seo'
 import LegalDraft from '@/components/patterns/LegalDraft'
 

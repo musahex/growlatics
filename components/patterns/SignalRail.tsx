@@ -14,11 +14,14 @@ export default function SignalRail({
   items,
   isActive = () => true,
   className,
+  titleAs: Title = 'h3',
 }: {
   items: RailItem[]
   /** Lit nodes (signal); others render dormant. */
   isActive?: (i: number) => boolean
   className?: string
+  /** 'p' where the same rail repeats across pages (service journey), so it adds no boilerplate headings. */
+  titleAs?: 'h3' | 'p'
 }) {
   return (
     <Reveal
@@ -39,7 +42,7 @@ export default function SignalRail({
               )}
             />
             <p className={cn('font-mono text-data', lit ? 'text-signal-ink' : 'text-text-3')}>{item.index}</p>
-            <h3 className="mt-2 text-title text-text">{item.title}</h3>
+            <Title className="mt-2 text-title text-text">{item.title}</Title>
             {item.body && <p className="mt-3 max-w-measure text-body-s text-text-2">{item.body}</p>}
             {item.note && <p className="mt-3 font-mono text-data text-text-3">{item.note}</p>}
             {item.tags && item.tags.length > 0 && (

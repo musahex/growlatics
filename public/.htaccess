@@ -20,3 +20,27 @@ ErrorDocument 404 /404.html
   Header always set Content-Security-Policy "frame-ancestors 'self'; upgrade-insecure-requests"
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()"
 </IfModule>
+
+# Caching: /_next/static/* is content-hashed (new name on every build), so it can be cached for a year.
+# HTML, robots.txt, sitemap.xml and the RSC .txt payloads must revalidate so a new upload is seen at once.
+# The env flag (not <If>) keeps this working on LiteSpeed as well as Apache.
+<IfModule mod_rewrite.c>
+  RewriteRule ^_next/static/ - [E=GL_IMMUTABLE:1]
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|txt|xml|webmanifest)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  Header set Cache-Control "public, max-age=31536000, immutable" env=GL_IMMUTABLE
+</IfModule>
+
+# Compression for text assets. Brotli where the server has it, gzip otherwise; Hostinger's CDN may already compress.
+# AddOutputFilterByType comes from mod_filter: without the guard a server lacking it would answer 500.
+<IfModule mod_filter.c>
+  <IfModule mod_brotli.c>
+    AddOutputFilterByType BROTLI_COMPRESS text/html text/css text/plain text/xml application/javascript text/javascript application/json application/xml application/manifest+json image/svg+xml
+  </IfModule>
+  <IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript text/javascript application/json application/xml application/manifest+json image/svg+xml
+  </IfModule>
+</IfModule>

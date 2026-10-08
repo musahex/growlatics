@@ -4,8 +4,8 @@ import Button from '@/components/ui/Button'
 import Section from '@/components/ui/Section'
 import Reveal from '@/components/ui/Reveal'
 
-/** P7 Convergence CTA: mark + headline + primary CTA on data-surface="dark". Pages may override only the heading. */
-export default function ConvergenceCTA({ heading, id = 'book-cta' }: { heading?: string | null; id?: string }) {
+/** P7 Convergence CTA: mark + headline + primary CTA on data-surface="dark". Pages may override the heading and the primary href (service pages keep ?system=). */
+export default function ConvergenceCTA({ heading, id = 'book-cta', href }: { heading?: string | null; id?: string; href?: string }) {
   const c = site.finalCta
   return (
     <Section id={id} tone="dark" rule aria-labelledby={`${id}-h`}>
@@ -20,7 +20,7 @@ export default function ConvergenceCTA({ heading, id = 'book-cta' }: { heading?:
           {c.body}
         </Reveal>
         <Reveal item className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
-          <Button href={c.primary.href} size="lg" arrow>
+          <Button href={href ?? c.primary.href} size="lg" arrow>
             {c.primary.label}
           </Button>
           <Button href={c.secondary.href} variant="secondary" size="lg">

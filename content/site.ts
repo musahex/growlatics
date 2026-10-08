@@ -18,7 +18,6 @@ export const site: SiteContent = {
   contact: { email: 'ahsan@growlatics.com', phone: '+1 (470) 755-6472', phoneHref: 'tel:+14707556472' },
   social: [
     { label: 'LinkedIn', href: 'https://www.linkedin.com/company/growlatics/' },
-    { label: 'Facebook', href: 'https://www.facebook.com/share/1bFSXzTp4i/' },
     { label: 'Instagram', href: 'https://www.instagram.com/growlatics' },
   ],
   primaryCta: { label: 'Book a Growth Call', href: '/contact/#book' },

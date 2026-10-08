@@ -30,8 +30,8 @@ export function trackLink(href: string, location: string): void {
 }
 
 // ─── First-party attribution (sessionStorage only; first touch in the tab wins) ──────────────────────────────
-// ponytail: captured on /contact/ load and on CTA clicks, so a visitor who lands with UTMs, browses to another page,
-// then clicks a CTA loses them. Full-session capture = one captureAttribution() call in a layout-level effect.
+// Captured once per tab by components/layout/Attribution (root layout), so UTMs survive client navigation; the
+// /contact/ load and CTA-click calls stay as harmless fallbacks.
 
 const KEY = 'gl_attribution'
 const PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'] as const

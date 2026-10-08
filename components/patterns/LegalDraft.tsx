@@ -1,4 +1,5 @@
-import { draftNotice, type LegalDoc } from '@/content'
+import { draftNotice } from '@/content'
+import type { LegalDoc } from '@/content/legal'
 import Section from '@/components/ui/Section'
 
 /** Draft legal page body: flagged, unlinked, noindex until the owner approves. */

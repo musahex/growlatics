@@ -27,7 +27,7 @@ export const privacy: LegalDoc = {
   verify: true,
   title: 'Privacy Policy',
   status,
-  ownerRequired: ['Legal entity name', 'Retention period', 'Effective date'],
+  ownerRequired: ['Legal entity name', 'Retention period', 'Effective date', 'Campaign-parameter (UTM) sentence review'],
   sections: [
     {
       heading: 'Who we are',
@@ -47,7 +47,7 @@ export const privacy: LegalDoc = {
     },
     {
       heading: 'Cookies and local storage',
-      body: 'This site sets no analytics or advertising cookies. It stores your light or dark theme choice in your browser’s local storage; that value never leaves your device.',
+      body: 'This site sets no analytics or advertising cookies. It stores your light or dark theme choice in your browser’s local storage; that value never leaves your device. [DRAFT, OWNER/LEGAL TO REVIEW] If the link you arrived on carries campaign parameters (utm_source, utm_medium, utm_campaign, utm_term, utm_content), the site keeps them, with the page you landed on and the name of the referring website, in your browser’s session storage until you close the tab, and adds them to your request only when you send it. No cookie is set and nothing is sent to an analytics or advertising provider.',
     },
     {
       heading: 'How long we keep it',

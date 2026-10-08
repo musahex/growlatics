@@ -6,7 +6,8 @@ A private-ish review copy of branch `v2` at **https://musahex.github.io/growlati
 Set by `NEXT_PUBLIC_SITE_ENV=preview` (unset = production, byte-for-byte as before):
 - `basePath: '/growlatics'` (`next.config.mjs`); the manifest link uses `NEXT_PUBLIC_BASE_PATH`.
 - Every page gets `<meta name="robots" content="noindex, nofollow">` (`lib/seo.ts`, `app/not-found.tsx`).
-- `scripts/preview-postbuild.mjs` (run by `postbuild`, no-op in production) writes `out/robots.txt` as `Disallow: /` and prefixes `out/site.webmanifest` paths.
+- `scripts/postbuild.mjs` (run by `postbuild`) writes `out/robots.txt` as `Allow: /` (crawlers must be able to fetch a page to read its `noindex`; a `Disallow` would hide it) and prefixes `out/site.webmanifest` paths.
+- In every build (preview and production) `scripts/postbuild.mjs` removes `out/lab` and the unapproved legal drafts (`out/privacy`, `out/terms`) unless `NEXT_PUBLIC_LEGAL_APPROVED=1`.
 - Canonical, OG, JSON-LD and the sitemap still point at https://growlatics.us.
 
 ## Run it

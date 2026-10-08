@@ -6,7 +6,7 @@ const linkCls = 'inline-flex min-h-11 items-center text-body-s text-text-2 trans
 
 function FooterLink({ href, label }: { href: string; label: string }) {
   return /^(https?:|mailto:|tel:)/.test(href) ? (
-    <a href={href} className={linkCls}>
+    <a href={href} className={linkCls} data-track={/^(mailto|tel):/.test(href) ? 'footer' : undefined}>
       {label}
     </a>
   ) : (
