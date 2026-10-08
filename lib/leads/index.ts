@@ -7,6 +7,7 @@
 // CRM form / Zapier / Make / n8n: use webhook. HubSpot: add a provider here (see docs/v2/LAUNCH.md §4).
 // No vendor SDK, no cookies, client-side only (static export).
 import { leadForm, optionLabel, type LeadResult, type LeadSubmission } from '@/content/lead'
+import { getAttribution, track } from '@/lib/analytics'
 
 export type { LeadResult, LeadSubmission } from '@/content/lead'
 export * from './validate'
@@ -22,6 +23,12 @@ export const leadConfig = {
 
 const MAX_MAILTO = 2000
 const dash = (v?: string) => (v && v.trim() ? v.trim() : '—')
+
+/** "utm_source=google, utm_medium=cpc, …" from first-party session attribution, or '' when none. */
+function attributionLine(): string {
+  const a = getAttribution()
+  return a ? Object.entries(a).map(([k, v]) => `${k}=${v}`).join(', ') : ''
+}
 
 export function leadEmailBody(lead: LeadSubmission, notes = dash(lead.message)): string {
   const markets = lead.markets
@@ -43,6 +50,7 @@ export function leadEmailBody(lead: LeadSubmission, notes = dash(lead.message)):
     notes,
     '',
     `Sent from ${leadForm.mailto.source}`,
+    ...(attributionLine() ? [`Campaign: ${attributionLine()}`] : []),
   ].join('\n')
 }
 
@@ -71,6 +79,7 @@ async function postWebhook(url: string, lead: LeadSubmission): Promise<LeadResul
         ...lead,
         submittedAt: new Date().toISOString(),
         source: typeof window !== 'undefined' ? window.location.pathname : '/contact/',
+        attribution: getAttribution(),
       }),
       signal: ctrl.signal,
     })
@@ -88,8 +97,11 @@ export const providers: Record<string, LeadProvider> = {
 }
 
 export async function submitLead(lead: LeadSubmission, opts: { forceMailto?: boolean } = {}): Promise<LeadResult> {
-  const provider = (!opts.forceMailto && providers[leadConfig.provider]) || providers.mailto
-  return provider(lead)
+  const name = (!opts.forceMailto && providers[leadConfig.provider] && leadConfig.provider) || 'mailto'
+  const result = await providers[name](lead)
+  // The only conversion event: a non-mailto provider confirmed receipt (webhook = HTTP 2xx). A mailto open is not a lead.
+  if (result.status === 'sent' && name !== 'mailto') track('lead_submitted', { provider: name, needs: lead.needs.join(',') })
+  return result
 }
 
 /** Booking link for the success state, with name/email as query params. */
