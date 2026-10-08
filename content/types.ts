@@ -124,6 +124,8 @@ export interface ServicePageContent extends PageContent {
   howItWorks?: Section
   engagementShapes?: Section
   journeyNote: string
+  /** Answer-first passage under the hero (AEO): what it is, then who / how it connects / how it starts. */
+  overview: { heading: string; answer: string; facts: { term: string; detail: string }[] }
   faqHeading?: string
 }
 

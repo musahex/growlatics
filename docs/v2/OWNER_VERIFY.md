@@ -10,6 +10,7 @@ Owner decision A (GLASS_BRIEF §12): keep factual service wording; remove or sof
 | 2 | `content/pages.ts:195–201` | Sales & BPO "Ways to engage": **Dedicated team** ("Named people working only on your account…"), **Campaign**, **Overflow** | Commercial engagement models. "Named people working only on your account" is a staffing commitment. Remove any shape that is not offered. |
 | 3 | `content/faq.ts:33` | "Who owns the leads and data?" → "You do. Where you have the systems, we work in yours." | Data ownership is a contract term; the site should only say it if the standard agreement says it. |
 | 4 | `content/legal.ts` (whole file) | Privacy Policy and Terms of Use | Legal approval. Owner supplies the legal entity name (placeholder `[LEGAL ENTITY NAME — OWNER TO PROVIDE]`), governing law, and approves the text. Pages stay unlinked, `noindex`, out of the sitemap until then. |
+| 5 | `content/pages.ts` home `global.body`, About `international.body` (audit 2026-10-09, `docs/v2/audit/aeo-content.md` CONT-06) | "Distributed execution lets us run sales, support and technology work for the markets you sell into…" — nothing new shipped | Positioning decision, not a fix: say plainly where delivery teams work (e.g. "delivery from Pakistan and the US") or keep it vague. Buyers and AI answers currently cannot tell. Only the owner can state where work is done. |
 
 ## Owner-only facts (left out on purpose)
 
