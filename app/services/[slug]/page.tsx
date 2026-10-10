@@ -34,7 +34,8 @@ const FLOW: Record<SystemId, { up: SystemId[]; down: SystemId[]; base: boolean }
   build: { up: [], down: ['acquire', 'sell', 'operate'], base: false },
 }
 
-export const dynamicParams = false
+// No `dynamicParams = false`: Next 14.2 dev with output:'export' rejects it as "missing generateStaticParams()".
+// The export emits only these slugs, so an unknown slug is never built and the host serves 404.html.
 export function generateStaticParams() {
   return Object.keys(servicePages).map((slug) => ({ slug }))
 }

@@ -148,11 +148,20 @@ export function SystemStage({ mode = 'inline', act, stage = 0, intro, labels = t
       }
       // Tier 1: 30fps when the scroll position has not changed for 2s.
       if (ctx.tier === 1 && t - lastChange > 2000 && (skip = !skip)) return
+      // Fixed stage: the acts wrapper's clip-path is the visible region. The pointer only drives the scene
+      // (proximity, routing, parallax, the cursor's node hairline) while it is inside that region, and only
+      // nodes inside it count as near, so nothing reaches over the footer.
+      const clip = fixed ? el.parentElement?.getBoundingClientRect() : null
+      const inClip = (y: number) => !clip || (y >= clip.top && y <= clip.bottom)
+      if (fixed) ctx.pointerFx = ctx.tier === 2 && inClip(sys.pointer.y)
       const { nearI, nearD } = stepField(ctx.field, ctx.tier === 1 ? dt * (t - lastChange > 2000 ? 2 : 1) : dt, kp, { still: ctx.still, pointerFx: ctx.pointerFx, rect })
-      if (fixed && ctx.tier === 2 && nearI >= 0) {
-        sys.near.x = ctx.field.screen[nearI * 2]
-        sys.near.y = ctx.field.screen[nearI * 2 + 1]
-        sys.near.d = nearD
+      if (fixed && ctx.tier === 2) {
+        const ny = nearI >= 0 ? ctx.field.screen[nearI * 2 + 1] : 0
+        if (ctx.pointerFx && nearI >= 0 && inClip(ny)) {
+          sys.near.x = ctx.field.screen[nearI * 2]
+          sys.near.y = ny
+          sys.near.d = nearD
+        } else sys.near.d = Infinity
       }
       ctx.draw?.(dt, t)
       ctx.overlays.forEach((fn) => fn(dt, t))
@@ -168,6 +177,7 @@ export function SystemStage({ mode = 'inline', act, stage = 0, intro, labels = t
         addTask(task, frame, 20)
       } else {
         removeTask(task)
+        sys.near.d = Infinity // paused (acts scrolled off): the cursor must not keep a stale node lock
         stopController?.()
         stopController = null
       }
