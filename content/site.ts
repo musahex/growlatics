@@ -15,7 +15,12 @@ export const site: SiteContent = {
     { code: 'PK', label: 'Pakistan' },
     { code: 'INTL', label: 'International' },
   ],
-  contact: { email: 'ahsan@growlatics.com', phone: '+1 (470) 755-6472', phoneHref: 'tel:+14707556472' },
+  contact: {
+    email: 'ahsan@growlatics.com',
+    phone: '+1 (470) 755-6472',
+    phoneHref: 'tel:+14707556472',
+    address: { street: '12123 Garner Mill Lane', city: 'Houston', region: 'TX', postalCode: '77089', country: 'US' },
+  },
   social: [
     { label: 'LinkedIn', href: 'https://www.linkedin.com/company/growlatics/' },
     { label: 'Instagram', href: 'https://www.instagram.com/growlatics' },

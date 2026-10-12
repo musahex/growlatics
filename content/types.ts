@@ -11,6 +11,7 @@ export type Route =
   | '/services/performance-marketing/'
   | '/services/customer-operations/'
   | '/services/technology/'
+  | '/services/voice-ai-testing/'
   | '/work/'
   | '/about/'
   | '/contact/'
@@ -21,6 +22,9 @@ export interface Verifiable { verify?: true }
 export interface Link { label: string; href: string; external?: boolean }
 export interface Cta { label: string; href: string }
 
+/** Office address as the owner supplied it (OWNER_VERIFY: owner-only fact). country is ISO 3166-1 alpha-2. */
+export interface PostalAddress { street: string; city: string; region: string; postalCode: string; country: 'US' }
+
 export interface SiteContent {
   name: 'Growlatics'
   url: 'https://growlatics.us'
@@ -29,13 +33,15 @@ export interface SiteContent {
   geography: string
   description: string
   markets: { code: 'US' | 'GB' | 'PK' | 'INTL'; label: string }[]
-  contact: { email: string; phone: string; phoneHref: string }
+  contact: { email: string; phone: string; phoneHref: string; address: PostalAddress }
   social: { label: 'LinkedIn' | 'Facebook' | 'Instagram'; href: string }[]
   primaryCta: Cta
   finalCta: { heading: string; body: string; primary: Cta; secondary: Cta; note: string }
 }
 
-export interface NavItem { label: string; href: Route; children?: { system: SystemId; label: string; href: Route }[] }
+/** Services menu entry: one of the four systems, or a standalone service with its own `tag` (mono eyebrow) and `short` line. */
+export type NavChild = { label: string; href: Route } & ({ system: SystemId; tag?: never; short?: never } | { system?: never; tag: string; short: string })
+export interface NavItem { label: string; href: Route; children?: NavChild[] }
 export interface NavContent {
   header: NavItem[]
   servicesPanelFooter: Link
@@ -95,7 +101,7 @@ export interface Section extends Verifiable {
 export interface FaqItem extends Verifiable { question: string; answer: string }
 
 export interface Seo { title: string; description: string; ogTitle?: string; noindex?: boolean }
-export interface Hero { eyebrow?: string; heading: string; lead: string; primary?: Cta; secondary?: Cta }
+export interface Hero { eyebrow?: string; heading: string; lead: string; lead2?: string; primary?: Cta; secondary?: Cta }
 
 export interface PageContent {
   route: Route
