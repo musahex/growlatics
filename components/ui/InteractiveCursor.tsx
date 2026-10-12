@@ -70,8 +70,12 @@ export default function InteractiveCursor() {
           else w.removeAttribute('data-surface')
         }
       }
+      // The node lock and hairline exist only while both the pointer and the node are inside the band the
+      // stage drew this frame (the acts' clip region), whatever order tasks ran in or how slow frames are.
+      const n = sys.near
+      const inBand = p.y >= n.top && p.y <= n.bottom && n.y >= n.top && n.y <= n.bottom
       let next = resolve(target)
-      if (next === 'default' && sys.near.d < 48) next = 'node'
+      if (next === 'default' && inBand && n.d < 48) next = 'node'
       if (next !== state) {
         // Text fields show the native I-beam.
         if (next === 'text') root.classList.remove('custom-cursor-active')
@@ -97,7 +101,7 @@ export default function InteractiveCursor() {
       r.style.transform = `translate3d(${pos.rx.toFixed(1)}px,${pos.ry.toFixed(1)}px,0) translate(-50%,-50%) scale(${pos.rs.toFixed(3)})`
 
       // Tier-2 home: a hairline from the ring to a node within 120px.
-      const la = damp(pos.la, sys.near.d < 120 && state !== 'text' ? 1 : 0, 15, dt)
+      const la = inBand ? damp(pos.la, n.d < 120 && state !== 'text' ? 1 : 0, 15, dt) : 0
       pos.la = la
       if (la > 0.01) {
         const vx = sys.near.x - pos.rx, vy = sys.near.y - pos.ry
@@ -111,7 +115,7 @@ export default function InteractiveCursor() {
         Math.abs(pos.dx - p.x) + Math.abs(pos.dy - p.y) + Math.abs(pos.rx - tx) + Math.abs(pos.ry - ty) < 0.2 &&
         Math.abs(pos.ds - DOT[state]) + Math.abs(pos.rs - RING[state]) < 0.002 &&
         (la < 0.01 || la > 0.99) &&
-        !(sys.near.d < 120)
+        !(inBand && n.d < 120)
       if (settled) {
         awake = false
         removeTask('cursor')

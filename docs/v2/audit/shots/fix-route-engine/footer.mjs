@@ -20,6 +20,10 @@ for (const theme of ['light', 'dark']) for (const reduced of [false, true]) for 
     const canvas = document.querySelector('[data-system-stage="fixed"] canvas')
     return { footerTop: f.top, cursor: !!cur, linkOp: link ? +link.style.opacity : 0, ringX: m ? +m[1] : null, ringY: m ? +m[2] : null, gl: !!canvas, tier: canvas ? (canvas.getContext ? 'canvas' : '') : 'none' }
   })
+  // Wall time alone is not enough on SwiftShader: frames can take 200-650 ms and the scheduler caps a damping
+  // step at 50 ms, so the ring and hairline ease slowly in real time. Also wait for frames; a real lock
+  // or a drawn hairline never releases however many frames pass.
+  const frames = (n) => page.evaluate((n) => new Promise((r) => { const f = () => (--n > 0 ? requestAnimationFrame(f) : r()); requestAnimationFrame(f) }), n)
   // Put the acts/footer boundary at 60% of the viewport.
   await page.evaluate(() => { const f = document.querySelector('footer'); scrollTo({ top: f.getBoundingClientRect().top + scrollY - innerHeight * 0.6, behavior: 'instant' }) })
   await page.waitForTimeout(1200)
@@ -33,6 +37,8 @@ for (const theme of ['light', 'dark']) for (const reduced of [false, true]) for 
       if (ft + dy > h - 2) continue
       await page.mouse.move(x + 30, ft + dy, { steps: 2 })
       await page.waitForTimeout(260)
+      if ((await info()).linkOp > 0.05) linkV++ // the hairline is refused at once outside the acts: no frame allowance
+      await frames(12)
       const s = await info(); samples++
       const locked = s.ringX != null && Math.hypot(s.ringX - (x + 30), s.ringY - (ft + dy)) > 12
       if (s.linkOp > 0.05) linkV++
@@ -44,7 +50,7 @@ for (const theme of ['light', 'dark']) for (const reduced of [false, true]) for 
   // Test 4: cursor held over the footer while scrolling to the bottom (stage pauses).
   await page.mouse.move(w / 2, h - 60)
   await page.mouse.wheel(0, 4000); await page.waitForTimeout(800)
-  await page.mouse.move(w / 2 + 3, h - 61); await page.waitForTimeout(300)
+  await page.mouse.move(w / 2 + 3, h - 61); await page.waitForTimeout(300); await frames(12)
   const b = await info()
   const staleLock = b.ringX != null && (Math.hypot(b.ringX - (w / 2 + 3), b.ringY - (h - 61)) > 12 || b.linkOp > 0.05)
   // Test 5: back up, the scene is still drawing.
