@@ -93,3 +93,38 @@ Not run: WebKit and Firefox (the same gap as perf-a11y-qa QA-01).
 ## 8. Commit
 
 Fix commit `16390d7`; this report is the next commit on `v2-fix-route-engine` (tip: `git log -1 v2-fix-route-engine`).
+
+## Static-build follow-up (2026-10-12, branch `v2-footer-hard`)
+
+god's runs of `footer.mjs` against static exports (the published preview and a locally served preview build of `32875a2`) showed 0-3 footer hairlines and 1-9 ring "locks" per 16-config run, while `next dev` showed 0/0.
+
+**Measured, not assumed.** Using a debug build that exposed `sys` (not committed), every violation was logged with `sys.near`, the acts' clip rect and the frame rate. A plain run was clean 5 times. Under load (3 runs in parallel, like god's), runs 5-7 reproduced 1-3 lines and 1-3 locks. In every sample:
+- `sys.near.d` was already `Infinity`: the stage had released the node, as 16390d7 intended. No real node lock was ever sampled.
+- frames were slow: 5-33 fps, longest frame 42-653 ms. The scheduler caps a damping step at 50 ms (`scheduler.ts`), so on a 400 ms software-rendered frame the ring and the hairline cover only one 50 ms step. 10 frames later the ring sat on the pointer and the hairline was at 0.
+
+**Cause.**
+1. Locks: the ring easing from its last node back to the pointer, sampled mid-ease in real time. Test lag, not a defect.
+2. Lines: real, and in the cursor. When `sys.near` was released, the cursor still faded its hairline over several frames toward the last node position. On slow frames that fade is still visible with the pointer over the footer. The production build is not different in logic. It just reached slow frames more often under the test's load.
+
+**Fix.**
+- `store.ts`: `sys.near` also carries `top`/`bottom`, the acts' clip band the stage drew this frame.
+- `SystemStage.tsx`: the fixed stage writes the band each frame from the rect it already reads, and empties it when it pauses.
+- `InteractiveCursor.tsx`: the node lock and the hairline exist only while the pointer **and** the node are inside that band. Outside it the hairline is refused at once (opacity 0, no fade), whatever order tasks ran in or how slow the frame was. Inside the acts the interaction, fade and ring easing are unchanged.
+
+No new listeners, loops or observers; no visual change.
+
+**Test (`footer.mjs`).** The hairline is sampled 260 ms after the pointer enters the footer with no frame allowance, so it must already be 0. The ring is then sampled after a further 12 animation frames: enough for the capped easing to settle, while a real lock would still hold.
+
+**Results (Chromium + SwiftShader, 16 configs each: 4 widths × light/dark × full/reduced motion).**
+
+| Run | Build | Served at | Lines in footer | Ring locks | Stale lock at bottom | Console errors |
+|---|---|---|---|---|---|---|
+| before, run 5 | preview, `32875a2` + debug | `/growlatics` | 1 | 3 | 0 | 0 |
+| before, run 6 | preview, `32875a2` + debug | `/growlatics` | 2 | 3 | 0 | 0 |
+| before, run 7 (unchanged test) | preview, `32875a2` + debug | `/growlatics` | 3 | 5 | 0 | 0 |
+| after, run 1 | preview (`NEXT_PUBLIC_SITE_ENV=preview`) | `/growlatics` | 0 | 0 | 0 | 0 |
+| after, run 2 | preview | `/growlatics` | 0 | 0 | 0 | 0 |
+| after, run 3 | preview | `/growlatics` | 0 | 0 | 0 | 0 |
+| after | plain production | `/` | 0 | 0 | 0 | 0 |
+
+The 3 "after" preview runs ran in parallel (the load that reproduced the fault), with 492 samples each. Gates: `npm run build` PASS, `npx tsc --noEmit` PASS, `npm run lint` PASS (no warnings), `node scripts/seo-crawl.mjs` 0 problems.

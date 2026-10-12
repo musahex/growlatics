@@ -153,7 +153,11 @@ export function SystemStage({ mode = 'inline', act, stage = 0, intro, labels = t
       // nodes inside it count as near, so nothing reaches over the footer.
       const clip = fixed ? el.parentElement?.getBoundingClientRect() : null
       const inClip = (y: number) => !clip || (y >= clip.top && y <= clip.bottom)
-      if (fixed) ctx.pointerFx = ctx.tier === 2 && inClip(sys.pointer.y)
+      if (fixed) {
+        ctx.pointerFx = ctx.tier === 2 && inClip(sys.pointer.y)
+        sys.near.top = clip ? clip.top : 0
+        sys.near.bottom = clip ? clip.bottom : 0
+      }
       const { nearI, nearD } = stepField(ctx.field, ctx.tier === 1 ? dt * (t - lastChange > 2000 ? 2 : 1) : dt, kp, { still: ctx.still, pointerFx: ctx.pointerFx, rect })
       if (fixed && ctx.tier === 2) {
         const ny = nearI >= 0 ? ctx.field.screen[nearI * 2 + 1] : 0
@@ -178,6 +182,7 @@ export function SystemStage({ mode = 'inline', act, stage = 0, intro, labels = t
       } else {
         removeTask(task)
         sys.near.d = Infinity // paused (acts scrolled off): the cursor must not keep a stale node lock
+        sys.near.top = sys.near.bottom = 0
         stopController?.()
         stopController = null
       }

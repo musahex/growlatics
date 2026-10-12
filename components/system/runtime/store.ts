@@ -20,8 +20,9 @@ export const sys = {
   /** When true the StageController leaves act/journey alone (lab, inline figures). */
   manual: false,
   focus: null as SystemId | null,
-  /** Nearest live node on the fixed home stage, viewport px; d = distance to pointer. Written by renderers. */
-  near: { x: 0, y: 0, d: Infinity },
+  /** Nearest live node on the fixed home stage, viewport px; d = distance to pointer. Written by renderers.
+   *  top/bottom: the acts' clip band (viewport px) the stage drew this frame; empty while paused. */
+  near: { x: 0, y: 0, d: Infinity, top: 0, bottom: 0 },
   /** True while the fixed home stage draws a live (tier 1/2) renderer; inline act figures hide then. */
   live: false,
 }
