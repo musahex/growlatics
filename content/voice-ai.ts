@@ -13,6 +13,10 @@ export const voiceAiTesting: {
   name: string
   seo: Seo
   hero: Hero
+  /** Accessible name of the hero network figure. */
+  stageTitle: string
+  /** P6 handoff strip under the hero: what we test → the test environment → what comes out. */
+  handoff: { upstream: { label: string; sub: string }[]; current: { label: string; sub: string }; downstream: { label: string; sub: string }[] }
   proof: string[]
   console: {
     title: string
@@ -50,6 +54,18 @@ export const voiceAiTesting: {
       'From thousands of concurrent calls to human-reviewed conversations, we help teams discover failures, validate configurations and determine whether Voice AI systems are ready for production.',
     primary: { label: 'Book a Voice AI Testing Consultation', href: '/contact/?system=voice-ai-testing#book' },
     secondary: { label: 'Discuss a Testing Project', href: mailto('Discuss a Voice AI Testing Project') },
+  },
+  stageTitle: 'Voice AI testing in the Growlatics network: the four systems at rest around the core while a test run flows',
+  handoff: {
+    upstream: [
+      { label: 'Your Voice AI', sub: 'STT + LLM + TTS' },
+      { label: 'Your systems', sub: 'Telephony, CRM, APIs' },
+    ],
+    current: { label: 'Growlatics', sub: 'Voice AI test environment' },
+    downstream: [
+      { label: 'Evidence', sub: 'Transcripts, metrics, findings' },
+      { label: 'Release', sub: 'Production readiness' },
+    ],
   },
   proof: ['High-Volume Call Testing', 'Custom Test Datasets', 'Human + Automated QA', 'Production Readiness'],
   console: {

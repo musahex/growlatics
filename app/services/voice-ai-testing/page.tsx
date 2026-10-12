@@ -2,9 +2,12 @@ import { voiceAiTesting as v } from '@/content'
 import { ldJson, pageJsonLd, pageMetadata, serviceJsonLd } from '@/lib/seo'
 import { cn } from '@/lib/utils'
 import PageHero from '@/components/patterns/PageHero'
+import PageStage from '@/components/pages/PageStage'
+import HandoffStrip from '@/components/patterns/HandoffStrip'
+import Inspector from '@/components/patterns/Inspector'
+import { flatBelowLg } from '@/components/patterns/glass'
 import TestConsole from '@/components/patterns/TestConsole'
 import SignalRail from '@/components/patterns/SignalRail'
-import Ledger from '@/components/patterns/Ledger'
 import ConvergenceCTA from '@/components/patterns/ConvergenceCTA'
 import Section from '@/components/ui/Section'
 import SectionHeader from '@/components/ui/SectionHeader'
@@ -40,16 +43,10 @@ export default function VoiceAiTestingPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(serviceJsonLd(v.name, v.route, v.hero.lead)) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(pageJsonLd(v.route, v.seo)) }} />
 
-      <PageHero hero={v.hero}>
-        <ul className="mb-6 flex flex-wrap gap-2">
-          {v.proof.map((p) => (
-            <li key={p} className="inline-flex items-center gap-2 rounded-sm border border-line px-2 py-1 font-mono text-data text-text-2">
-              <span aria-hidden className="size-1.5 rounded-full bg-signal" />
-              {p}
-            </li>
-          ))}
-        </ul>
-        <TestConsole />
+      <PageHero hero={v.hero} stage={<PageStage act={5} title={v.stageTitle} />}>
+        {/* P6: what we test → the test environment → what comes out, live edges (DIRECTION §8.2). */}
+        <HandoffStrip glass upstream={v.handoff.upstream} current={v.handoff.current} downstream={v.handoff.downstream} />
+        <TestConsole className="mt-6" />
       </PageHero>
 
       {/* Capability strip: four short facts under the hero, the same hairline dl the service overviews use. */}
@@ -88,7 +85,30 @@ export default function VoiceAiTestingPage() {
 
       <Section id={v.services.id} rule aria-labelledby="services-h">
         <SectionHeader id="services-h" eyebrow={v.services.eyebrow} heading={v.services.heading} body={v.services.body} />
-        <Ledger className="mt-12" rows={v.services.items.map((s) => ({ term: s.title, description: s.body, tags: s.tags }))} />
+        <div className="mt-12">
+          <Inspector
+            label={v.services.heading}
+            panelClassName={cn('md:glass md:rounded-liquid md:p-8', flatBelowLg)}
+            items={v.services.items.map((s, i) => ({
+              id: `s${i + 1}`,
+              meta: String(i + 1).padStart(2, '0'),
+              label: s.title,
+              content: (
+                <div>
+                  <h3 className="text-title text-text">{s.title}</h3>
+                  <p className="mt-4 max-w-measure text-body text-text-2">{s.body}</p>
+                  <ul className="mt-6 flex flex-wrap gap-2">
+                    {s.tags.map((t) => (
+                      <li key={t} className={chip}>
+                        {t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ),
+            }))}
+          />
+        </div>
       </Section>
 
       <Section id="deployment" rule aria-labelledby="deploy-h">
@@ -99,7 +119,11 @@ export default function VoiceAiTestingPage() {
           </div>
           {/* The call path, top to bottom: a vertical signal rail with the review step lit. */}
           <Reveal as="ol" group className="relative grid gap-8 lg:mt-14">
-            <span aria-hidden className="absolute bottom-2 left-1.5 top-2 w-px bg-line-2" />
+            <span aria-hidden className="absolute bottom-2 left-1.5 top-2 w-px bg-net-edge-hot">
+              <span className="absolute inset-0 motion-safe:animate-travel-y">
+                <span className="absolute -left-[2.5px] top-0 size-1.5 rounded-full bg-net-packet motion-reduce:top-1/2" />
+              </span>
+            </span>
             {v.deployment.flow.map((n, i, all) => {
               const last = i === all.length - 1
               return (
@@ -120,11 +144,11 @@ export default function VoiceAiTestingPage() {
             <SectionHeader id="data-h" eyebrow={v.datasets.eyebrow} heading={v.datasets.heading} body={v.datasets.body} />
             <p className="mt-4 max-w-measure text-body-l text-text-2">{v.datasets.body2}</p>
           </div>
-          <Reveal as="ul" className="flex flex-wrap content-start gap-2 self-start lg:mt-14">
+          <Reveal as="ul" group className="flex flex-wrap content-start gap-2 self-start lg:mt-14">
             {v.datasets.tags.map((t) => (
-              <li key={t} className={chip}>
+              <Reveal as="li" item key={t} className={chip}>
                 {t}
-              </li>
+              </Reveal>
             ))}
           </Reveal>
         </Split>

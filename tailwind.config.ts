@@ -129,6 +129,11 @@ const config: Config = {
           '10%, 90%': { opacity: '1' },
           '100%': { transform: 'translateX(100%)', opacity: '0' },
         },
+        'travel-y': {
+          '0%': { transform: 'translateY(0)', opacity: '0' },
+          '10%, 90%': { opacity: '1' },
+          '100%': { transform: 'translateY(100%)', opacity: '0' },
+        },
         // a waveform bar breathing between its resting height and ~40 % of it (hero test console)
         wave: {
           '0%, 100%': { transform: 'scaleY(1)' },
@@ -138,6 +143,7 @@ const config: Config = {
       animation: {
         travel: 'travel 2.4s linear infinite',
         wave: 'wave 1.6s ease-in-out infinite',
+        'travel-y': 'travel-y 3.2s linear infinite',
       },
     },
   },
