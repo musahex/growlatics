@@ -23,4 +23,4 @@ Local check: `NEXT_PUBLIC_SITE_ENV=preview npm run build && mkdir -p $TMPDIR/pv 
 ## Remove it
 1. Settings › Pages › **Unpublish site** (or `gh api -X DELETE repos/musahex/growlatics/pages` to drop the Pages config entirely). Check https://musahex.github.io/growlatics/ returns 404.
 2. Remove the `v2` deploy rule: Settings › Environments › github-pages › Deployment branches, delete `v2`.
-3. On `v2`, revert the two commits "Add manual GitHub Pages preview deployment" and "Run the Pages preview through deploy.yml" (before merging `v2` into `main` for Hostinger).
+3. Then delete `.github/workflows/deploy.yml` and `preview-pages.yml` in a normal PR. **Do not revert** the two preview commits: that restores a dispatchable workflow that publishes an indexable production build to Pages (superseded 2026-10-12, see `docs/deployment/CI_CD.md` §11). Both files are manual-only and `scripts/deploy/check-workflows.mjs` blocks any push trigger, so merging `v2` into `main` with them in place is safe.

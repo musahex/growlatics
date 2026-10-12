@@ -39,7 +39,7 @@ Not blocking launch: Search Console + Bing submission (§5 step 10, after go-liv
 ## 3. Before uploading
 
 1. Owner answers §2 items 1–3, 5, 6 and 13 (and any others they want at launch).
-2. god merges `v2-audit-final` → `v2`. Before `v2` goes to `main`: revert the two preview commits ("Add manual GitHub Pages preview deployment", "Run the Pages preview through deploy.yml"), see `PREVIEW.md` "Remove it". Never push `main` while remote `main` is `8925b85`.
+2. god merges `v2-audit-final` → `v2`. Do **not** revert the preview commits (superseded 2026-10-12; reverting restores a production-to-Pages workflow): the preview workflows are manual-only and guarded, see `docs/deployment/CI_CD.md` §11. Never push `main` while remote `main` is `8925b85` other than by merging `v2` (fast-forward, replaces the old push-to-Pages `deploy.yml`). Hostinger deploys are now GitHub Actions: `docs/deployment/OWNER_SETUP.md`.
 3. On the release commit: `npm ci && npm run build` (plain build, no `NEXT_PUBLIC_SITE_ENV`; set any `NEXT_PUBLIC_LEAD_*` / `NEXT_PUBLIC_BOOKING_URL` in the same shell first; `NEXT_PUBLIC_LEGAL_APPROVED=1` only after legal approval).
 4. Check `out/`: `node scripts/seo-crawl.mjs` → `0 problem(s)`; `ls -a out` shows `.htaccess`, `404.html`, `index.html`, `_next/`, `robots.txt`, `sitemap.xml`; no `lab`, `privacy`, `terms`.
 
@@ -78,7 +78,7 @@ Replace every `OWNER.*` placeholder in `content/legal.ts`, remove the `[DRAFT, O
 
 1. GitHub → Settings → Pages → **Unpublish site** (or `gh api -X DELETE repos/musahex/growlatics/pages`). Check https://musahex.github.io/growlatics/ returns 404.
 2. Settings → Environments → `github-pages` → Deployment branches: delete `v2`.
-3. On `v2`, revert the two preview commits before merging into `main` (§3 step 2).
+3. Delete `deploy.yml` and `preview-pages.yml` in a normal PR; do not revert the preview commits (§3 step 2).
 Current state: the preview was redeployed from `v2` 9f8788a (2026-10-09, run 37850920277) and serves the audited build (robots `Allow`, every page noindex, no legal drafts). Keep it published until the owner decides; these steps are for later.
 
 ## 8. Blockers

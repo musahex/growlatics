@@ -1,0 +1,77 @@
+name: CI
+
+# Pull requests into main: the same checks and the same plain production build the deploy uses. No secrets,
+# no deployment, nothing published (the site.tgz artifact is internal to the run).
+# Also called by deploy-production.yml as its build job, so PR CI and production builds cannot drift apart.
+on:
+  pull_request:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: Build and validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - name: Type check
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npm run lint
+      - name: Self-checks (lead adapter, export validator, workflow guard)
+        run: |
+          node -e "require('jiti')(process.cwd()+'/', {alias:{'@':process.cwd()}})('./lib/leads/selfcheck.ts')"
+          node scripts/deploy/validate-export.mjs --self-test
+          node scripts/deploy/check-workflows.mjs --self-test
+          node scripts/deploy/check-workflows.mjs
+
+      # Plain production build: no NEXT_PUBLIC_SITE_ENV, basePath or assetPrefix. Privacy/Terms ship only when the
+      # repository variable NEXT_PUBLIC_LEGAL_APPROVED is '1' (owner's legal sign-off). Lead/booking settings likewise.
+      - name: Production build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_ENV: ""
+          NEXT_PUBLIC_LEGAL_APPROVED: ${{ vars.NEXT_PUBLIC_LEGAL_APPROVED }}
+          NEXT_PUBLIC_LEAD_PROVIDER: ${{ vars.NEXT_PUBLIC_LEAD_PROVIDER }}
+          NEXT_PUBLIC_LEAD_WEBHOOK_URL: ${{ vars.NEXT_PUBLIC_LEAD_WEBHOOK_URL }}
+          NEXT_PUBLIC_BOOKING_URL: ${{ vars.NEXT_PUBLIC_BOOKING_URL }}
+
+      - name: SEO crawl
+        run: node scripts/seo-crawl.mjs
+        env:
+          NEXT_PUBLIC_LEGAL_APPROVED: ${{ vars.NEXT_PUBLIC_LEGAL_APPROVED }}
+      - name: Export validation
+        run: node scripts/deploy/validate-export.mjs out
+        env:
+          NEXT_PUBLIC_LEGAL_APPROVED: ${{ vars.NEXT_PUBLIC_LEGAL_APPROVED }}
+
+      # A tarball keeps dotfiles (.htaccess); upload-artifact on its own drops hidden files.
+      - name: Package artifact
+        run: tar czf site.tgz -C out .
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: site-${{ github.sha }}
+          path: site.tgz
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Summary
+        run: |
+          echo "### Build ${GITHUB_SHA:0:12} (${GITHUB_EVENT_NAME}): tsc, lint, self-checks, build, SEO crawl, export validation PASS" >> "$GITHUB_STEP_SUMMARY"

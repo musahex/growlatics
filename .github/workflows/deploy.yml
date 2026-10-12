@@ -2,7 +2,9 @@ name: Preview on GitHub Pages (manual, via legacy entry point)
 
 # GitHub only dispatches workflows registered on the default branch, and only deploy.yml is.
 # On v2 this file just runs the noindex preview: gh workflow run deploy.yml --ref v2
-# Manual runs only; no push trigger. Revert this commit after the preview (docs/v2/PREVIEW.md).
+# Manual runs only; no push trigger, ever: main used to auto-deploy to Pages from this file (8925b85).
+# Do NOT revert the preview commits to remove it (that would restore a production-to-Pages workflow): delete this
+# file and preview-pages.yml instead, see docs/deployment/CI_CD.md "GitHub Pages preview". Production is deploy-production.yml.
 on:
   workflow_dispatch:
 

@@ -1,0 +1,76 @@
+name: Roll back production (Hostinger)
+
+# Manual: Actions › "Roll back production (Hostinger)" › Run workflow (branch main), or
+#   gh workflow run rollback-production.yml --ref main -f confirm=ROLLBACK [-f release_id=<id>]
+# Empty release_id = the release that was live before the current one. Ids: run with release_id=list to print them.
+# Not gated by PRODUCTION_DEPLOY_ENABLED on purpose: rollback must work while deploys are switched off.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type ROLLBACK to switch the live site
+        required: true
+      release_id:
+        description: "Release id to restore (empty = previous; 'list' = only print releases)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: growlatics-production
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: production
+      url: https://growlatics.us
+    env:
+      GL_TARGET: gl-prod
+      GL_DOCROOT: ${{ vars.HOSTINGER_DEPLOY_PATH }}
+      GL_MODE: ${{ vars.HOSTINGER_DEPLOY_MODE || 'swap' }}
+      GL_PRESERVE: ${{ vars.HOSTINGER_PRESERVE || '.well-known' }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://growlatics.us' }}
+      RELEASE_ID: ${{ inputs.release_id }}
+    steps:
+      - name: Confirm
+        if: inputs.confirm != 'ROLLBACK' && inputs.release_id != 'list'
+        run: echo "::error::confirm must be ROLLBACK" && exit 1
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: SSH setup (pinned host key)
+        run: bash scripts/deploy/ssh-setup.sh
+        env:
+          HOSTINGER_SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+          HOSTINGER_SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          HOSTINGER_SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          HOSTINGER_SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+          HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+
+      - name: Releases on the host
+        run: bash scripts/deploy/deploy.sh list | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Switch
+        id: switch
+        if: inputs.release_id != 'list'
+        run: bash scripts/deploy/deploy.sh rollback "$RELEASE_ID"
+
+      - name: Verify (HTTP)
+        if: steps.switch.outcome == 'success'
+        run: node scripts/deploy/smoke.mjs "$PRODUCTION_URL" "${{ steps.switch.outputs.active }}" --basic
+
+      - name: Summary
+        if: always() && inputs.release_id != 'list'
+        run: |
+          echo "### Rollback: ${{ steps.switch.outputs.previous || '?' }} → ${{ steps.switch.outputs.active || 'not switched' }} (switch: ${{ steps.switch.outcome }}; verified only if the Verify step passed)" >> "$GITHUB_STEP_SUMMARY"
