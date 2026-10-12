@@ -43,7 +43,7 @@ if (!basic) {
   const robots = await get('/robots.txt')
   check('HTTP robots.txt', robots.status === 200 && robots.body.includes(`Sitemap: ${SITE}/sitemap.xml`) && !/^Disallow:\s*\/\s*$/m.test(robots.body), robots.status)
   const sm = await get('/sitemap.xml')
-  check('HTTP sitemap.xml lists the 9 routes', sm.status === 200 && ROUTES.every((r) => sm.body.includes(`<loc>${SITE}${r}</loc>`)), sm.status)
+  check('HTTP sitemap.xml lists every route', sm.status === 200 && ROUTES.every((r) => sm.body.includes(`<loc>${SITE}${r}</loc>`)), sm.status)
 
   // Every local asset the home and contact pages reference (chunks, CSS, fonts, images, icons, manifest).
   const contact = await get('/contact/')

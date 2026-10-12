@@ -1,6 +1,6 @@
 import { chromium } from '/Users/moses/bat/career-ops/node_modules/playwright-core/index.mjs'
 const base = process.argv[2]
-const pages = ['/', '/services/', '/services/sales-bpo/', '/services/performance-marketing/', '/services/customer-operations/', '/services/technology/', '/about/', '/work/', '/contact/']
+const pages = ['/', '/services/', '/services/sales-bpo/', '/services/performance-marketing/', '/services/customer-operations/', '/services/technology/', '/services/voice-ai-testing/', '/about/', '/work/', '/contact/']
 const b = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] })
 const out = []
 for (const theme of ['light', 'dark']) for (const [w, h] of [[1440, 900], [1024, 768], [820, 1180], [390, 844]]) {
