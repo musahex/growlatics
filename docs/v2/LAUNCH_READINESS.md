@@ -49,6 +49,21 @@ Replace every `OWNER.*` placeholder in `content/legal.ts`, remove the `[DRAFT, O
 
 ## 5. Hostinger deploy steps
 
+**Deploy status (2026-10-12).** Labels: [hPanel] confirmed by the owner in hPanel · [SSH] confirmed by authenticated SSH (nothing yet) · [GitHub] configured and verified in GitHub · [owner] waiting for the owner · [approval] needs separate production approval.
+
+| Item | State |
+|---|---|
+| Hostinger SSH `u604656931@141.136.33.243:65002`, server1860 UK, upload folder `public_html` | [hPanel] |
+| Doc root `/home/u604656931/domains/growlatics.us/public_html` | expected, not verified [SSH pending] |
+| Deploy key installed in hPanel | unconfirmed [owner] |
+| Host key (candidate ED25519 `SHA256:dvH7tK5YZQ+Fv5mVgokf4EGLSsOte3P4ilNU5vUWl7M`) | UNVERIFIED [owner]; methods in `docs/deployment/CI_CD.md` §5a |
+| GitHub `production` env (main only), secrets HOST/PORT/USER, vars `PRODUCTION_DEPLOY_ENABLED=false`, `PRODUCTION_URL` | [GitHub] |
+| Secrets `HOSTINGER_SSH_PRIVATE_KEY`, `HOSTINGER_SSH_KNOWN_HOSTS`; var `HOSTINGER_DEPLOY_PATH` | not set [owner] / unset until SSH discovery |
+| Manual release of `claude/determined-lovelace-uv676d` (Houston address, `/services/voice-ai-testing/`) | done by another session outside this pipeline; **must be merged into `v2` before any CI deploy** or production loses both: `docs/deployment/RECONCILE_LOVELACE.md` [approval] |
+| First CI deploy from `main` | [approval] |
+
+The preferred path is the GitHub Actions pipeline (`docs/deployment/OWNER_SETUP.md`). The manual steps below remain the fallback and the rollback reference. After the lovelace merge there are **10** routes and the sitemap has **10** URLs; read "9" below as "10" then.
+
 1. **Back up.** hPanel → Files → File Manager → `public_html/` → select all (show hidden files on) → Compress → download the zip. Or hPanel → Backups → files backup. Keep it at least a week.
 2. Empty `public_html/` (old `_next/` chunks must not linger). Touch nothing outside it. No DNS change.
 3. Zip the **contents** of `out/` locally, upload into `public_html/`, Extract, delete the zip.

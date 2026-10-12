@@ -1,6 +1,10 @@
 # CI/CD: GitHub Actions → Hostinger (https://growlatics.us)
 
-Status (2026-10-12): **IMPLEMENTED and TESTED locally; AWAITING CREDENTIALS and LAUNCH APPROVAL.** Nothing has deployed to Hostinger. It is not automatic or operational until a real push-to-main deploy has passed its smoke test. Owner steps: [OWNER_SETUP.md](OWNER_SETUP.md).
+Status (2026-10-12): **IMPLEMENTED and TESTED locally; AWAITING CREDENTIALS, HOST KEY VERIFICATION and LAUNCH APPROVAL.** Nothing has deployed to Hostinger from this pipeline. It is not automatic or operational until a real push-to-main deploy has passed its smoke test. Owner steps: [OWNER_SETUP.md](OWNER_SETUP.md).
+
+**Before `PRODUCTION_DEPLOY_ENABLED` is ever set to `true`:** the urgent branch `claude/determined-lovelace-uv676d` (Houston address + Voice AI Testing page, released to Hostinger manually by another session) must be merged into `v2`, or the first CI deploy from `main` removes both from production. Plan, conflicts and apply commands: [RECONCILE_LOVELACE.md](RECONCILE_LOVELACE.md).
+
+Status labels used below: **[hPanel]** confirmed by the owner in hPanel · **[SSH]** confirmed by authenticated SSH (nothing yet) · **[GitHub]** configured and verified in GitHub (god, API, 2026-10-12) · **[owner]** waiting for the owner · **[approval]** needs separate production approval.
 
 ## 1. Architecture
 
@@ -69,22 +73,56 @@ All actions are pinned to commit SHAs (checkout v4.2.2, setup-node v4.1.0, uploa
 | `NEXT_PUBLIC_LEGAL_APPROVED` | `1` only after legal sign-off of Privacy/Terms | unset = drafts excluded |
 | `NEXT_PUBLIC_LEAD_PROVIDER`, `NEXT_PUBLIC_LEAD_WEBHOOK_URL`, `NEXT_PUBLIC_BOOKING_URL` | lead/booking config (`lib/leads`) | unset = mailto flow |
 
+- **Current state [GitHub] (verified by god via the GitHub API, 2026-10-12):**
+
+| Item | State |
+|---|---|
+| Environment `production` | exists; deployment branches = `main` only |
+| Env secrets `HOSTINGER_SSH_HOST`, `HOSTINGER_SSH_PORT`, `HOSTINGER_SSH_USER` | set |
+| Env secret `HOSTINGER_SSH_PRIVATE_KEY` | **not set** [owner] (after the deploy key is installed in hPanel) |
+| Env secret `HOSTINGER_SSH_KNOWN_HOSTS` | **not set** [owner] (only after the host key is verified, §5a) |
+| Repo variable `PRODUCTION_DEPLOY_ENABLED` | `false` (deploy off) |
+| Repo variable `PRODUCTION_URL` | set |
+| Repo variable `HOSTINGER_DEPLOY_PATH` | **unset on purpose** until the doc root is confirmed by SSH discovery [SSH] |
+| Repo variable `HOSTINGER_V1_REVIEWED` | unset (first deploy refuses until the owner reviews the doc root listing) [approval] |
+
 - Branch protection on `main` (recommended): require PR + status check "CI / Build and validate", no force pushes, no deletion. Emergency hotfix path: an admin may bypass ("Allow specified actors to bypass"), push the fix to `main`, and the normal deploy runs; open a follow-up PR if the check was skipped.
 
 ## 5. Hostinger: what is known and what the deploy verifies itself
 
-| Fact | Status |
-|---|---|
-| Plan type, SSH availability, host, port, user | **Unknown** (no access). Owner reads them in hPanel › Advanced › SSH Access. Port is often 65002; use hPanel's value. |
-| Exact doc root of growlatics.us | **Unknown**. Never assumed to be `~/public_html` (addon domains live under `~/domains/<domain>/public_html`). Owner confirms in hPanel › Files › File Manager / Websites › Dashboard. |
-| rsync on the host | **Unknown**; required (Hostinger's SSH plans normally ship it). If missing, see §13. |
-| Symlinked doc root followed by the web server | **Unknown**; hence default `swap` mode. |
-| Disk space, ownership | Checked at runtime by `preflight`. |
-| HTTPS / CDN | HTTPS via Hostinger CDN verified 2026-10-09 (`public/.htaccess`). CDN caching behaviour after a deploy unknown; smoke uses cache-busting queries. |
+| Fact | Value | Status |
+|---|---|---|
+| SSH host / port | `141.136.33.243` : `65002` | [hPanel]; stored as env secrets [GitHub] |
+| SSH user | `u604656931` | [hPanel]; stored as env secret [GitHub] |
+| Server | server1860, UK | [hPanel] |
+| Upload folder | `public_html` | [hPanel] |
+| Exact doc root of growlatics.us | expected `/home/u604656931/domains/growlatics.us/public_html` | **not verified** [SSH pending]. `HOSTINGER_DEPLOY_PATH` stays unset until discovery confirms it. Never assumed to be `~/public_html`. |
+| SSH keys can be added | yes, hPanel › Advanced › SSH Access | [hPanel]. Whether the deploy key is installed: **unconfirmed** [owner] |
+| Host key | keyscan candidate ED25519 `SHA256:dvH7tK5YZQ+Fv5mVgokf4EGLSsOte3P4ilNU5vUWl7M` | **UNVERIFIED** [owner]. Hostinger AI support could not confirm; owner escalated to human support. See §5a. |
+| rsync, `mv -T`, sha256sum on the host | — | unknown [SSH pending]; required. If missing, see §13. |
+| Symlinked doc root followed by the web server | — | unknown; hence default `swap` mode. |
+| Disk space, ownership | — | checked at runtime by `preflight`. |
+| HTTPS / CDN | HTTPS via Hostinger CDN verified 2026-10-09 (`public/.htaccess`) | CDN caching after a deploy unknown; smoke uses cache-busting queries. |
+| Live content | the manual lovelace release (`d2dbe47`) may be what is live | reconcile before enabling deploys ([RECONCILE_LOVELACE.md](RECONCILE_LOVELACE.md)) [approval] |
 
 Connection: SSH with a dedicated ed25519 deploy key (public half in hPanel only). Host key from `HOSTINGER_SSH_KNOWN_HOSTS` with `StrictHostKeyChecking yes`; never `ssh-keyscan` in CI. SFTP fallback was considered and not built: it gives no checksum verify or atomic rename and would need a different tool; plaintext FTP is never acceptable.
 
 **Preflight (fails closed, writes nothing until all pass):** doc root is absolute, has no `.`/`..`, is not `/`'s child or `$HOME`; exists; parent writable; doc root and its parent on one filesystem (renames atomic); mode matches what is on disk; on later runs `.growlatics-deploy/ROOT` names exactly this doc root; on the first run the doc root must contain `index.html`, `index.php` or `.htaccess` and the owner must set `HOSTINGER_V1_REVIEWED=true`; nothing in the doc root that the live release did not put there (other than `HOSTINGER_PRESERVE`); free space ≥ 2 × release + live site + 50 MB; no deploy lock held.
+
+
+## 5a. Host key verification
+
+`HOSTINGER_SSH_KNOWN_HOSTS` must hold a host key that came from a source an attacker in the network path cannot forge. A key from `ssh-keyscan` or a first-connection prompt is only a **candidate** until one of these confirms its fingerprint. Trustworthy methods, in order:
+
+1. **Human Hostinger support** states the server's ED25519 fingerprint for server1860 / `141.136.33.243:65002` (owner escalated 2026-10-12; AI support could not confirm). Compare it character for character with the candidate.
+2. **hPanel Cron Jobs, one-off command.** hPanel is reached over authenticated HTTPS, so the server reports its own key:
+   - hPanel › Advanced › Cron Jobs › add a job running once, command:
+     `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub > $HOME/hostkey.txt 2>&1`
+   - After it has run, open `hostkey.txt` in hPanel › File Manager (it is in the home directory, outside `public_html`, so never web-served) and compare with the candidate.
+   - Then **delete `hostkey.txt` and the cron job.**
+3. **Multi-vantage scans** (explicitly weaker): `ssh-keyscan -p 65002 -t ed25519 141.136.33.243 | ssh-keygen -lf -` from the owner's Mac, from a GitHub-hosted runner and from a phone hotspot, all agreeing. This only shows no single network path is tampered with; it proves nothing about the server. Using it is the **owner's recorded risk decision**.
+
+Never `StrictHostKeyChecking=no`, `accept-new`, or `ssh-keyscan` inside the workflow. The known_hosts line uses `[141.136.33.243]:65002 ssh-ed25519 AAAA…` (port ≠ 22).
 
 ## 6. Release layout and switch
 
