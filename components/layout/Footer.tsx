@@ -24,7 +24,6 @@ export default function Footer() {
           <div className="max-w-sm">
             <Logo />
             <p className="mt-4 text-body text-text">{site.tagline}</p>
-            <p className="mt-2 text-body-s text-text-3">{site.geography}</p>
             <address className="mt-2 text-body-s not-italic text-text-3">{formatAddress(site.contact.address)}</address>
             <ul className="mt-6 flex flex-wrap gap-x-5">
               {site.social.map((s) => (

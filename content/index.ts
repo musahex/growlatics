@@ -25,9 +25,9 @@ const labels: Record<string, string> = {
   ...Object.fromEntries(site.markets.map((m) => [`market.${m.code.toLowerCase()}`, m.label])),
 }
 
-/** One-line postal address for copy: '12123 Garner Mill Lane, Houston, TX 77089'. */
+/** Address as shown in copy, street and city only: '12123 Garner Mill Lane, Houston'. JSON-LD carries the full PostalAddress. */
 export function formatAddress(a: PostalAddress): string {
-  return `${a.street}, ${a.city}, ${a.region} ${a.postalCode}`
+  return `${a.street}, ${a.city}`
 }
 
 /** Short display label for a graph / content key, e.g. getLabel('sell.appointment-setting') → 'Appointments'. */

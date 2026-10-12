@@ -42,7 +42,6 @@ export default function ContactPage() {
                 ))}
               </li>
             </ul>
-            <p className="mt-6 text-body-s text-text-3">{site.geography}</p>
 
             <h2 className="mt-16 text-title text-text">{contact.call.heading}</h2>
             <ol className="mt-6 grid gap-6">
