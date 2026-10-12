@@ -2,6 +2,7 @@
 import { systems } from './systems'
 import { journey } from './journey'
 import { site } from './site'
+import type { PostalAddress } from './types'
 
 export * from './types'
 export * from './site'
@@ -22,6 +23,11 @@ const labels: Record<string, string> = {
   ...Object.fromEntries(systems.flatMap((s) => s.capabilities.map((c) => [c.id, c.short]))),
   ...Object.fromEntries(journey.stages.map((st) => [st.id, st.name])),
   ...Object.fromEntries(site.markets.map((m) => [`market.${m.code.toLowerCase()}`, m.label])),
+}
+
+/** One-line postal address for copy: '12123 Garner Mill Lane, Houston, TX 77089'. */
+export function formatAddress(a: PostalAddress): string {
+  return `${a.street}, ${a.city}, ${a.region} ${a.postalCode}`
 }
 
 /** Short display label for a graph / content key, e.g. getLabel('sell.appointment-setting') → 'Appointments'. */

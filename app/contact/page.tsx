@@ -1,4 +1,4 @@
-import { contact, site } from '@/content'
+import { contact, formatAddress, site } from '@/content'
 import { ldJson, pageJsonLd, pageMetadata } from '@/lib/seo'
 import PageHero from '@/components/patterns/PageHero'
 import QualificationFlow from '@/components/patterns/QualificationFlow'
@@ -30,6 +30,9 @@ export default function ContactPage() {
                 <a href={site.contact.phoneHref} className={linkCls} data-track="contact-aside">
                   {site.contact.phone}
                 </a>
+              </li>
+              <li className="border-b border-line py-2">
+                <address className="inline-flex min-h-11 items-center text-body not-italic text-text">{formatAddress(site.contact.address)}</address>
               </li>
               <li className="flex flex-wrap gap-x-6 border-b border-line py-2">
                 {site.social.map((s) => (

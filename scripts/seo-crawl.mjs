@@ -33,7 +33,7 @@ for (const p of pages.sort()) {
   const ld = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1])
   const jsonld = ld.flatMap((t) => { const j = JSON.parse(t); return (j['@graph'] || [j]).map((x) => x['@type']) })
   // Factual-only structured data: none of these may appear (IA §7, brief §5).
-  const banned = ld.join('').match(/"(address|aggregateRating|review|ratingValue|foundingDate|numberOfEmployees|offers|price|LocalBusiness)"/g)
+  const banned = ld.join('').match(/"(aggregateRating|review|ratingValue|foundingDate|numberOfEmployees|offers|price|LocalBusiness)"/g)
   ld.forEach((t) => walkLd(JSON.parse(t)))
   ids[route] = new Set([...body.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]))
   const raw = [...body.matchAll(/<a [^>]*href="([^"]*)"/g)].map((m) => m[1].replace(/&amp;/g, '&'))

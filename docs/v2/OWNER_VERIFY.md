@@ -14,7 +14,8 @@ Owner decision A (GLASS_BRIEF §12): keep factual service wording; remove or sof
 
 ## Owner-only facts (left out on purpose)
 
-- Legal entity name, registration details, registered address: not on the site anywhere (copy or JSON-LD). Add only if the owner provides them.
+- Legal entity name, registration details: not on the site anywhere (copy or JSON-LD). Add only if the owner provides them.
+- Office address: supplied by the owner 2026-10-12 (12123 Garner Mill Lane, Houston, TX 77089). Lives in `content/site.ts` `contact.address`; shown on /contact/, in the footer, and as `PostalAddress` on the Organization JSON-LD. Still no `LocalBusiness`.
 - Response time after a request, coverage hours, languages: not stated. FAQ says coverage hours and languages are agreed per engagement.
 
 ## Resolved in 9a (softened, `verify` cleared)
