@@ -132,11 +132,11 @@ function ServicesMenu({ pathname }: { pathname: string }) {
         </button>
       </div>
 
-      <div id="services-panel" hidden={!open} className="absolute left-1/2 top-full w-screen max-w-2xl -translate-x-1/2 pt-4">
+      <div id="services-panel" hidden={!open} className="absolute left-1/2 top-full w-screen max-w-3xl -translate-x-1/2 pt-4">
         <div className="glass-elevated glass-drop rounded-liquid p-2">
-          <ul className="grid grid-cols-[1.25fr_1fr_1fr_1fr] gap-1">
+          <ul className="grid grid-cols-[1.25fr_1fr_1fr_1fr_1fr] gap-1">
             {services.children!.map((c) => {
-              const s = systemById[c.system]
+              const s = c.system ? systemById[c.system] : undefined
               return (
                 <li key={c.href}>
                   <Link
@@ -144,9 +144,9 @@ function ServicesMenu({ pathname }: { pathname: string }) {
                     aria-current={pathname === c.href ? 'page' : undefined}
                     className="rounded-liquid-inner flex h-full flex-col gap-2 p-4 transition-colors duration-fast ease-out hover:bg-text/[0.05] aria-[current=page]:bg-signal-soft"
                   >
-                    <span className="font-mono text-data uppercase text-signal-ink">{s.verb}</span>
-                    <span className={cn('font-semibold text-text', s.emphasis ? 'text-body' : 'text-body-s')}>{c.label}</span>
-                    <span className="text-body-s text-text-3">{s.short}</span>
+                    <span className="font-mono text-data uppercase text-signal-ink">{s ? s.verb : c.tag}</span>
+                    <span className={cn('font-semibold text-text', s?.emphasis ? 'text-body' : 'text-body-s')}>{c.label}</span>
+                    <span className="text-body-s text-text-3">{s ? s.short : c.short}</span>
                   </Link>
                 </li>
               )
@@ -337,7 +337,7 @@ export default function Header() {
                               aria-current={pathname === c.href ? 'page' : undefined}
                               className="flex min-h-11 items-center gap-3 rounded-liquid-inner px-3 text-body text-text-2 aria-[current=page]:text-text"
                             >
-                              <span className="w-16 font-mono text-data uppercase text-signal-ink">{systemById[c.system].verb}</span>
+                              <span className="w-16 font-mono text-data uppercase text-signal-ink">{c.system ? systemById[c.system].verb : c.tag}</span>
                               {c.label}
                             </Link>
                           </li>

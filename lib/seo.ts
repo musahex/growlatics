@@ -132,6 +132,7 @@ export const sitemapRoutes: { route: string; priority: number }[] = [
   { route: '/services/performance-marketing/', priority: 0.8 },
   { route: '/services/customer-operations/', priority: 0.8 },
   { route: '/services/technology/', priority: 0.8 },
+  { route: '/services/voice-ai-testing/', priority: 0.8 },
   { route: '/about/', priority: 0.7 },
   { route: '/contact/', priority: 0.9 },
   { route: '/work/', priority: 0.5 },

@@ -11,6 +11,7 @@ export type Route =
   | '/services/performance-marketing/'
   | '/services/customer-operations/'
   | '/services/technology/'
+  | '/services/voice-ai-testing/'
   | '/work/'
   | '/about/'
   | '/contact/'
@@ -38,7 +39,9 @@ export interface SiteContent {
   finalCta: { heading: string; body: string; primary: Cta; secondary: Cta; note: string }
 }
 
-export interface NavItem { label: string; href: Route; children?: { system: SystemId; label: string; href: Route }[] }
+/** Services menu entry: one of the four systems, or a standalone service with its own `tag` (mono eyebrow) and `short` line. */
+export type NavChild = { label: string; href: Route } & ({ system: SystemId; tag?: never; short?: never } | { system?: never; tag: string; short: string })
+export interface NavItem { label: string; href: Route; children?: NavChild[] }
 export interface NavContent {
   header: NavItem[]
   servicesPanelFooter: Link
@@ -98,7 +101,7 @@ export interface Section extends Verifiable {
 export interface FaqItem extends Verifiable { question: string; answer: string }
 
 export interface Seo { title: string; description: string; ogTitle?: string; noindex?: boolean }
-export interface Hero { eyebrow?: string; heading: string; lead: string; primary?: Cta; secondary?: Cta }
+export interface Hero { eyebrow?: string; heading: string; lead: string; lead2?: string; primary?: Cta; secondary?: Cta }
 
 export interface PageContent {
   route: Route

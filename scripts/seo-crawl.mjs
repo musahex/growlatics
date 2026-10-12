@@ -88,7 +88,7 @@ if (!LEGAL) for (const f of allFiles(OUT)) if (/\.(js|html|txt)$/.test(f) && rea
 // Click depth from / (BFS over internal links).
 const depth = { '/': 0 }, q = ['/']
 while (q.length) { const r = q.shift(); for (const h of links[r] || []) if (!(h in depth)) { depth[h] = depth[r] + 1; q.push(h) } }
-for (const s of ['/services/sales-bpo/', '/services/performance-marketing/', '/services/customer-operations/', '/services/technology/'])
+for (const s of ['/services/sales-bpo/', '/services/performance-marketing/', '/services/customer-operations/', '/services/technology/', '/services/voice-ai-testing/'])
   if (!(depth[s] <= 2)) problems.push(`${s}: click depth ${depth[s] ?? '∞'} (> 2)`)
 
 // Sitemap / robots.
