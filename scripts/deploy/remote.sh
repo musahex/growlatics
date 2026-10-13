@@ -47,8 +47,11 @@ current_id() { [ -f "$DOCROOT/$MARKER" ] && head -n1 "$DOCROOT/$MARKER" || echo 
 entries() { local f; for f in "$1"/*; do [ "${f##*/}" = "$MARKER" ] || echo "${f##*/}"; done; }
 # Names in the live doc root that the current release did not put there and that are not preserved.
 foreign() {
-  local known="$META/$1.entries"; [ -f "$known" ] || known=/dev/null
-  entries "$DOCROOT" | grep -vxFf <(cat "$known"; printf '%s\n' "$MARKER" $PRESERVE) || true
+  # Pure bash: Hostinger's CageFS has no /dev/fd, so process substitution fails there and grep -f <(…) matched nothing.
+  local known="$META/$1.entries" n skip=$'\n'"$MARKER"$'\n'
+  [ -f "$known" ] && skip+="$(cat "$known")"$'\n'
+  for n in $PRESERVE; do skip+="$n"$'\n'; done
+  entries "$DOCROOT" | while IFS= read -r n; do [[ "$skip" == *$'\n'"$n"$'\n'* ]] || echo "$n"; done
 }
 
 require_layout() {
