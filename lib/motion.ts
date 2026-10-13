@@ -1,0 +1,86 @@
+// Motion constants (docs/v2/DIRECTION.md §4). Mirrored as CSS variables in app/globals.css.
+import { useSyncExternalStore } from 'react'
+import type { Variants, Transition } from 'framer-motion'
+
+const REDUCED = '(prefers-reduced-motion: reduce)'
+/**
+ * prefers-reduced-motion, hydration-safe: false on the server and during hydration, then the real
+ * value. (framer-motion's useReducedMotion reads matchMedia on the first client render, which made
+ * the client tree differ from the static HTML: React #418/#423.) Reduced variants below therefore
+ * also settle correctly when they replace the full ones after mount.
+ */
+export function useReducedMotion() {
+  return useSyncExternalStore(
+    (fn) => {
+      const m = matchMedia(REDUCED)
+      m.addEventListener('change', fn)
+      return () => m.removeEventListener('change', fn)
+    },
+    () => matchMedia(REDUCED).matches,
+    () => false,
+  )
+}
+
+export const duration = {
+  instant: 0.12,
+  fast: 0.2,
+  base: 0.32,
+  slow: 0.56,
+  slower: 0.88,
+  cinematic: 1.4,
+} as const
+
+type Bezier = [number, number, number, number]
+export const ease: { out: Bezier; inOut: Bezier; in: Bezier; linear: 'linear' } = {
+  out: [0.16, 1, 0.3, 1],
+  inOut: [0.65, 0, 0.35, 1],
+  in: [0.7, 0, 0.84, 0],
+  linear: 'linear',
+}
+
+// Exits run at 60% of the matching entrance duration.
+export const exitDuration = (d: number) => d * 0.6
+
+// R1–R4 fire once when 20% of the element is in view; nothing re-animates on scroll-back.
+export const viewportOnce = { once: true, amount: 0.2 } as const
+
+export const stagger = { rise: 0.06, trace: 0.12, bars: 0.08, activate: 0.09 } as const
+
+const t = (d: number, e: Bezier | 'linear' = ease.out): Transition => ({ duration: d, ease: e })
+
+/** R1 Rise, with its reduced-motion equivalent (fade only, `fast`). */
+export function rise(reduced: boolean | null): Variants {
+  return reduced
+    ? { hidden: { opacity: 0 }, show: { opacity: 1, y: 0, transition: { ...t(duration.fast), y: { duration: 0 } } } }
+    : { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: t(duration.slow) } }
+}
+
+/** Parent that staggers R1 children. */
+export function riseGroup(reduced: boolean | null, gap: number = stagger.rise): Variants {
+  return { hidden: {}, show: { transition: { staggerChildren: reduced ? 0 : gap } } }
+}
+
+/** R2 Trace: animate `pathLength` 0→1. Reduced motion draws at once. */
+export function trace(reduced: boolean | null, i = 0): Variants {
+  return reduced
+    ? { hidden: { pathLength: 1 }, show: { pathLength: 1, transition: { duration: 0 } } }
+    : { hidden: { pathLength: 0 }, show: { pathLength: 1, transition: { ...t(duration.slower), delay: i * stagger.trace } } }
+}
+
+/** R3 Bars: scaleY 0→1 from the bottom. Reduced motion shows bars at full height. */
+export function bars(reduced: boolean | null, i = 0, d: number = duration.slow): Variants {
+  return reduced
+    ? { hidden: { scaleY: 1 }, show: { scaleY: 1, transition: { duration: 0 } } }
+    : { hidden: { scaleY: 0 }, show: { scaleY: 1, transition: { ...t(d), delay: i * stagger.bars } } }
+}
+
+/** R6 Swap: exit up 8px (`ease-in`), enter with R1. Reduced motion cross-fades over `fast`. */
+export function swap(reduced: boolean | null): Variants {
+  return reduced
+    ? { initial: { opacity: 0 }, enter: { opacity: 1, y: 0, transition: { ...t(duration.fast), y: { duration: 0 } } }, exit: { opacity: 0, transition: t(duration.fast) } }
+    : {
+        initial: { opacity: 0, y: 16 },
+        enter: { opacity: 1, y: 0, transition: t(duration.slow) },
+        exit: { opacity: 0, y: -8, transition: t(exitDuration(duration.base), ease.in) },
+      }
+}

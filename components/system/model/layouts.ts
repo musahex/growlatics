@@ -1,0 +1,373 @@
+// Per-act target compositions (DIRECTION §6.2, §7). Normalised: x 0..1 left→right, y 0..1 top→bottom,
+// z -1..1 (negative = further). One key per act, act 4 has one key per journey stage.
+import { CORE, EDGES, NODES, NODE_INDEX, type SystemId } from './graph'
+
+/** Node state levels: 0 hidden · 1 dormant · 2 idle · 3 active. Edge levels: 0 hidden · 1 broken · 2 rest · 3 hot. */
+export const LEVEL = { hidden: 0, dormant: 1, idle: 2, active: 3 } as const
+export type NodeState = keyof typeof LEVEL
+
+export type Pose = {
+  pos: Float32Array // N*3
+  node: Float32Array // N, 0..3
+  edge: Float32Array // E, 0..3
+  label: Float32Array // N, 0..1 SpatialLabel visibility
+  names: number // 0..1 the four system names over their clusters (acts 1, 3, 5)
+  field: number // dormant background field alpha (act 1)
+  dim: number // whole-network multiplier (acts 6 and 8 step back)
+  mark: number // 0..1 the core resolves into the five-bar mark (act 9)
+  hero: number // journey hero packet visibility
+  cam: Float32Array // [x, y, zoom, tiltDeg]
+}
+
+const N = NODES.length
+const E = EDGES.length
+export const STAGE_COUNT = 5
+/** Key order: acts 1-3, journey stages 0-4 (act 4), acts 5-9. */
+export const KEY_COUNT = 3 + STAGE_COUNT + 5
+
+export const keyFor = (act: number, stage = 0) =>
+  act < 4 ? act - 1 : act === 4 ? 3 + Math.min(STAGE_COUNT - 1, Math.max(0, stage)) : act + 3
+
+export const emptyPose = (): Pose => ({
+  pos: new Float32Array(N * 3),
+  node: new Float32Array(N),
+  edge: new Float32Array(E),
+  label: new Float32Array(N),
+  names: 0,
+  field: 0,
+  dim: 1,
+  mark: 0,
+  hero: 0,
+  cam: new Float32Array([0.5, 0.5, 1, 0]),
+})
+
+type Center = { x: number; y: number; z: number; r: number }
+const GOLDEN = 2.39996323
+const sysOf = (i: number) => NODES[i].system
+
+/** Spread each group's nodes around its centre (phyllotaxis, deterministic). */
+function place(p: Pose, groups: [string[], Center][]) {
+  for (const [ids, c] of groups) {
+    const m = ids.length
+    ids.forEach((id, k) => {
+      const i = NODE_INDEX[id]
+      const a = k * GOLDEN + c.x * 7
+      const rad = m === 1 ? 0 : c.r * Math.sqrt((k + 0.55) / m)
+      p.pos[i * 3] = c.x + Math.cos(a) * rad
+      p.pos[i * 3 + 1] = c.y + Math.sin(a) * rad * 0.8
+      p.pos[i * 3 + 2] = c.z + ((k % 3) - 1) * 0.12
+    })
+  }
+}
+
+const idsOf = (s: SystemId) => NODES.filter((x) => x.system === s).map((x) => x.id)
+const bySystem = (centers: Partial<Record<SystemId, Center>>): [string[], Center][] =>
+  (Object.keys(centers) as SystemId[]).map((s) => [idsOf(s), centers[s]!])
+
+function states(p: Pose, fn: (s: SystemId, i: number) => NodeState) {
+  for (let i = 0; i < N; i++) p.node[i] = LEVEL[fn(sysOf(i), i)]
+}
+
+type EdgeMode = 'fragmented' | 'connected' | 'flowing' | 'converge'
+function edges(p: Pose, mode: EdgeMode) {
+  EDGES.forEach((ed, i) => {
+    const market = ed.a.startsWith('market.')
+    const na = p.node[NODE_INDEX[ed.a]], nb = p.node[NODE_INDEX[ed.b]]
+    const lit = Math.min(na, nb) >= LEVEL.idle
+    let v: number
+    if (market) v = 0
+    else if (ed.kind === 'internal') v = lit ? 2 : Math.min(na, nb) >= 1 ? 0.6 : 0
+    else if (ed.kind === 'handoff') v = mode === 'fragmented' ? 1 : 0
+    else v = mode === 'fragmented' ? 0 : mode === 'flowing' || mode === 'converge' ? (lit ? 2.6 : 0.6) : lit ? 2 : 0.6
+    p.edge[i] = v
+  })
+}
+
+// Market nodes rest on the core when hidden so they never fly in from the origin.
+function parkMarkets(p: Pose) {
+  for (const id of ['market.us', 'market.gb', 'market.pk']) {
+    const i = NODE_INDEX[id]
+    p.pos.set(p.pos.subarray(CORE * 3, CORE * 3 + 3), i * 3)
+  }
+}
+
+const CORE_C = (x: number, y: number): Center => ({ x, y, z: 0.15, r: 0 })
+
+// ── Act 1: the connected growth operator (idle end state; text-safe zone on the left) ──
+function act1(): Pose {
+  const p = emptyPose()
+  place(p, [
+    ...bySystem({
+      acquire: { x: 0.8, y: 0.25, z: -0.1, r: 0.085 },
+      sell: { x: 0.77, y: 0.5, z: 0.35, r: 0.11 },
+      operate: { x: 0.86, y: 0.72, z: 0, r: 0.07 },
+      build: { x: 0.87, y: 0.88, z: -0.75, r: 0.09 }, // clear of the System index's right edge (touch 1024 tier 1)
+    }),
+    [['core.growlatics'], CORE_C(0.62, 0.52)],
+  ])
+  parkMarkets(p)
+  // Sell is the commercial lead: the only lit cluster at rest. The others stay neutral (orange = active).
+  states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' || s === 'sell' ? 'active' : 'idle'))
+  edges(p, 'connected')
+  p.field = 1
+  p.names = 1
+  return p
+}
+
+// ── Act 2: six vendor islands drifting apart, core dormant, handoffs broken ──
+function act2(): Pose {
+  const p = emptyPose()
+  place(p, [
+    [['acquire.paid-search', 'acquire.funnels'], { x: 0.58, y: 0.2, z: 0, r: 0.05 }],
+    [['acquire.seo', 'acquire.social', 'acquire.youtube', 'acquire.lead-generation'], { x: 0.86, y: 0.22, z: -0.2, r: 0.07 }],
+    [['sell.cold-outreach', 'sell.outbound-calling'], { x: 0.6, y: 0.52, z: 0.3, r: 0.05 }],
+    [['sell.lead-qualification', 'sell.inbound', 'sell.appointment-setting', 'sell.telesales', 'sell.sales-operations'], { x: 0.87, y: 0.5, z: 0.2, r: 0.08 }],
+    [idsOf('operate'), { x: 0.62, y: 0.82, z: 0, r: 0.07 }],
+    [idsOf('build'), { x: 0.88, y: 0.84, z: -0.7, r: 0.08 }],
+    [['core.growlatics'], CORE_C(0.74, 0.52)],
+  ])
+  parkMarkets(p)
+  states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' ? 'dormant' : 'idle'))
+  edges(p, 'fragmented')
+  p.cam[3] = 8
+  return p
+}
+
+// ── Act 3: reconnected through the core, clusters compressed ──
+function act3(): Pose {
+  const p = emptyPose()
+  place(p, [
+    ...bySystem({
+      acquire: { x: 0.62, y: 0.3, z: 0, r: 0.075 },
+      sell: { x: 0.84, y: 0.42, z: 0.3, r: 0.095 },
+      operate: { x: 0.8, y: 0.72, z: 0, r: 0.065 },
+      build: { x: 0.66, y: 0.84, z: -0.75, r: 0.1 },
+    }),
+    [['core.growlatics'], CORE_C(0.72, 0.54)],
+  ])
+  parkMarkets(p)
+  states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' ? 'active' : 'idle'))
+  edges(p, 'flowing')
+  p.names = 1
+  return p
+}
+
+// ── Act 4: journey stages. A wide flat graph the camera travels across. ──
+const JOURNEY: Record<string, Center> = {
+  acquire: { x: 0.2, y: 0.36, z: 0, r: 0.08 },
+  sell: { x: 0.5, y: 0.4, z: 0.3, r: 0.1 },
+  operate: { x: 0.78, y: 0.38, z: 0, r: 0.07 },
+  build: { x: 0.5, y: 0.8, z: -0.8, r: 0.16 },
+}
+const STAGE_SYSTEMS: SystemId[][] = [['acquire'], ['acquire', 'sell'], ['sell'], ['operate'], ['build']]
+const STAGE_FOCUS: [number, number][] = [
+  [0.2, 0.36],
+  [0.36, 0.38],
+  [0.5, 0.4],
+  [0.78, 0.38],
+  [0.5, 0.72],
+]
+function journey(stage: number): Pose {
+  const p = emptyPose()
+  const active = STAGE_SYSTEMS[stage]
+  const reached = new Set(STAGE_SYSTEMS.slice(0, stage + 1).flat())
+  const centers: Partial<Record<SystemId, Center>> = {}
+  for (const [s, c] of Object.entries(JOURNEY)) {
+    centers[s as SystemId] = active.includes(s as SystemId) ? { ...c, r: c.r * 1.6 } : c
+  }
+  place(p, [...bySystem(centers), [['core.growlatics'], CORE_C(0.5, 0.58)]])
+  parkMarkets(p)
+  states(p, (s) =>
+    s === 'market' ? 'hidden' : s === 'core' ? 'active' : active.includes(s) ? 'active' : reached.has(s) ? 'idle' : 'dormant',
+  )
+  edges(p, 'flowing')
+  NODES.forEach((x, i) => (p.label[i] = active.includes(x.system) ? 1 : 0))
+  // Focus lands right of centre (≈ x 0.68) so the stage panel on the left stays clear.
+  p.cam.set([STAGE_FOCUS[stage][0] - 0.1, STAGE_FOCUS[stage][1], 1.8, 0])
+  p.hero = 1
+  return p
+}
+
+// ── Act 5: top-down ring, Sell at 12 o'clock and 1.25× larger ──
+function act5(): Pose {
+  const p = emptyPose()
+  place(p, [
+    ...bySystem({
+      // Ring sits right of the text column (≥ 0.6 at 1440): Acquire's name and nodes stay off the copy.
+      sell: { x: 0.75, y: 0.22, z: 0, r: 0.11 },
+      operate: { x: 0.9, y: 0.5, z: 0, r: 0.065 },
+      build: { x: 0.75, y: 0.8, z: 0, r: 0.08 },
+      acquire: { x: 0.62, y: 0.5, z: 0, r: 0.065 },
+    }),
+    [['core.growlatics'], CORE_C(0.75, 0.5)],
+  ])
+  parkMarkets(p)
+  states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' ? 'active' : 'idle'))
+  edges(p, 'flowing')
+  p.names = 1
+  return p
+}
+
+// ── Act 6: the systems line up as one route (the trace lanes' bottom lane), stepped back so the lanes lead ──
+function act6(): Pose {
+  const p = emptyPose()
+  place(p, [
+    ...bySystem({
+      acquire: { x: 0.66, y: 0.5, z: 0, r: 0.035 },
+      sell: { x: 0.76, y: 0.5, z: 0.2, r: 0.045 },
+      operate: { x: 0.9, y: 0.5, z: 0, r: 0.035 },
+      build: { x: 0.83, y: 0.68, z: -0.6, r: 0.05 },
+    }),
+    [['core.growlatics'], CORE_C(0.83, 0.5)],
+  ])
+  parkMarkets(p)
+  states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' ? 'active' : 'idle'))
+  edges(p, 'flowing')
+  p.dim = 0.35
+  return p
+}
+
+// ── Act 7: the network spreads into a flat band and steps back to the field; the DOM band (home/GlobalBand)
+// carries the 24-hour ribbon, ticks and markets so they line up with the copy on every tier. ──
+function act7(): Pose {
+  const p = emptyPose()
+  const caps = NODES.filter((x) => !x.id.startsWith('market.'))
+  caps.forEach((x, k) => p.pos.set([0.08 + (k / (caps.length - 1)) * 0.84, 0.5 + (k % 2 ? 0.02 : -0.02), -0.3], NODE_INDEX[x.id] * 3))
+  parkMarkets(p)
+  states(p, () => 'hidden')
+  p.field = 0.6
+  return p
+}
+
+// ── Act 8: convergence begins. Clusters contract toward the core, top right, clear of the rail below ──
+function act8(): Pose {
+  const p = emptyPose()
+  place(p, [
+    ...bySystem({
+      acquire: { x: 0.72, y: 0.22, z: 0, r: 0.035 },
+      sell: { x: 0.88, y: 0.22, z: 0.2, r: 0.04 },
+      operate: { x: 0.88, y: 0.4, z: 0, r: 0.03 },
+      build: { x: 0.72, y: 0.4, z: -0.6, r: 0.035 },
+    }),
+    [['core.growlatics'], CORE_C(0.8, 0.31)],
+  ])
+  parkMarkets(p)
+  states(p, (s) => (s === 'market' ? 'hidden' : s === 'core' ? 'active' : 'idle'))
+  edges(p, 'converge')
+  p.dim = 0.6
+  return p
+}
+
+// ── Act 9: everything converges on the core, which resolves into the mark ──
+function act9(): Pose {
+  const p = emptyPose()
+  place(p, [
+    ...bySystem({
+      acquire: { x: 0.44, y: 0.36, z: 0, r: 0.04 },
+      sell: { x: 0.56, y: 0.36, z: 0.2, r: 0.045 },
+      operate: { x: 0.56, y: 0.48, z: 0, r: 0.035 },
+      build: { x: 0.44, y: 0.48, z: -0.6, r: 0.04 },
+    }),
+    [['core.growlatics'], CORE_C(0.5, 0.42)],
+  ])
+  parkMarkets(p)
+  // Destination reached: every system lit for the first time on the page.
+  states(p, (s) => (s === 'market' ? 'hidden' : 'active'))
+  edges(p, 'converge')
+  p.mark = 1
+  return p
+}
+
+export const KEYS: Pose[] = [act1(), act2(), act3(), ...[0, 1, 2, 3, 4].map(journey), act5(), act6(), act7(), act8(), act9()]
+
+// ── Act 1 portrait (1024×1366 fixed stage, phones): the hero copy fills the top and the System index the
+// bottom, so the network sits in the band between them, Sell in the middle and nearest. Portrait coordinates. ──
+function act1Portrait(): Pose {
+  const p = emptyPose()
+  place(p, [
+    ...bySystem({
+      acquire: { x: 0.22, y: 0.6, z: -0.1, r: 0.08 },
+      sell: { x: 0.5, y: 0.53, z: 0.35, r: 0.1 },
+      operate: { x: 0.78, y: 0.6, z: 0, r: 0.065 },
+      build: { x: 0.5, y: 0.69, z: -0.75, r: 0.08 }, // clear of the System index's top edge
+    }),
+    [['core.growlatics'], CORE_C(0.62, 0.47)],
+  ])
+  const ref = KEYS[0]
+  p.node.set(ref.node)
+  p.edge.set(ref.edge)
+  p.field = ref.field
+  p.names = ref.names
+  parkMarkets(p)
+  return p
+}
+
+/** Phone/portrait: transpose so horizontal arrangements stack vertically. */
+// ponytail: plain x/y transpose except act 1 (act1Portrait); hand-tune more portrait keys if an act reads wrong.
+function transpose(p: Pose) {
+  for (let i = 0; i < N; i++) {
+    const x = p.pos[i * 3]
+    p.pos[i * 3] = p.pos[i * 3 + 1]
+    p.pos[i * 3 + 1] = x
+  }
+  const cx = p.cam[0]
+  p.cam[0] = p.cam[1]
+  p.cam[1] = cx
+}
+
+/** Inline figures: fit the 2D camera to the visible nodes so a composition fills its box. */
+export function frame(p: Pose, pad = 0.12) {
+  let x0 = 1, y0 = 1, x1 = 0, y1 = 0
+  for (let i = 0; i < N; i++) {
+    if (p.node[i] < 0.5) continue
+    const x = p.pos[i * 3], y = p.pos[i * 3 + 1]
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y)
+  }
+  if (x1 < x0) return p
+  p.cam[0] = (x0 + x1) / 2 + 0.03 // labels sit right of their nodes
+  p.cam[1] = (y0 + y1) / 2
+  p.cam[2] = Math.min(2.2, Math.max(1, 1 / (Math.max(x1 - x0, y1 - y0) + pad * 2)))
+  return p
+}
+
+const PORTRAIT_KEYS: Pose[] = KEYS.map((k, i) => {
+  if (i === 0) return act1Portrait()
+  const p = emptyPose()
+  p.pos.set(k.pos); p.node.set(k.node); p.edge.set(k.edge); p.label.set(k.label); p.cam.set(k.cam)
+  Object.assign(p, { names: k.names, field: k.field, dim: k.dim, mark: k.mark, hero: k.hero })
+  transpose(p)
+  return p
+})
+
+const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+
+/** Scroll position → continuous key position. 60% dwell on the act's end state, 40% travel to the next (§4.4). */
+export function keyPosition(act: number, local: number, stage = 0, stageLocal = 0) {
+  const k = keyFor(act, stage)
+  const l = act === 4 ? stageLocal : local
+  const travel = l < 0.6 ? 0 : easeInOut(Math.min(1, (l - 0.6) / 0.4))
+  return Math.min(KEY_COUNT - 1, k + travel)
+}
+
+/** Writes the blended pose at key position `kp` into `out` (no allocation). */
+export function poseAt(out: Pose, kp: number, portrait = false) {
+  const i0 = Math.max(0, Math.min(KEY_COUNT - 1, Math.floor(kp)))
+  const i1 = Math.min(KEY_COUNT - 1, i0 + 1)
+  const t = kp - i0
+  const keys = portrait ? PORTRAIT_KEYS : KEYS
+  const a = keys[i0], b = keys[i1]
+  const lerpArr = (o: Float32Array, x: Float32Array, y: Float32Array) => {
+    for (let j = 0; j < o.length; j++) o[j] = x[j] + (y[j] - x[j]) * t
+  }
+  lerpArr(out.pos, a.pos, b.pos)
+  lerpArr(out.node, a.node, b.node)
+  lerpArr(out.edge, a.edge, b.edge)
+  lerpArr(out.label, a.label, b.label)
+  lerpArr(out.cam, a.cam, b.cam)
+  out.names = a.names + (b.names - a.names) * t
+  out.field = a.field + (b.field - a.field) * t
+  out.dim = a.dim + (b.dim - a.dim) * t
+  out.mark = a.mark + (b.mark - a.mark) * t
+  out.hero = a.hero + (b.hero - a.hero) * t
+  return out
+}

@@ -1,0 +1,142 @@
+name: Deploy production (Hostinger)
+
+# push to main → build → validate → deploy out/ to https://growlatics.us → smoke test → auto-rollback on failure.
+# Kill switch: the deploy job runs only while the REPOSITORY variable PRODUCTION_DEPLOY_ENABLED is exactly 'true'.
+# Unset (the state until launch approval) = build and validate only; nothing reaches Hostinger.
+# Emergency disable: delete or change that variable (Settings › Secrets and variables › Actions › Variables).
+# Docs: docs/deployment/CI_CD.md. Never triggered by PRs, other branches or the Pages preview.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# One production run at a time; a queued run is never cancelled mid-deploy. GitHub keeps only the newest
+# pending run in the group, so a superseded commit waiting in the queue is dropped instead of deployed.
+concurrency:
+  group: growlatics-production
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and validate
+    uses: ./.github/workflows/ci.yml
+
+  disabled:
+    name: Deploy disabled (kill switch)
+    needs: build
+    if: vars.PRODUCTION_DEPLOY_ENABLED != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Deploy **disabled**; repository variable PRODUCTION_DEPLOY_ENABLED is not 'true'. Nothing was sent to Hostinger." >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    name: Deploy to Hostinger
+    needs: build
+    if: vars.PRODUCTION_DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://growlatics.us
+    env:
+      GL_TARGET: gl-prod
+      GL_DOCROOT: ${{ vars.HOSTINGER_DEPLOY_PATH }}
+      GL_MODE: ${{ vars.HOSTINGER_DEPLOY_MODE || 'swap' }}
+      GL_KEEP: ${{ vars.HOSTINGER_KEEP_RELEASES || '5' }}
+      GL_PRESERVE: ${{ vars.HOSTINGER_PRESERVE || '.well-known' }}
+      GL_V1_REVIEWED: ${{ vars.HOSTINGER_V1_REVIEWED }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://growlatics.us' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version-file: .nvmrc
+
+      # Never deploy a commit that is no longer the tip of main: the newer push has its own run.
+      - name: Still the newest commit on main?
+        id: fresh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tip=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)
+          if [ "$tip" != "$GITHUB_SHA" ]; then
+            echo "main moved on to $tip; skipping the deploy of $GITHUB_SHA" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "go=false" >> "$GITHUB_OUTPUT"
+          else echo "go=true" >> "$GITHUB_OUTPUT"; fi
+
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        if: steps.fresh.outputs.go == 'true'
+        with:
+          name: site-${{ github.sha }}
+      - name: Unpack and re-validate
+        if: steps.fresh.outputs.go == 'true'
+        run: |
+          mkdir out && tar xzf site.tgz -C out
+          node scripts/deploy/validate-export.mjs out
+        env:
+          NEXT_PUBLIC_LEGAL_APPROVED: ${{ vars.NEXT_PUBLIC_LEGAL_APPROVED }}
+
+      - name: SSH setup (pinned host key)
+        if: steps.fresh.outputs.go == 'true'
+        run: bash scripts/deploy/ssh-setup.sh
+        env:
+          HOSTINGER_SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
+          HOSTINGER_SSH_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}
+          HOSTINGER_SSH_USER: ${{ secrets.HOSTINGER_SSH_USER }}
+          HOSTINGER_SSH_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}
+          HOSTINGER_SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_SSH_KNOWN_HOSTS }}
+
+      # An older commit must never replace a newer live release (e.g. re-running an old workflow run).
+      # Redeploying an old release is the rollback workflow's job.
+      - name: Refuse to go backwards
+        if: steps.fresh.outputs.go == 'true'
+        run: |
+          [ -n "$GL_DOCROOT" ] || { echo "::error::repository variable HOSTINGER_DEPLOY_PATH is not set"; exit 1; }
+          # shellcheck disable=SC2029 # the path is expanded here on purpose, quoted with %q
+          live=$(ssh gl-prod "sed -n 2p $(printf '%q' "$GL_DOCROOT")/deploy-release.txt 2>/dev/null" || true)
+          if [[ "$live" =~ ^[0-9a-f]{40}$ ]] && [ "$live" != "$GITHUB_SHA" ] && git merge-base --is-ancestor "$GITHUB_SHA" "$live" 2>/dev/null; then
+            echo "::error::live commit $live is newer than $GITHUB_SHA; refusing to deploy an older commit"; exit 1
+          fi
+          echo "live commit: ${live:-none (pre-CI site)}"
+
+      - name: Upload, verify, switch
+        id: deploy
+        if: steps.fresh.outputs.go == 'true'
+        run: bash scripts/deploy/deploy.sh release out "$GITHUB_SHA"
+
+      - name: Smoke test (HTTP)
+        id: smoke
+        if: steps.deploy.outcome == 'success'
+        run: node scripts/deploy/smoke.mjs "$PRODUCTION_URL" "${{ steps.deploy.outputs.id }}"
+
+      - name: Automatic rollback
+        id: rollback
+        if: failure() && steps.deploy.outputs.active != ''
+        run: bash scripts/deploy/deploy.sh rollback "${{ steps.deploy.outputs.previous }}"
+      - name: Verify rollback
+        if: failure() && steps.rollback.outcome == 'success'
+        run: node scripts/deploy/smoke.mjs "$PRODUCTION_URL" "${{ steps.deploy.outputs.previous }}" --basic
+
+      - name: Prune old releases
+        if: success() && steps.smoke.outcome == 'success'
+        run: bash scripts/deploy/deploy.sh prune
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Production deploy"
+            echo "| | |"; echo "|---|---|"
+            echo "| Commit | \`$GITHUB_SHA\` ($GITHUB_REF_NAME) |"
+            echo "| URL | $PRODUCTION_URL |"
+            echo "| Release | ${{ steps.deploy.outputs.id || 'none' }} (previous: ${{ steps.deploy.outputs.previous || 'n/a' }}) |"
+            echo "| Upload + switch | ${{ steps.deploy.outcome }} |"
+            echo "| Smoke test | ${{ steps.smoke.outcome }} |"
+            echo "| Automatic rollback | ${{ steps.rollback.outcome }} (verified only if 'Verify rollback' passed) |"
+          } >> "$GITHUB_STEP_SUMMARY"

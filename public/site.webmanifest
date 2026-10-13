@@ -1,0 +1,13 @@
+{
+  "name": "Growlatics",
+  "short_name": "Growlatics",
+  "description": "Growth operations, Sales & BPO and technology partner connecting marketing, sales, customer operations and technology.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#070605",
+  "theme_color": "#070605",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
