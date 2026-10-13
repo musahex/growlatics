@@ -1,5 +1,7 @@
 # Owner setup checklist: Hostinger auto-deploy
 
+**Status 2026-10-13: done; the pipeline is ACTIVE** (see [ACTIVATION_2026-10-13.md](ACTIVATION_2026-10-13.md)). The steps below are kept for key rotation or a rebuild.
+
 Do these in order. Nothing deploys until step 5. Details: [CI_CD.md](CI_CD.md). Never paste a private key into chat, an issue or a commit.
 
 ## 0. Where things stand (2026-10-12)

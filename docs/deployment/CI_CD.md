@@ -1,8 +1,6 @@
 # CI/CD: GitHub Actions → Hostinger (https://growlatics.us)
 
-Status (2026-10-12): **IMPLEMENTED and TESTED locally; AWAITING CREDENTIALS, HOST KEY VERIFICATION and LAUNCH APPROVAL.** Nothing has deployed to Hostinger from this pipeline. It is not automatic or operational until a real push-to-main deploy has passed its smoke test. Owner steps: [OWNER_SETUP.md](OWNER_SETUP.md).
-
-**Before `PRODUCTION_DEPLOY_ENABLED` is ever set to `true`:** the urgent branch `claude/determined-lovelace-uv676d` (Houston address + Voice AI Testing page, released to Hostinger manually by another session) must be merged into `v2`, or the first CI deploy from `main` removes both from production. Plan, conflicts and apply commands: [RECONCILE_LOVELACE.md](RECONCILE_LOVELACE.md).
+Status (2026-10-13): **ACTIVE.** First automated release ran 2026-10-13 (run 38384727796, main `d556fac`, release `20261013T104028Z-d556fac1da06`, smoke PASS). Every push to `main` now deploys automatically while `PRODUCTION_DEPLOY_ENABLED=true`. Record: [ACTIVATION_2026-10-13.md](ACTIVATION_2026-10-13.md).
 
 Status labels used below: **[hPanel]** confirmed by the owner in hPanel · **[SSH]** confirmed by authenticated SSH (nothing yet) · **[GitHub]** configured and verified in GitHub (god, API, 2026-10-12) · **[owner]** waiting for the owner · **[approval]** needs separate production approval.
 
@@ -111,6 +109,8 @@ Connection: SSH with a dedicated ed25519 deploy key (public half in hPanel only)
 
 
 ## 5a. Host key verification
+
+**Decision taken (2026-10-13):** Hostinger could not state the fingerprint, so the owner approved **TOFU** (trust on first use) for `[141.136.33.243]:65002`: the owner accepted ED25519 `SHA256:dvH7tK5YZQ+Fv5mVgokf4EGLSsOte3P4ilNU5vUWl7M` interactively (it matched every earlier scan), and that pinned key is `HOSTINGER_SSH_KNOWN_HOSTS`. This is an owner trust decision, not independent Hostinger verification; the methods below remain the way to upgrade it. If the host key ever changes, deploys fail closed; do not replace the secret without verifying the new key.
 
 `HOSTINGER_SSH_KNOWN_HOSTS` must hold a host key that came from a source an attacker in the network path cannot forge. A key from `ssh-keyscan` or a first-connection prompt is only a **candidate** until one of these confirms its fingerprint. Trustworthy methods, in order:
 
