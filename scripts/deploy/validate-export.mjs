@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 
 export const ROUTES = ['/', '/about/', '/services/', '/services/sales-bpo/', '/services/performance-marketing/',
-  '/services/customer-operations/', '/services/technology/', '/work/', '/contact/']
+  '/services/customer-operations/', '/services/technology/', '/services/voice-ai-testing/', '/work/', '/contact/']
 const SITE = 'https://growlatics.us'
 
 export function validate(dir, { legalApproved = process.env.NEXT_PUBLIC_LEGAL_APPROVED === '1' } = {}) {

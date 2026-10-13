@@ -64,7 +64,8 @@ const webPage = (route: string, seo: Seo, breadcrumb?: string) => ({
   ...(breadcrumb && { breadcrumb: { '@id': breadcrumb } }),
 })
 
-/** Organization + WebSite + WebPage JSON-LD for Home. Every field comes from content; no address, ratings or counts (IA §7). */
+/** Organization + WebSite + WebPage JSON-LD for Home. Every field comes from content; the address is the owner-supplied
+ *  office in site.contact (OWNER_VERIFY); no LocalBusiness, ratings or counts (IA §7). */
 export function homeJsonLd(seo: Seo) {
   const organization = {
     '@type': 'Organization',
@@ -75,6 +76,14 @@ export function homeJsonLd(seo: Seo) {
     description: site.description,
     email: site.contact.email,
     telephone,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: site.contact.address.street,
+      addressLocality: site.contact.address.city,
+      addressRegion: site.contact.address.region,
+      postalCode: site.contact.address.postalCode,
+      addressCountry: site.contact.address.country,
+    },
     sameAs: site.social.map((s) => s.href),
     areaServed,
     contactPoint: { '@type': 'ContactPoint', contactType: 'sales', email: site.contact.email, telephone },
@@ -123,6 +132,7 @@ export const sitemapRoutes: { route: string; priority: number }[] = [
   { route: '/services/performance-marketing/', priority: 0.8 },
   { route: '/services/customer-operations/', priority: 0.8 },
   { route: '/services/technology/', priority: 0.8 },
+  { route: '/services/voice-ai-testing/', priority: 0.8 },
   { route: '/about/', priority: 0.7 },
   { route: '/contact/', priority: 0.9 },
   { route: '/work/', priority: 0.5 },

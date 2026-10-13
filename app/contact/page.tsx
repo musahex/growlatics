@@ -1,4 +1,4 @@
-import { contact, site } from '@/content'
+import { contact, formatAddress, site } from '@/content'
 import { ldJson, pageJsonLd, pageMetadata } from '@/lib/seo'
 import PageHero from '@/components/patterns/PageHero'
 import QualificationFlow from '@/components/patterns/QualificationFlow'
@@ -31,6 +31,9 @@ export default function ContactPage() {
                   {site.contact.phone}
                 </a>
               </li>
+              <li className="border-b border-line py-2">
+                <address className="inline-flex min-h-11 items-center text-body not-italic text-text">{formatAddress(site.contact.address)}</address>
+              </li>
               <li className="flex flex-wrap gap-x-6 border-b border-line py-2">
                 {site.social.map((s) => (
                   <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-body-s text-text-2 hover:text-text">
@@ -39,7 +42,6 @@ export default function ContactPage() {
                 ))}
               </li>
             </ul>
-            <p className="mt-6 text-body-s text-text-3">{site.geography}</p>
 
             <h2 className="mt-16 text-title text-text">{contact.call.heading}</h2>
             <ol className="mt-6 grid gap-6">

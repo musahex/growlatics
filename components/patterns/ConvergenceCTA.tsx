@@ -1,12 +1,29 @@
-import { site } from '@/content'
+import { site, type Cta } from '@/content'
 import Mark from '@/components/brand/Mark'
 import Button from '@/components/ui/Button'
 import Section from '@/components/ui/Section'
 import Reveal from '@/components/ui/Reveal'
 
 /** P7 Convergence CTA: mark + headline + primary CTA on data-surface="dark". Pages may override the heading and the primary href (service pages keep ?system=). */
-export default function ConvergenceCTA({ heading, id = 'book-cta', href }: { heading?: string | null; id?: string; href?: string }) {
-  const c = site.finalCta
+export default function ConvergenceCTA({
+  heading,
+  id = 'book-cta',
+  href,
+  body,
+  primary,
+  secondary,
+  note,
+}: {
+  heading?: string | null
+  id?: string
+  href?: string
+  body?: string
+  primary?: Cta
+  secondary?: Cta
+  /** null = no note line. */
+  note?: string | null
+}) {
+  const c = { ...site.finalCta, ...(body && { body }), ...(primary && { primary }), ...(secondary && { secondary }), ...(note !== undefined && { note }) }
   return (
     <Section id={id} tone="dark" rule aria-labelledby={`${id}-h`}>
       <Reveal group className="flex flex-col items-center text-center">
@@ -27,9 +44,11 @@ export default function ConvergenceCTA({ heading, id = 'book-cta', href }: { hea
             {c.secondary.label}
           </Button>
         </Reveal>
-        <Reveal item as="p" className="mt-6 text-body-s text-text-3">
-          {c.note}
-        </Reveal>
+        {c.note && (
+          <Reveal item as="p" className="mt-6 text-body-s text-text-3">
+            {c.note}
+          </Reveal>
+        )}
       </Reveal>
     </Section>
   )

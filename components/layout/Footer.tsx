@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { nav, site } from '@/content'
+import { formatAddress, nav, site } from '@/content'
 import Logo from '@/components/brand/Logo'
 
 const linkCls = 'inline-flex min-h-11 items-center text-body-s text-text-2 transition-colors duration-fast ease-out hover:text-text sm:min-h-0 sm:py-1.5'
@@ -24,7 +24,7 @@ export default function Footer() {
           <div className="max-w-sm">
             <Logo />
             <p className="mt-4 text-body text-text">{site.tagline}</p>
-            <p className="mt-2 text-body-s text-text-3">{site.geography}</p>
+            <address className="mt-2 text-body-s not-italic text-text-3">{formatAddress(site.contact.address)}</address>
             <ul className="mt-6 flex flex-wrap gap-x-5">
               {site.social.map((s) => (
                 <li key={s.label}>

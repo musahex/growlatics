@@ -2,6 +2,7 @@ import type { Hero } from '@/content'
 import Button from '@/components/ui/Button'
 import Section from '@/components/ui/Section'
 import SectionHeader from '@/components/ui/SectionHeader'
+import Reveal from '@/components/ui/Reveal'
 
 /**
  * Internal page hero: eyebrow, H1 (display-l), lead, CTAs, optional figure below.
@@ -15,6 +16,11 @@ export default function PageHero({ hero, stage, children }: { hero: Hero; stage?
       {stage && <div className="pointer-events-none absolute inset-x-0 -inset-y-16 hidden lg:block">{stage}</div>}
       <div className={stage ? 'relative lg:flex lg:min-h-[30rem] lg:max-w-[52%] lg:flex-col lg:justify-center' : undefined}>
         <SectionHeader as="h1" size="display-l" eyebrow={hero.eyebrow} heading={hero.heading} body={hero.lead} />
+        {hero.lead2 && (
+          <Reveal load delay={160} as="p" className="mt-4 max-w-measure text-body-l text-text-2">
+            {hero.lead2}
+          </Reveal>
+        )}
         {(hero.primary || hero.secondary) && (
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             {hero.primary && (
