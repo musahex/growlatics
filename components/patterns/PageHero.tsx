@@ -35,6 +35,11 @@ export default function PageHero({ hero, stage, children }: { hero: Hero; stage?
             )}
           </div>
         )}
+        {hero.note && (
+          <Reveal load delay={200} as="p" className="mt-4 text-body-s text-text-3">
+            {hero.note}
+          </Reveal>
+        )}
       </div>
       </div>
       {children && <div className="relative mt-16">{children}</div>}

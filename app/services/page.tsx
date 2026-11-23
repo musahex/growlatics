@@ -1,4 +1,4 @@
-import { engagement, journey, services, site, stageTitles, systemById, systems, systemsSellFirst, voiceAiTesting } from '@/content'
+import { aeo, engagement, journey, services, site, stageTitles, systemById, systems, systemsSellFirst, voiceAiTesting } from '@/content'
 import { ldJson, pageJsonLd, pageMetadata } from '@/lib/seo'
 import { cn } from '@/lib/utils'
 import PageHero from '@/components/patterns/PageHero'
@@ -66,6 +66,25 @@ export default function ServicesPage() {
               </ul>
               <Button href={voiceAiTesting.route} variant="text" arrow className="mt-6">
                 Explore {voiceAiTesting.name}
+              </Button>
+            </div>
+          </Reveal>
+          <Reveal className="grid gap-6 border-t border-line py-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-16">
+            <div>
+              <p className="mb-3 text-label uppercase text-signal-ink">{aeo.hero.eyebrow}</p>
+              <h3 className="text-title text-text">{aeo.name}</h3>
+            </div>
+            <div>
+              <p className="max-w-measure text-body text-text-2">{aeo.hero.lead}</p>
+              <ul className="mt-6 flex flex-wrap gap-2">
+                {aeo.system.columns.map((c) => (
+                  <li key={c.title} className="rounded-sm border border-line px-2 py-1 font-mono text-data text-text-2">
+                    {c.title}
+                  </li>
+                ))}
+              </ul>
+              <Button href={aeo.route} variant="text" arrow className="mt-6">
+                Explore {aeo.name}
               </Button>
             </div>
           </Reveal>

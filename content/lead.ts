@@ -2,7 +2,7 @@ import type { ServiceSlug } from './types'
 import { site } from './site'
 
 // Book a Growth Call qualification flow (IA §6). Used by lib/leads/ and components/patterns/QualificationFlow.
-export type NeedId = ServiceSlug | 'voice-ai-testing' | 'not-sure'
+export type NeedId = ServiceSlug | 'voice-ai-testing' | 'aeo' | 'not-sure'
 export type StageOfBusiness = 'early' | 'growing' | 'established' | 'enterprise'
 export type MarketId = 'us' | 'uk' | 'pk' | 'other'
 export type StartWindow = 'now' | 'quarter' | 'exploring'
@@ -39,6 +39,7 @@ export const leadForm = {
         { value: 'customer-operations', label: 'Customer Operations' },
         { value: 'technology', label: 'Technology & Development' },
         { value: 'voice-ai-testing', label: 'Voice AI Testing & QA' },
+        { value: 'aeo', label: 'AEO for my local business' },
         { value: 'not-sure', label: 'Not sure yet — help me find the gap' },
       ] as Option<NeedId>[],
     },

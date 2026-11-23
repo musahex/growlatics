@@ -134,7 +134,7 @@ function ServicesMenu({ pathname }: { pathname: string }) {
 
       <div id="services-panel" hidden={!open} className="absolute left-1/2 top-full w-screen max-w-3xl -translate-x-1/2 pt-4">
         <div className="glass-elevated glass-drop rounded-liquid p-2">
-          <ul className="grid grid-cols-[1.25fr_1fr_1fr_1fr_1fr] gap-1">
+          <ul className="grid grid-cols-3 gap-1">
             {services.children!.map((c) => {
               const s = c.system ? systemById[c.system] : undefined
               return (
