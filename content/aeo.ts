@@ -31,7 +31,8 @@ export const aeo: {
   liveCheck: { eyebrow: string; heading: string; cards: { label: string; value: string; sub: string }[]; line: string }
   checks: { eyebrow: string; heading: string; intro: string; items: { title: string; body: string }[]; line: string }
   everywhere: { eyebrow: string; heading: string; upstream: { label: string; sub: string }[]; current: { label: string; sub: string }; downstream: { label: string; sub: string }[]; line: string }
-  system: { eyebrow: string; heading: string; columns: { when: string; title: string; body: string; tags: string[] }[]; line: string }
+  /** Two groups of AEO steps: what brings calls within weeks, and what makes AI keep naming you. */
+  system: { eyebrow: string; heading: string; columns: { when: string; title: string; body: string; steps: string[] }[]; line: string }
   how: { eyebrow: string; heading: string; steps: { title: string; body: string; when: string }[]; timeline: string; faster: string }
   measure: { eyebrow: string; heading: string; agencies: { label: string; items: string[]; line: string }; us: { label: string; items: string[]; line: string } }
   proof: { eyebrow: string; heading: string; body: string; reference: string; image: { src: string; alt: string; width: number; height: number } }
@@ -131,22 +132,26 @@ export const aeo: {
     heading: 'Leads now, and leads that last.',
     columns: [
       {
-        when: 'From week 1',
-        title: 'Quick leads',
-        body: 'Google ads that put you at the top of search, with leads that go only to you, not five other contractors. An AI assistant replies to every lead within a minute and books the job.',
-        tags: ['Google Local Services Ads', 'Google search ads', 'AI assistant books every lead'],
-      },
-      {
-        when: 'Always running',
-        title: 'The foundation',
-        body: 'Your Google profile, reviews and website, set up so customers trust you and call.',
-        tags: ['Website built to convert', 'Google Business Profile', 'A steady flow of reviews'],
+        when: 'Within weeks',
+        title: 'Leads now',
+        body: 'Your Google profile, reviews and listings, set up so customers trust you and call.',
+        steps: [
+          'Google Business Profile completed: services, photos and the towns you serve',
+          'A steady flow of recent reviews on Google and other sites',
+          'Name, phone and address matching on every listing',
+          'Trust signals in place: your name, years in business, license and insurance',
+        ],
       },
       {
         when: 'Builds over months',
-        title: 'AEO: be the answer',
+        title: 'Leads that last',
         body: "We make your business easy for ChatGPT and Google's AI to recommend, and keep it there.",
-        tags: ['Pages for every service and town', 'Videos and local mentions', 'AI names you first'],
+        steps: [
+          'A page for every service and every town, written for that town',
+          'Answers to the questions customers actually ask AI',
+          'Videos, directories and local mentions that tell the same story',
+          'AI names you first: tracked every month, reported every week',
+        ],
       },
     ],
     line: 'As AEO grows, you rely less on paid ads and more work comes to you for free.',
@@ -203,7 +208,6 @@ export const aeo: {
     line: 'Two jobs a month pays for it.',
     items: [
       { title: 'No contract.', body: 'Month to month.' },
-      { title: 'Your ad budget goes straight to Google.', body: 'You control it.' },
       { title: 'Weekly updates', body: 'with real numbers.' },
       { title: 'You own everything we build.' },
       { title: 'One business per trade, per city.' },

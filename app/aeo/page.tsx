@@ -144,7 +144,26 @@ export default function AeoPage() {
       {/* 6 · What we do: three tracks on one rail. */}
       <Section id="system" tone="surface" aria-labelledby="system-h">
         <SectionHeader id="system-h" eyebrow={a.system.eyebrow} heading={a.system.heading} />
-        <SignalRail className="mt-16" items={a.system.columns.map((c) => ({ index: c.when, title: c.title, body: c.body, tags: c.tags }))} />
+        <Reveal group className="mt-12 grid gap-10 md:grid-cols-2 md:gap-16">
+          {a.system.columns.map((c, k) => (
+            <Reveal item key={c.title}>
+              <p className="font-mono text-data uppercase text-signal-ink">{c.when}</p>
+              <h3 className="mt-3 text-display-m text-text">{c.title}</h3>
+              <p className="mt-4 max-w-measure text-body text-text-2">{c.body}</p>
+              <ol className="mt-8 border-b border-line">
+                {c.steps.map((st, i) => (
+                  <li key={st} className="grid grid-cols-[2.5rem_1fr] gap-x-3 border-t border-line py-4">
+                    <span className="flex items-center gap-2 pt-0.5 font-mono text-data text-text-3">
+                      <span aria-hidden className={dot(k === 1)} />
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="text-body text-text">{st}</span>
+                  </li>
+                ))}
+              </ol>
+            </Reveal>
+          ))}
+        </Reveal>
         <p className="mt-12 max-w-measure text-body-l text-text-2">{a.system.line}</p>
       </Section>
 
