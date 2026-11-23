@@ -14,6 +14,7 @@ export * from './faq'
 export * from './proof'
 export * from './lead'
 export * from './voice-ai'
+export * from './aeo'
 // legal.ts is NOT re-exported: the barrel is imported by client components, and the unapproved drafts must not ship
 // in shared JS. app/privacy and app/terms import '@/content/legal' directly.
 

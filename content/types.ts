@@ -12,6 +12,7 @@ export type Route =
   | '/services/customer-operations/'
   | '/services/technology/'
   | '/services/voice-ai-testing/'
+  | '/aeo/'
   | '/work/'
   | '/about/'
   | '/contact/'
@@ -101,7 +102,7 @@ export interface Section extends Verifiable {
 export interface FaqItem extends Verifiable { question: string; answer: string }
 
 export interface Seo { title: string; description: string; ogTitle?: string; noindex?: boolean }
-export interface Hero { eyebrow?: string; heading: string; lead: string; lead2?: string; primary?: Cta; secondary?: Cta }
+export interface Hero { eyebrow?: string; heading: string; lead: string; lead2?: string; primary?: Cta; secondary?: Cta; /** Small line under the CTAs. */ note?: string }
 
 export interface PageContent {
   route: Route

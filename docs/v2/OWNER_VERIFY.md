@@ -15,6 +15,7 @@ Owner decision A (GLASS_BRIEF §12): keep factual service wording; remove or sof
 ## Owner-only facts (left out on purpose)
 
 - Legal entity name, registration details: not on the site anywhere (copy or JSON-LD). Add only if the owner provides them.
+- AEO for Local Businesses page (`/aeo/`, `content/aeo.ts`): owner-supplied 2026-11-23 (copy document + deck). Owner's own claims on the page: the three sourced statistics, the Samosa Paradise proof and screenshot (`public/aeo/samosa-paradise.webp`), the reference-call line, and the $300–$800 range. WhatsApp number +1 (470) 908-1949 is separate from the site's call number by the owner's instruction. No prices in JSON-LD.
 - Voice AI Testing & QA page (`/services/voice-ai-testing/`, `content/voice-ai.ts`): owner-supplied 2026-10-12. The hero console's "2,000+" concurrent calls is an owner-confirmed figure (2026-10-12). Contact details are the site's; no legal entity name.
 - Office address: supplied by the owner 2026-10-12 (12123 Garner Mill Lane, Houston, TX 77089). Lives in `content/site.ts` `contact.address`; shown as "12123 Garner Mill Lane, Houston" on /contact/ and in the footer (the "US / Pakistan business…" geography line was removed from both spots at the owner's request), and in full as `PostalAddress` on the Organization JSON-LD. Still no `LocalBusiness`.
 - Response time after a request, coverage hours, languages: not stated. FAQ says coverage hours and languages are agreed per engagement.
